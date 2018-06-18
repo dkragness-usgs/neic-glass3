@@ -29,6 +29,23 @@ Config::~Config() {
 }
 
 // set up for configuration from a file
+// ========================
+// DK REVIEW 20180618
+// This function doesn't do what I'd expect based
+// on the comment with the header or the name.
+// It seems like it's a lightweight function to
+// set member variables and take no action.
+//
+// Also seems somewhat redundant to clear, like
+// you could have clear() call setup() with blank strings.
+// 
+// In general, seems like you have an overkill number of functions.
+// Do you really have a use-case for all of them?
+// ========================
+/* \brief config configuration function
+*
+* The this function configures the config class.
+*/
 bool Config::setup(std::string filepath, std::string filename) {
 	m_sFilePath = filepath;
 	m_sFileName = filename;
@@ -64,6 +81,19 @@ void Config::loadConfigfile() {
 		if (currentline == "") {
 			continue;
 		}
+
+    // ========================
+    // DK REVIEW 20180618
+    // I think it doesn't matter for JSON, but note that getNextLineFromConfigFile()
+    // removes the line breaks between lines, so humans might
+    // interpret:
+    // this is\n
+    // my config\n
+    // as  "this is my config"
+    // but the parser is going to see it as
+    // "this ismy config"
+    // That OK?
+    // ========================
 
 		// tack the current line on the end of the
 		// config string
@@ -103,7 +133,7 @@ std::string Config::getConfig_String() {
 // set (and parse into JSON) a configuration string
 bool Config::setConfigString(std::string newconfig) {
 	// now that we have the whole config string
-	// deserailize the config string into a json value
+	// deserialize the config string into a json value
 	// I think (hope) this ignores newlines and whitespace
 	json::Value deserializedJSON = json::Deserialize(newconfig);
 
@@ -169,7 +199,15 @@ bool Config::openConfigFile() {
 
 std::string Config::getNextLineFromConfigFile() {
 	// make sure we've got a file open
-	if (m_InFile.is_open() == false) {
+
+  
+  // ========================
+  // DK REVIEW 20180618
+  // Shouldn't this be an exception throw in c++ world?
+  // I'm just saying...
+  // ========================
+
+  if (m_InFile.is_open() == false) {
 		return ("");
 	}
 

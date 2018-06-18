@@ -1,3 +1,12 @@
+# ========================
+# DK REVIEW 20180618
+# This file should be separated out into two or more files, similar to what we do in Hydra
+# Where project wide stuff should show up in one common file instead of having redundant
+# copies, while sub-project stuff shows up in it's own file, pulling common pieces as
+# necessary.  The goal of course being not having redundant copies of the same "processing info",
+# so that it doesn't have to be tracked/changed in multiple places.
+# ========================
+
 # Tweaks CMake's default compiler/linker settings
 #
 # This must be a macro(), as inside a function string() can only
