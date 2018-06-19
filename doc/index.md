@@ -4,6 +4,12 @@ Please note that this documentation site is **Under Construction** and not all p
 
 ## Library Documentation:
 
+# ========================
+# DK REVIEW 20180618
+# Come back to this at a future point in time, once more code has been reviewed.
+# ========================
+
+
 * [Config](https://usgs.github.io/neic-glass3/config/html/)
 * [GlassCore](https://usgs.github.io/neic-glass3/glasscore/html/)
 * [Log](https://usgs.github.io/neic-glass3/log/html/)

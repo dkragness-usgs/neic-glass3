@@ -1,5 +1,14 @@
 # Glass3 Configuration
 
+# ========================
+# DK REVIEW 20180618
+# Maybe this isn't the place to make this comment, but seems like the parameters doc needs a lot more UNIT indications
+# and maybe some range guidance and a little more verbage.
+# Lots of good stuff in here, but for me at least, some of the params are head-scratchers...
+# Rows, Cols, Resolution
+# ========================
+
+ 
 ## Example
 An example `glass_init.d` configuration file:
 ```json
