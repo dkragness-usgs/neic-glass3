@@ -1,3 +1,16 @@
+# ========================
+# DK REVIEW 20180621
+# Missing description of the file.  Maybe something like:
+#
+# This file represents the ak135 velocity model,
+# giving P and S velocities in m/s, as well as density
+# for each depth(in km) between earth surface and core.
+# Discontinuities in velocity are expressed by listing
+# the same depth twice with different velocities (see 20km for first example)
+# velocity between listed depths is based on linear interpolation of the two
+# closest entries.
+# ========================
+
 #NB: Model has addition surface layer (neg depth) for station
 #    elevation correction. The layer with 0 depth is assumed to
 #    be the mean radius of the earth.

@@ -1,3 +1,8 @@
+# ========================
+# DK REVIEW 20180618
+# Missing descriptions of config params...
+# ========================
+
 # gen-travel-times.d
 # Configuration file for the glass parameters
 {

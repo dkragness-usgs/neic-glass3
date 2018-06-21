@@ -16,6 +16,22 @@
 #include <string>
 #include <iostream>
 
+// ========================
+// DK REVIEW 20180621
+// Missing description of the file.
+// Something about application that generates traveltimes
+// Seems like it should also list external library dependencies.
+// And provide a USAGE statement.  
+// ========================
+
+
+// ========================
+// DK REVIEW 20180621
+// Missing doxy comment.
+// this looks like a logging function, but there's a bunch of code
+// in main() that calls logger::log() and references spdlog
+// OMG! What's up with that!?!
+// ========================
 void logTravelTimes(glassutil::logMessageStruct message) {
 	if (message.level == glassutil::log_level::info) {
 		logger::log("info", "traveltime: " + message.message);
@@ -28,6 +44,10 @@ void logTravelTimes(glassutil::logMessageStruct message) {
 	}
 }
 
+// ========================
+// DK REVIEW 20180621
+// Missing doxy comment.
+// ========================
 int main(int argc, char* argv[]) {
 	// check our arguments
 	if ((argc < 2) || (argc > 3)) {
@@ -40,22 +60,28 @@ int main(int argc, char* argv[]) {
 
 	// Look up our log directory
 	std::string logpath;
-	char* pLogDir = getenv("GLASS_LOG");
+  // ========================
+  // DK REVIEW 20180621
+  // Somewhere in some doc for this app, it should indicate use of this env variable
+  // ========================
+  char* pLogDir = getenv("GLASS_LOG");
 	if (pLogDir != NULL) {
 		logpath = pLogDir;
 	} else {
-		std::cout << "gen-travel-times-app using default log director of ./"
+		std::cout << "gen-travel-times-app using default log directory of ./"
 					<< std::endl;
 		logpath = "./";
 	}
 
 	// get our logname if available
-	std::string logName = "gen-travel-times-app";
 	if (argc >= 3) {
 		logName = std::string(argv[2]);
 	}
+  else  { 
+    std::string logName = "gen-travel-times-app";
+  }
 
-	// now set up our logging
+  // now set up our logging
 	logger::log_init(logName, spdlog::level::debug, logpath, true);
 
 	logger::log(
@@ -75,7 +101,11 @@ int main(int argc, char* argv[]) {
 	// load our basic config
 	util::Config * genConfig = new util::Config("", configFile);
 
-	// check to see if our config is of the right format
+  // ========================
+  // DK REVIEW 20180621
+  // Meh...  Grumble grumble...  I hate this code style with non matched brace alignment, to save a line....
+  // ========================
+  // check to see if our config is of the right format
 	if (genConfig->getJSON().HasKey("Configuration")
 			&& ((genConfig->getJSON())["Configuration"].GetType()
 					== json::ValueType::StringVal)) {
@@ -86,7 +116,20 @@ int main(int argc, char* argv[]) {
 			logger::log("critcal",
 						"gen-travel-times-app: Wrong configuration, exiting.");
 
-			delete (genConfig);
+      // ========================
+      // DK REVIEW 20180621
+      // I see this kind of code in multiple places, and I'm not a fan.
+      // Instead of doing uniform cleanup in multiple places, I think it
+      // would be better to have
+      // returncode = 1;
+      // goto cleanup_config;
+      // :cleanup_config
+      //   delete(genConfig)
+      //   return(returncode)
+      //
+      //  thoughts?
+      // ========================
+      delete (genConfig);
 			return (1);
 		}
 	} else {
@@ -122,13 +165,29 @@ int main(int argc, char* argv[]) {
 			&& ((genConfig->getJSON())["OutputPath"].GetType()
 					== json::ValueType::StringVal)) {
 		path = (genConfig->getJSON())["OutputPath"].ToString();
-		glassutil::CLogit::log(
+    // ========================
+    // DK REVIEW 20180621
+    // Why are we using logger::log() and glassutil::CLogit::log()
+    // and we have a logTravelTimes() function? 
+    // ========================
+    glassutil::CLogit::log(
 				glassutil::log_level::info,
 				"gen-travel-times-app: Using OutputPath: " + path);
 	}
 
 	// file extension
-	std::string extension = ".trv";
+  // ========================
+  // DK REVIEW 20180621
+  // Default should go in an else after the if below.
+  // If I found a config command, use it, else use default.
+  // If you're just gonna log it when it's dug up from the config
+  // file, then seems like you should say something about
+  // "Found FileExtension command, using ..."
+  // Instead of just "using FileExtension", which makes it
+  // sound like you're always gonna tell me what FileExtension
+  // you're using.
+  // ========================
+  std::string extension = ".trv";
 	if (genConfig->getJSON().HasKey("FileExtension")
 			&& ((genConfig->getJSON())["FileExtension"].GetType()
 					== json::ValueType::StringVal)) {
@@ -174,8 +233,18 @@ int main(int argc, char* argv[]) {
 						"gen-travel-times-app: Failed to generate travel time "
 						"file.");
 
-				// cleanup
-				delete (genConfig);
+        // ========================
+        // DK REVIEW 20180621
+        //
+        // cleanup
+        // returncode = 1;
+        // goto cleanup_ttgenerator;
+        // :cleanup_ttgenerator
+        //   delete(travelGenerator)
+        // :cleanup_config
+        //   delete(genConfig)
+        //   return(returncode)
+        delete (genConfig);
 				delete (travelGenerator);
 				return (1);
 			}
@@ -191,3 +260,13 @@ int main(int argc, char* argv[]) {
 	// done
 	return (0);
 }
+// ========================
+// DK REVIEW 20180621
+// I'm a fan of putting the function name
+// in a comment with the closing brace, 
+// whenever you have a function that's more than a page
+// long.  Just helps confirm that you are still viewing
+// the same function.  Of course you already added that 
+// function delineation thing (which is missing in this code),
+// so maybe that's not neccessary.
+// ========================
