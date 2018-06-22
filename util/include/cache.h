@@ -36,6 +36,11 @@ class Cache : public util::BaseClass {
 	 */
 	Cache();
 
+  // ========================
+  // DK REVIEW 20180621
+  // Needs a better \brief description
+  // ========================
+
 	/**
 	 * \brief cache advanced constructor
 	 *
@@ -59,6 +64,13 @@ class Cache : public util::BaseClass {
 	 * This function configures the cache class
 	 * \param config - A pointer to a json::Object containing to the
 	 * configuration to use
+
+   // ========================
+   // DK REVIEW 20180621
+   // Looks like "Cmd" and "DiskFile" 
+   // are both required keys for the config parameter in the setup JSON object.
+   // Should be doc'd somewhere, probably here.
+   // ========================
 	 * \return returns true if successful, false otherwise.
 	 */
 	bool setup(json::Object *config) override;
@@ -178,7 +190,16 @@ class Cache : public util::BaseClass {
 	 */
 	bool writeCacheToDisk(bool lock = true);
 
-	/**
+  // ========================
+  // DK REVIEW 20180621
+  // Function name capitalization
+  // looks really odd.
+  // This doesn't seem to match the google style guide
+  // for variable names.
+  // seems like it should be m_DiskCacheFilename
+  // and then getDiskCachFileName(), if I'm not misinterpreting the guide.  (I can't remember what the capitalization should be)
+  // ========================
+  /**
 	 *\brief getter for m_sDiskCacheFile
 	 */
 	const std::string getSDiskCacheFile() {
@@ -187,6 +208,13 @@ class Cache : public util::BaseClass {
 		m_ConfigMutex.unlock();
 		return (diskcachefile);
 	}
+
+  // ========================
+  // DK REVIEW 20180621
+  // How do you set the DiskCachFile filename?  Looks like it's loaded from the config JSON object in setup()
+  // Should there be a separate realtime set option, or a protected set option that gets called from the setup()
+  // funciton?
+  // ========================
 
 	/**
 	 *\brief getter for m_bCacheModified
@@ -226,6 +254,18 @@ class Cache : public util::BaseClass {
 	 * \brief a std::map iterator used to output the cache
 	 */
 	std::map<std::string, std::shared_ptr<json::Object>>::iterator m_CacheDumpItr;
+
+
+  // ========================
+  // DK REVIEW 20180621
+  // Do you really need 3 different mutex's.  Isn't one enough?  What are the 
+  // properties of the 3 different mutex's that make them neccessary.
+  // I understand 1 (I'm using the cache, don't try to use it till I"m done)
+  // I understand 2  read + write  (where read says I"m reading it, so don't change it, but somebody else can read it)
+  // And write says (I'm messing with the cache, so don't anybody else try to do anything with it).
+  // I don't understand needing one for the config and one for the cache and one for disk (unless it's somehow
+  // attached to the file and preventing some other process from accessing it at the same time).
+  // ========================
 
 	/**
 	 * \brief the mutex for the cache

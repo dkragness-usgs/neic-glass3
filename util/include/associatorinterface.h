@@ -30,6 +30,17 @@ namespace util {
  * information to the associator library via the sendtoassociator() 
  * function.
  */
+
+// ========================
+// DK REVIEW 20180621
+// I don't understand...
+// I see the comment that says this interface is for 
+//  some class that "instantiate and manage the associator library",
+// but I don't understand what that means and why it's important.
+// Why would I access this interface and what's the thing on the other
+// side of the interface gonna do for me?
+// ========================
+  
 class iAssociator {
  public:
 	/**

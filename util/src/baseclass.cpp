@@ -17,7 +17,7 @@ BaseClass::~BaseClass() {
 
 // configuration
 bool BaseClass::setup(json::Object *config) {
-	// to be overrided by child classes
+	// to be overridden by child classes
 	m_Config = config;
 	m_bIsSetup = true;
 
@@ -25,7 +25,7 @@ bool BaseClass::setup(json::Object *config) {
 }
 
 void BaseClass::clear() {
-	// to be overrided by child classes
+	// to be overridden by child classes
 	m_Config = NULL;
 	m_bIsSetup = false;
 }
