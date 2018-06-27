@@ -23,6 +23,21 @@ namespace util {
  * This class inherits from util::baseclass
  * This class is intended to be extended by derived classes.
  */
+ // ========================
+ // DK REVIEW 20180627
+ // My attitude is that documentation for library Public methods/attributes should be very explicit and descriptiive, and either provide
+ // an example or a reference to an example code block at the class level.
+ // Protected and Private doc can be a bit more sparse and assume a little more skill and familiarity
+ // on the part of the developer.
+ // There should not be documentation that says "getter for  <protected member>"  or "sets <protected member>"
+ // Should be something like, "retrieves the value of internal flag that tracks (or controls) ..."
+ // ========================
+
+ // ========================
+ // DK REVIEW 20180627
+ // Needs example code that shows how to use the class
+ // ========================
+
 class ThreadBaseClass : public util::BaseClass {
  public:
 	/**
@@ -35,7 +50,11 @@ class ThreadBaseClass : public util::BaseClass {
 
 	/**
 	 * \brief threadbaseclass advanced constructor
-	 *
+ // ========================
+ // DK REVIEW 20180627
+ // \brief needs better description.
+ // ========================
+ *
 	 * The advanced constructor for the threadbaseclass class.
 	 * Initializes members to default values.
 	 * \param threadname - A std::string containing the desired
@@ -57,7 +76,12 @@ class ThreadBaseClass : public util::BaseClass {
 	 *
 	 * Allocates and starts the work thread.
 	 * \return returns true if successful.
-	 */
+   // ========================
+   // DK REVIEW 20180627
+   // Need to be explicit about when the thread comes about at an OS object level.
+   // when does the thread object get created?  Here?
+   // ========================
+   */
 	virtual bool start();
 
 	/**
@@ -73,7 +97,12 @@ class ThreadBaseClass : public util::BaseClass {
 	 *
 	 * Checks to see if the work thread is still running.
 	 * \return returns true if thread is still running.
-	 */
+   // ========================
+   // DK REVIEW 20180627
+   // What does "running" mean in this instance?  The OS Thread is still alive?
+   // The worker thread is still busy executing some piece of work and not idle?
+   // ========================
+   */
 	virtual bool check();
 
 	/**
@@ -99,7 +128,12 @@ class ThreadBaseClass : public util::BaseClass {
 	 * Virtual work function to be overridden by deriving classes
 	 * \return Returns true if work was successful, false otherwise
 	 */
-	virtual bool work() = 0;
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  virtual bool work() = 0;
 
 	/**
 	 * \brief threadbaseclass is running
@@ -107,7 +141,12 @@ class ThreadBaseClass : public util::BaseClass {
 	 * Checks to see if the work thread is running
 	 * \return Returns true if m_bRunWorkThread is true, false otherwise
 	 */
-	virtual bool isRunning();
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  virtual bool isRunning();
 
 	/**
 	 * \brief threadbaseclass is set work check
@@ -115,40 +154,74 @@ class ThreadBaseClass : public util::BaseClass {
 	 * Signifies that the work thread is still alive by setting
 	 * m_bCheckWorkThread to true
 	 */
-	void setWorkCheck();
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  void setWorkCheck();
 
 	/**
 	 *\brief getter for m_iCheckInterval
 	 */
-	int getCheckInterval() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  int getCheckInterval() const {
 		return m_iCheckInterval;
 	}
 
 	/**
 	 *\brief getter for m_bCheckWorkThread
 	 */
-	bool getCheckWorkThread() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  bool getCheckWorkThread() const {
 		return m_bCheckWorkThread;
 	}
 
 	/**
 	 *\brief getter for m_bStarted
 	 */
-	bool getStarted() const {
+   // ========================
+   // DK REVIEW 20180627
+   // seems like a function with the name getstarted
+   // should be much more active!
+   // ========================
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  bool getStarted() const {
 		return m_bStarted;
 	}
 
 	/**
 	 *\brief getter for m_sThreadName
 	 */
-	const std::string& getThreadName() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Only way to set the threadname is in one of the constructors.  Intentional?
+   // ========================
+  const std::string& getThreadName() const {
 		return m_sThreadName;
 	}
 
 	/**
 	 *\brief getter for tLastCheck
 	 */
-	time_t getLastCheck() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Public method requires better documentation, with either an example or a reference
+   // to an example code block at the class level.
+   // ========================
+  time_t getLastCheck() const {
 		return tLastCheck;
 	}
 
@@ -202,7 +275,11 @@ class ThreadBaseClass : public util::BaseClass {
 	/**
 	 * \brief the time_t holding the last time the thread status was checked
 	 */
-	time_t tLastCheck;
+   // ========================
+   // DK REVIEW 20180627
+   // why is this not M_tLastCheck ? 
+   // ========================
+  time_t tLastCheck;
 
 	/**
 	 * \brief integer variable indicating how long to sleep in milliseconds in

@@ -16,6 +16,15 @@ namespace util {
  *
  * Convert the given epoch time from decimal seconds to an
  * ISO8601 time string
+ // ========================
+ // DK REVIEW 20180627
+ // give an example of an ISO8601 time string
+ // provide atleast one link (somewhere in this file to the specification for ISO8601)
+ // if ISO 8601 doesn't specify precision, then
+ // indicate how rounding/truncation will be done
+ // and at what level.
+ // ========================
+
  * \param epochtime - A double containing the epoch time
  * \return returns an ISO8601 formatted time std::string
  */
@@ -26,6 +35,11 @@ std::string convertEpochTimeToISO8601(double epochtime);
  *
  * Convert the given epoch time from decimal seconds to an
  * ISO8601 time string
+ // ========================
+ // DK REVIEW 20180627
+ // From the doc it doesn't seem like "now" has anything to do with now, 
+ // but is instead tEpochTime or epochtime
+ // ========================
  * \param now - A time_t containing the epoch time
  * \param decimalseconds - A an optional double containing the decimal seconds
  * \return returns an ISO8601 formatted time std::string
@@ -37,6 +51,11 @@ std::string convertEpochTimeToISO8601(time_t now, double decimalseconds = 0);
  *
  * Convert the given date time string to an
  * ISO8601 time string
+ // ========================
+ // DK REVIEW 20180627
+ // Input is a string, but indicated to be a time.
+ // No format is given for the input string.  Please specify.
+ // ========================
  * \param TimeString - A std::string containing the date time
  * \return returns an ISO8601 formatted time std::string
  */
@@ -49,6 +68,11 @@ std::string convertDateTimeToISO8601(const std::string &TimeString);
  * \param TimeString - A std::string containing the date time
  * \return returns a double variable containing the epochtime
  */
+ // ========================
+ // DK REVIEW 20180627
+ // Input is a string, but indicated to be a time.
+ // No format is given for the input string.  Please specify.
+ // ========================
 double convertDateTimeToEpochTime(const std::string &TimeString);
 
 /**

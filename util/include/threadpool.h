@@ -23,7 +23,15 @@ namespace util {
  * logic. The baseclass class supports creating and starting a
  * pool of worker threads that can run various job functions
  *
- */
+  // ========================
+ // DK REVIEW 20180627
+ // Needs example code that shows how to use the class
+ // Needs significantly more narrative to explain how to use
+ // the class, what it was designed for, how to interact with it,
+ // timeouts, exceptions, can work be stopped and then restarted,
+ // etc.
+ // ========================
+*/
 class ThreadPool {
  public:
 	/**
@@ -64,14 +72,24 @@ class ThreadPool {
 	 *
 	 * Checks each thread in the pool to see if it is still responsive.
 	 */
-	bool check();
+   // ========================
+   // DK REVIEW 20180627
+   // Meaning of the return value not defined/described
+   // ========================
+  bool check();
 
 	/**
 	 * \brief threadpool stop function
 	 *
 	 * Stops and waits for each thread in the threadpool
 	 */
-	bool stop();
+   // ========================
+   // DK REVIEW 20180627
+   // Meaning of the return value not defined/described
+   // Does this function stop all threads, or signal them all
+   // to stop?  Is there a timeout?  any exceptions?
+   // ========================
+  bool stop();
 
 	/**
 	 * \brief threadpool status update function
@@ -79,7 +97,11 @@ class ThreadPool {
 	 * Updates the status for each thread in the threadpool
 	 * \param status - A boolean flag containing the status to set
 	 */
-	void setStatus(bool status);
+   // ========================
+   // DK REVIEW 20180627
+   // I don't get it.  Better description and/or example please.
+   // ========================
+  void setStatus(bool status);
 
 	/**
 	 *\brief get the current number of jobs in the queue
@@ -94,14 +116,26 @@ class ThreadPool {
 	/**
 	 *\brief getter for m_bRunJobLoop
 	 */
-	bool getBRunJobLoop() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Capitalization seems wonky.
+   // ========================
+   // ========================
+   // DK REVIEW 20180627
+   // Needs better doc.
+   // ========================
+  bool getBRunJobLoop() const {
 		return (m_bRunJobLoop);
 	}
 
 	/**
 	 *\brief getter for m_iNumThreads
 	 */
-	int getINumThreads() const {
+   // ========================
+   // DK REVIEW 20180627
+   // Code is better documentation than the documentation.
+   // ========================
+  int getINumThreads() const {
 		return (m_iNumThreads);
 	}
 
@@ -148,7 +182,12 @@ class ThreadPool {
 	/**
 	 * \brief the std::mutex for m_ThreadStatusMap
 	 */
-	std::mutex m_StatusMutex;
+   // ========================
+   // DK REVIEW 20180627
+   // How does this mutex work?  i.e. is this write vs. write, or does read
+   // use the mutex too?  Who writes the status?  Threads update their own status?
+   // ========================
+  std::mutex m_StatusMutex;
 
 	/**
 	 * \brief the std::queue of std::function<void() jobs
@@ -186,7 +225,11 @@ class ThreadPool {
 	/**
 	 * \brief the time_t holding the last time the thread status was checked
 	 */
-	time_t tLastCheck;
+   // ========================
+   // DK REVIEW 20180627
+   // Should this not be m_tLastCheck.  If not, why?  I'm sure this was a test and I failed....
+   // ========================
+  time_t tLastCheck;
 
 	/**
 	 * \brief the integer interval in seconds after which the work thread
