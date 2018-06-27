@@ -12,6 +12,11 @@
 
 namespace util {
 
+  // ========================
+  // DK REVIEW 20180627
+  // Needs more descriptive comment.  "input data retrieval interface" = clueless code reviewer
+  // ========================
+
 /**
  * \interface iinput
  * \brief input data retrieval interface
@@ -23,7 +28,11 @@ namespace util {
  */
 class iInput {
  public:
-	/**
+   // ========================
+   // DK REVIEW 20180627
+   // Needs more descriptive comment.  "Get input data"???
+   // ========================
+   /**
 	 * \brief Get input data
 	 *
 	 * This pure virtual function is implemented by a concrete class to
@@ -34,7 +43,11 @@ class iInput {
 	 */
 	virtual std::shared_ptr<json::Object> getData() = 0;
 
-	/**
+  // ========================
+  // DK REVIEW 20180627
+  // Needs more descriptive comment.  
+  // ========================
+  /**
 	 * \brief Get count of remaining input data
 	 *
 	 * This pure virtual function is implemented by a concrete class to

@@ -31,6 +31,17 @@ std::vector<std::string> split(const std::string &s, char delim);
  * \param delim - A char containing the the delimiter to split with.
  * \param elems - A std::vector of std::strings used to contain the split
  * elements
+ // ========================
+ // DK REVIEW 20180627
+ // What's the point of this function vs. the one above it?  
+ // Performance, by avoiding copy constructor
+ //  my_string = split();
+ // instead of
+ //  split(my_string)
+ // Flexibility ?  passing something derived from a vector
+ // something else?
+ // ========================
+
  * \return returns a std::vector containing the split std::string elements
  */
 std::vector<std::string> &split(const std::string &s, char delim,
@@ -42,6 +53,13 @@ std::vector<std::string> &split(const std::string &s, char delim,
  * Convert a narrow string to a wide string
  * \param s - A std::string containing the narrow string
  * \return returns a std::wstring containing the converted wide string
+ // ========================
+ // DK REVIEW 20180627
+ // It's been a long time since I dealt with any internationalization
+ // stuff.  Are you supporting any code pages and extended characters
+ // or does this only support ascii characters and is just a matter
+ // of changing the character type from 1 byte to 2?
+ // ========================
  */
 std::wstring string2WString(const std::string& s);
 
@@ -61,6 +79,13 @@ std::string wString2String(const std::wstring& s);
  * \param s - A std::string containing the string to remove characters from
  * \param chars - A std::string containing the characters to remove.
  * \return returns a std::string containing modified string.
+ // ========================
+ // DK REVIEW 20180627
+ // This doesn't remove a substring right? You're just using the string to store
+ // an array of characters, each of which will be removed?  
+ // Seems like a good spot for the doc to be extra clear.
+ // Also would be a great spot for an example.
+ // ========================
  */
 std::string& removeChars(std::string& s, const std::string& chars); // NOLINT
 
@@ -83,7 +108,12 @@ std::string& replaceChars(std::string& s, const std::string& from, // NOLINT
  * Tests to see if a provided string contains only numbers
  * (and '.')
  * \param s - A std::string containing the string to test
- * \return returns a true if the string contains only numbers, false otherwise
+ * \return returns true if the string contains only numbers, false otherwise
+ // ========================
+ // DK REVIEW 20180627
+ // Seems implied from your documentation that any string with whitespace will result in a false return,
+ // but would be nice if it was explicit.  "1234.5" will return true, but "1234.5 " or " 1234.5" will return false.
+ // ========================
  */
 bool isStringNum(const std::string &s);
 
@@ -94,6 +124,11 @@ bool isStringNum(const std::string &s);
  * \param s - A std::string containing the string to test
  * \return returns a true if the string contains only characters, false
  * otherwise
+ // ========================
+ // DK REVIEW 20180627
+ // Seems implied from your documentation that any string with whitespace will result in a false return,
+ // but would be nice if it was explicit.  "the" will return true, but "the " or " the" will return false.
+ // ========================
  */
 bool isStringAlpha(const std::string &s);
 

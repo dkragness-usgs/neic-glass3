@@ -213,7 +213,7 @@ class Cache : public util::BaseClass {
   // DK REVIEW 20180621
   // How do you set the DiskCachFile filename?  Looks like it's loaded from the config JSON object in setup()
   // Should there be a separate realtime set option, or a protected set option that gets called from the setup()
-  // funciton?
+  // function?
   // ========================
 
 	/**
