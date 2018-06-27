@@ -95,7 +95,13 @@ class BaseClass {
 	 * \brief the boolean flag indicating whether the class has been
 	 * setup.
 	 */
-	bool m_bIsSetup;
+   // ========================
+   // DK REVIEW 20180626
+   // What is the significance of m_bIsSetup.  Is it true anytime setup() has been called, or
+   // only if setup completes successfully.
+   // I noticed that m_bIsSetup is not 
+   // ========================
+  bool m_bIsSetup;
 };
 }  // namespace util
 #endif  // BASECLASS_H
