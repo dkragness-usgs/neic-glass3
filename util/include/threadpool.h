@@ -309,6 +309,13 @@ class ThreadPool : public util::BaseClass {
 	 * the pool
 	 */
 	std::map<std::thread::id, bool> m_ThreadStatusMap;
+  // DK REVIEW 20180717
+  // similar to ThreadPool, I would switch this from a bool to a time_t (or some time value with appropriate granularity).
+  // have the thread update it's status time, and then the monitoring function can just
+  // read it instead of having to also update it, and you can get rid of the mutex to do thread-status updates.
+  // if it's an option, you could make this an atomic<time_t>, instead of a time_t instead of a bool.
+  // alternatively, you could make a struct of ThreadStatus and tLastHeartbeat and use that in both ThreadPool( as second in the m_ThreadStatusMap and 
+  // ThreadBaseClass in place of the proposed m_ThreadStatus and m_tLastHeartbeat for thread-status monitoring.
 
 	/**
 	 * \brief the std::mutex to control access to m_ThreadStatusMap

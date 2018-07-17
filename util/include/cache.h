@@ -95,6 +95,16 @@ class Cache : public util::BaseClass {
 	 */
 	virtual std::shared_ptr<json::Object> getFromCache(std::string id);
 
+  /* DK REVIEW 20180716
+    This seems more like a C program or a verizon commercial.  Free access to data anytime, anywhere.
+    Seems like this doesn't follow the object oriented paradigm of "be nice to everyone, trust no one!"
+    Under that paradigm, you would need to 
+    1) make a copy of the data as it came in (so that no one could modify it externally without the knowledge of the object/class)
+    2) share a const shared_ptr, that way a consumer could not change the data.
+    Data changes would/could ONLY be accomplished via calling addToCache().
+    That would make it much easier to apply any criteria to the cache or debug issues with it.
+    Would be "cleaner" but slower.
+    */
 	/**
 	 * \brief get next data from cache
 	 *

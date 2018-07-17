@@ -70,7 +70,8 @@ bool ThreadPool::start() {
 		// add to status map if we're tracking status
 		if (getHealthCheckInterval() > 0) {
 			m_StatusMutex.lock();
-			m_ThreadStatusMap[m_ThreadPool[i].get_id()] = true;
+      // DK REVIEW 20180717 - insert a NEW key in m_ThreadStatusMap
+			m_ThreadStatusMap[m_ThreadPool[i].get_id()] = true; 
 			m_StatusMutex.unlock();
 		}
 
@@ -184,7 +185,7 @@ void ThreadPool::jobLoop() {
 
 		// give up some time at the end of the loop
 		jobSleep();
-	}
+	}  // DK REVIEW 20180717  - Add guard comment to indicate what this brace is the ending for
 
 	logger::log("debug",
 				"ThreadPool::jobLoop(): Thread Exit.(" + getPoolName() + ")");
@@ -192,7 +193,7 @@ void ThreadPool::jobLoop() {
 
 // ---------------------------------------------------------jobSleep
 void ThreadPool::jobSleep() {
-	if (isRunning() == true) {
+	if (isRunning() == true) {  // DK REVIEW 20170717 - why only sleep when isRunning().  Any chance of a CPU peg from an endless loop, with this function getting called repeatedly in a tight loop?
 		std::this_thread::sleep_for(std::chrono::milliseconds(getSleepTime()));
 	}
 }
@@ -256,7 +257,12 @@ bool ThreadPool::healthCheck() {
 // ---------------------------------------------------------setJobHealth
 void ThreadPool::setJobHealth(bool status) {
 	// update thread status
-	std::lock_guard<std::mutex> guard(m_StatusMutex);
+	std::lock_guard<std::mutex> guard(m_StatusMutex);  // DK REVIEW 20170717 -   Seems like if we were motivated, we could find some more efficient way to handle the locking for the health
+                                                     // status updates, since those would seem to be fairly frequent.
+                                                     // The prime problem is making sure that no one changes the map on us, when we're checking status.
+                                                     // perhaps we could overcome that by only allowing map size changes to be made in a certain state
+                                                     // that requires an ACK from the work threads before entering.
+                                                     // perhaps it's just not worth worrying about.
 	if (m_ThreadStatusMap.find(std::this_thread::get_id())
 			!= m_ThreadStatusMap.end()) {
 		m_ThreadStatusMap[std::this_thread::get_id()] = status;

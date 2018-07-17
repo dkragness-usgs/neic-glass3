@@ -20,7 +20,7 @@ namespace util {
 
 /**
  * \brief A character array used to store the environment variable
- * TZ will be stored after the first call to ConvertISO8601ToEpochTime()
+ * TZ.  It will be stored after the first call to ConvertISO8601ToEpochTime()
  */
 char envTZ[MAXENV];
 
@@ -31,6 +31,12 @@ std::string convertEpochTimeToISO8601(double epochtime) {
 
 	fractionpart = modf(epochtime, &integerpart);
 
+  // DK REVIEW 20180717
+  // not sure that casting to an int will give you what you want.
+  //  possible that integerpart will end up as 24.999999997 instead of 25, and then you will get the wrong answer, no?
+  // seems like using something like this: 
+  //  #define SAFE_DOUBLE_2_INT(f) ((int)(f >= 0.0 ? (f + 0.1) : (f - 0.1))
+  // would be better.
 	time_t time = static_cast<int>(integerpart);
 
 	return (convertEpochTimeToISO8601(time, fractionpart));
@@ -138,6 +144,9 @@ double convertISO8601ToEpochTime(const std::string &TimeString) {
 		// Change time zone to GMT
 		_putenv("TZ=UTC");
 
+    // DK REVIEW 20180717  Why do these need to be set when converting UTC, but they don't need to
+    // be saved / reset when converting back to prior timezone.
+
 		// set the timezone-offset to 0
 		_timezone = 0;
 
@@ -145,6 +154,7 @@ double convertISO8601ToEpochTime(const std::string &TimeString) {
 		_daylight = 0;
 
 		// ensure _tzset() has been called, so that it isn't called again.
+    // DK REVIEW 20180717   I don't understand the comment(Above) associated with this line of code(below).
 		_tzset();
 
 		// convert to epoch time
@@ -191,7 +201,7 @@ double convertISO8601ToEpochTime(const std::string &TimeString) {
 #endif
 
 		// add decimal seconds and return
-		return (static_cast<double>(usabletime) + seconds);
+		return (static_cast<double>(usabletime) + seconds);  // DK REVIEW 20180717 - why does this have to be cast?  aren't these already two doubles?
 	} catch (const std::exception &) {
 		logger::log(
 				"warning",

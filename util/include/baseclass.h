@@ -48,12 +48,13 @@ class BaseClass {
 	 * The this function configures the baseclass class
 	 * \param config - A pointer to a json::Object containing to the
 	 * configuration to use
-	 * \warning Uses the base class mutex available via getMutex(), locking
+	 * \warning WARNING! Uses the base class mutex available via getMutex(), locking
 	 * getMutex(), or any other method where the class mutex is obtained and
 	 * locked, before calling setup will cause a deadlock.
 	 * \return returns true if successful.
 	 */
 	virtual bool setup(json::Object *config);
+
 
 	/**
 	 * \brief baseclass clear function
@@ -62,7 +63,9 @@ class BaseClass {
 	 * Clears all configuration.
 	 * \warning This function does not clean up memory (m_Config), it assumes
 	 * that the original owner of the json::Object * will.
-	 */
+   * WARNING! Uses the base class mutex available via getMutex(), locking
+   * getMutex(), or any other method where the class mutex is obtained and
+   * locked, before calling setup will cause a deadlock.	 */
 	virtual void clear();
 
 	/* \brief Retrieves a pointer to the class member json::Object that holds
@@ -92,6 +95,11 @@ class BaseClass {
 	 * \brief A pointer to the json::Object that holds the configuration
 	 */
 	json::Object *m_Config;
+  /* DK REVIEW 20180716
+     you could define this type as:
+     atomic<json::Object *> m_Config
+     and completely do away with your mutex use in getConfig()
+  */
 
 	/**
 	 * \brief the boolean flag indicating whether the class has been

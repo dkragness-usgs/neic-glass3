@@ -114,6 +114,8 @@ class Config {
 	 * \returns Return a json::Object containing the configuration
 	 */
 	json::Object getJSON();
+  /* DK REVIEW 20180716  0 interesting that you return an object (make a copy) here,
+     but in many other places(classes), you seem to return a shared_ptr to an object.*/
 
 	/**
 	 * \brief Config clear function

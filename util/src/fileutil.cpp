@@ -24,6 +24,21 @@
 namespace glass3 {
 namespace util {
 
+
+// DK REVIEW 20180717
+// This function name doesn't seem like a good one for its functionality.
+// This function returns the first file in a directory that matches the input 
+// criteria.  There is no way to cycle through all the files in the directory
+// or start from the place you left off in the last call.
+// Seems to me that getNameOfFirstMatchingFileFromDir()  would be a very
+// long but good descriptive name for this function.
+//
+// This function also needs to be rewritten to have the same functionality on both
+// platforms (WIN32 and non-WIN32).  If you want to keep it as two separate blocks
+// (the way it is now), then the per-action processing comments need to be the same
+// for both blocks, to ensure you don't have different functionality in the two
+// blocks.  Alternatively, you could have one merged block of code, with a lot more platform #ifdefs
+//
 // ---------------------------------------------------------getNextFileName
 bool getNextFileName(const std::string &path, const std::string &extension,
 						std::string &filename) {  // NOLINT
@@ -66,6 +81,8 @@ bool getNextFileName(const std::string &path, const std::string &extension,
 			// found something that isn't a directory
 			filefound = true;
 			continue;
+      // DK REVIEW 20180717  - be clearer to do a break; here instead of a continue;  continue implies that you're done with this iteration
+      // of the loop, when in this case, you're completely done with the loop.
 		}
 
 		// The preceding file wasn't one we can use.  Keep looking...
@@ -116,6 +133,11 @@ bool getNextFileName(const std::string &path, const std::string &extension,
 		std::string file_name = std::string(ent->d_name);
 		std::string full_file_name = path + "/" + file_name;
 
+    // DK REVIEW 20180717
+    // how come in the platform-specific non-windows code, 
+    // files with MOVEERROREXTENSION are avoided, but the
+    // same is not true for the Windows code?
+
 		// ensure that this isn't a file that failed to move
 		if (file_name.find(std::string(MOVEERROREXTENSION))
 				!= std::string::npos)
@@ -159,6 +181,7 @@ bool getNextFileName(const std::string &path, const std::string &extension,
 bool moveFileTo(std::string filename, const std::string &dirname) {
 	std::string fromStr;
 	std::string toStr;
+  std::string filenameNoPath;  // DK REVIEW 20180717 - move this to the top of the func with the other definitions, cause it interrupts the flow based on where it was at.
 
 	// get where the file name starts
 	int startPosOfFilename = static_cast<int>(filename.find_last_of("/"));
@@ -171,7 +194,6 @@ bool moveFileTo(std::string filename, const std::string &dirname) {
 
 	int filenameLength = static_cast<int>(filename.size()) - startPosOfFilename;
 
-	std::string filenameNoPath;
 
 	// build fromstring
 	if (startPosOfFilename > 0 && filenameLength > 1) {
@@ -199,6 +221,8 @@ bool moveFileTo(std::string filename, const std::string &dirname) {
 		std::string badfilename;
 
 		if (errno == EACCES) {
+      // DK REVIEW 20180717 - We are presuming the EACCES is an error when trying to overwrite an existing file
+      // and not a permission issue with the "from" file.
 			// Somehow, we already dealt with this file - we're either testing,
 			// or somehow got two copies of the same file.  Since they should
 			// be identical, just log it and delete the file we had wanted to
@@ -216,6 +240,14 @@ bool moveFileTo(std::string filename, const std::string &dirname) {
 		} else if (errno == ENOENT) {
 			// This happens on occasion, and really it's fine so let's not freak
 			// out...
+      // DK 20180717 - doesn't seem like it's "fine".  It's saying that it can't move the file
+      // likely because it can't find or access the from file.
+      // this implies that either it's somewhat ready but not fully ready for finding
+      // or someone came along and removed it between the time we found it and the time
+      // we could move it.
+      // Can ENOENT also apply to the "to" location, or does that result in a different error?
+      // Since John changed the comment in the .h file to include ENOENT in the list of conditions
+      // that can return true, it seems like we are covered here, and don't need to make any changes.
 			logger::log(
 					"warning",
 					"movefileto(): Unable to move " + fromStr + " to " + toStr

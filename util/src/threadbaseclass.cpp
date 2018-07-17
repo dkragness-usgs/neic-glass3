@@ -19,7 +19,7 @@ ThreadBaseClass::ThreadBaseClass()
 	setHealthCheckInterval(1);
 	setLastHealthCheck(std::time(nullptr));
 
-	setSleepTime(100);
+	setSleepTime(100);  // DK REVIEW 20180717  -   Why?
 }
 
 // ---------------------------------------------------------ThreadBaseClass
@@ -34,7 +34,7 @@ ThreadBaseClass::ThreadBaseClass(std::string threadname, int sleeptimems)
 	setHealthCheckInterval(1);
 	setLastHealthCheck(std::time(nullptr));
 
-	setSleepTime(sleeptimems);
+	setSleepTime(sleeptimems);  // DK REVIEW 20180717  -   Why?
 }
 
 // ---------------------------------------------------------~ThreadBaseClass
@@ -227,6 +227,11 @@ void ThreadBaseClass::workLoop() {
 	// done with thread
 	return;
 }
+
+// DK REVIEW 20180717  
+//  See annoying comment in threadbaseclass.h
+//  "I think it would be clearer if we consolidated the next 3 variables(m_bRunWorkThread, m_bStarted, m_bThreadHealth) into 1: m_ThreadStatus ..."
+
 
 // ---------------------------------------------------------setRunning
 void ThreadBaseClass::setRunning(bool running) {

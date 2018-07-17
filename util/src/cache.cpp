@@ -89,6 +89,18 @@ bool Cache::removeFromCache(std::string id) {
 
 	std::lock_guard<std::mutex> guard(getMutex());
 
+  /* DK REVIEW 20180816 
+     From https://en.cppreference.com/w/cpp/container/map/erase
+     it looks like there is an erase() method that takes a key.
+     Seems like you could just call:
+       int nDeleted = m_Cache.erase(id);
+       if(nDeleted == 0)
+         log("we didn't find it");
+
+       instead of first calling find(id);
+       but maybe erase(Key) is just doing the same thing you are doing.
+  */
+
 	// see if we have it
 	if (m_Cache.find(id) == m_Cache.end()) {
 		// we don't, do nothing

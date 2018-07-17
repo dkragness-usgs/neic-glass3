@@ -25,6 +25,9 @@ namespace util {
  * overriding the pure virtual function work()
  *
  * This class inherits from util::baseclass
+ *
+ * This class has no tie-in or relation with glass3::util::ThreadPool
+
  */
 class ThreadBaseClass : public util::BaseClass {
  public:
@@ -284,6 +287,23 @@ class ThreadBaseClass : public util::BaseClass {
 	 */
 	std::thread *m_WorkThread;
 
+  // DK REVIEW 20180717  
+  //  I think it would be clearer if we consolidated the next 3 variables(m_bRunWorkThread, m_bStarted, m_bThreadHealth) into 1: m_ThreadStatus
+  //  and then transformed m_tLastHealthCheck into m_tLastHeartbeat or similar
+  //  ThreadStatus could be an enum with potential values
+  //   INITIALIZED -  set during construction
+  //   STARTING - set by calling thread in start() prior to starting the thread
+  //   STARTED  - set by workLoop() (in the work thread) as it starts up
+  //   STOPPING - set by calling thread in stop() - signals work thread that it should stop.
+  //   STOPPED  - set by workLoop() when it quits
+  //   
+  //   m_tLastHealthCheck gets replaced by m_tLastHeartbeat,  which is set by setThreadHealth()
+  //   and then health checks are as simple as checking tnow - m_tLastHeartbeat > m_iHealthCheckInterval (assuming m_iHealthCheckInterval > 0)
+  //   this gives you a timestamp of the last time the thread said it was alive.  It also doesn't require the checking thread to "reset"
+  //   the health of the thread, making it read-only.  Makes it very cheap to check the health as well.
+  //   setStarted() and setRunning() can be consolidated into a setState() call, and there can be another getState() call.
+  //   A thread can't have multiple states at the same time, and you may choose to enforce some sort of state transition logic
+  //   in the setState() call.
 	/**
 	 * \brief boolean flag indicating whether the work thread should run,
 	 * controls the loop in workloop()
@@ -305,7 +325,7 @@ class ThreadBaseClass : public util::BaseClass {
 	/**
 	 * \brief the std::mutex used to control access to m_bThreadHealth
 	 */
-	std::mutex m_HealthCheckMutex;
+	std::mutex m_HealthCheckMutex;  // DK REVIEW 20180717  - I don't see this member used anywhere in the class.
 
 	/**
 	 * \brief the time_t holding the last time the thread status was checked,

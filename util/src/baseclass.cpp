@@ -45,6 +45,9 @@ void BaseClass::clear() {
 // ---------------------------------------------------------getConfig
 const json::Object * BaseClass::getConfig() {
 	std::lock_guard<std::mutex> guard(getMutex());
+  // DK REVIEW 20180716
+  // not sure how many times you call getConfig(), but you could define
+  // m_Config as atomic, instead of using the mutex here, since it's a pointer.
 	return (m_Config);
 }
 

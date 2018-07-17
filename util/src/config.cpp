@@ -105,6 +105,12 @@ json::Object Config::parseJSONFromString(std::string newconfig) {
 	m_sConfigString = newconfig;
 	m_ConfigJSON = jsonObject;
 
+  /* DK REVIEW 20180716
+     Seems like most of the things in util return a shared_ptr to an object, rather than the object.
+     I'm guessing you followed the lead of the JSON parser here, but maybe it makes more sense to follow
+     the style of the rest of util (now that you've brought config into util), and pass a 
+     shared_ptr or even a shared_ptr(const)
+     */
 	return (jsonObject);
 }
 
@@ -218,3 +224,7 @@ void Config::closeFile(std::ifstream &inFile) {
 }
 }  // namespace util
 }  // namespace glass3
+
+/* DK REVIEW 20180816 I already looked at and signed off on 95% of this source file back when it lived in the config/ dir
+   I'm not gonna review it in detail again.
+*/
