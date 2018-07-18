@@ -36,6 +36,9 @@ class FileUtil : public ::testing::Test {
 		std::string badpath1 = std::string(BADPATH1);
 
 		// set up testing paths
+    // DK REVIEW 20180718 - wouldn't kill you to use "this->" to reference class attributes
+    // when you put the code that accesses data abovt the data declarations for the class.
+    // took me a while to figure out where these next 3 varaiables came from....
 		firsttestpath = "./" + testdata + "/" + testpath1;
 		secondtestpath = "./" + testdata + "/" + testpath2;
 		badpath = "./" + testdata + "/" + badpath1;
@@ -112,7 +115,7 @@ class FileUtil : public ::testing::Test {
 	}
 
 	virtual void TearDown() {
-		// file should already cleaned up as part of tests, but look for it
+		// file should already be cleaned up as part of tests, but look for it
 		// anyway in case this was part of some failed test
 		if (std::ifstream(testfilename).good()) {
 			std::remove(testfilename.c_str());
@@ -139,6 +142,9 @@ class FileUtil : public ::testing::Test {
 		rmdir(secondtestpath.c_str());
 #endif
 	}
+
+  // DK REVIEW 20180718 - move these declarations up to the top of the scope section (protected)
+  // to make code clearer.
 
 	std::string firsttestpath;
 	std::string secondtestpath;
@@ -251,3 +257,5 @@ TEST_F(FileUtil, FailTests) {
 	// make sure we found the file
 	ASSERT_FALSE(result)<< "deletefilefrom call";
 }
+
+// DK REVIEW 20180718  -  props in general for the frequency (if not the quality) of documentation in the unit test cases.

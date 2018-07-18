@@ -9,6 +9,8 @@
 #include <fstream>
 #include <vector>
 
+// DK REVIEW 20180718 - holding off, pending incorporation or denial of review feedback for underlying class.
+
 #define THREADPOOLNAME "testpool"
 #define NUMTHREADS 5
 #define SLEEPTIME 100

@@ -8,6 +8,8 @@
 #define TESTSTOPCOUNT 10
 #define WAITTIME 2
 
+// DK REVIEW 20180718 - holding off, pending incorporation or denial of review feedback for underlying class.
+
 // stub class based on ThreadBaseClass for unit tests
 class threadbasestub : public glass3::util::ThreadBaseClass {
  public:

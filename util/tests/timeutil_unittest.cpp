@@ -9,6 +9,14 @@
 #define TIMET 1451338344
 #define DECIMALSEC .017
 
+// DK REVIEW 20180718
+// should have multiple tests that test boundary conditions:
+// 1451338344.50
+// 1451338344.9999997
+// 1451338344.00000000001
+//
+// otherwise looks good
+
 // tests to see if ConvertEpochTimeToISO8601 is functional
 TEST(TimeUtil, ConvertEpochTimeToISO8601) {
 	std::string ExpectedISO8601 = std::string(ISO8601TIME);
