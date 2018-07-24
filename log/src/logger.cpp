@@ -66,6 +66,16 @@ void log_init(const std::string &programname,
 void log_update_level(spdlog::level::level_enum loglevel) {
 	// update current log level
 	try {
+
+    // DK REVIEW 20180724 - does this even work?
+    // https://github.com/gabime/spdlog/issues/105
+    // The above post makes it sound like it has no effect
+    // on existing logger objects to call the static method
+    // after those logger objects have been created.  
+    // But I could be reading too much into the post.
+    // Kinda seem like this function is oriented towards
+    // setting the minimum-level of message that gets logged.
+    // If so, it should be renamed to something that conveys that.
 		// set logging level
 		spdlog::set_level(loglevel);
 
@@ -106,6 +116,15 @@ void log_update_level(const std::string &logstring) {
  * details::line_logger critical();
  * details::line_logger alert();
  * details::line_logger emerg();
+ */
+
+/* DK REVIEW 20180724 - 
+ * I think I would've done this in the reverse way.
+ * I would have had just 1 function that had an interface
+ * to spdlog and the try and catch and check blocks, and
+ * then would have had lots of functions that called that one
+ * e.g. log(level, message) would have the spdlog interface
+ * and then loginfo() would just call log(spdlog::level::info, message
  */
 
 void log(const std::string &level, const std::string &message) {
