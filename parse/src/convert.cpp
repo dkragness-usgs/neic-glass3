@@ -16,6 +16,11 @@ namespace parse {
 std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 								const std::string &outputAgencyID,
 								const std::string &outputAuthor) {
+
+  // DK 20180730 REVIEW
+  // would be useful to have an example input and output message for quick review.
+  // I'm assuming you already have one handy in testing subbranch...
+
 	if (data == NULL) {
 		glass3::util::log("error",
 					"hypoToJSONDetection(): Null json data object passed in.");
@@ -65,7 +70,9 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 	try {
 		// required values
 		detection.id = ID;
-		detection.source.agencyid = outputAgencyID;
+    // DK 20180730 REVIEW
+    // seems like this use of outputAgencyID and outputAuthor should be explicitly detailed in funciton definition comment
+    detection.source.agencyid = outputAgencyID;
 		detection.source.author = outputAuthor;
 		detection.hypocenter.latitude = (*data)["Latitude"];
 		detection.hypocenter.longitude = (*data)["Longitude"];
@@ -89,6 +96,8 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 		}
 
 		// optional values that we have
+    // DK 20180730 REVIEW
+    // seems like these are defaults that should be documented in function definition.
 		detection.minimumdistance = (*data)["MinimumDistance"];
 		detection.gap = (*data)["Gap"];
 		detection.bayes = (*data)["Bayes"];
@@ -215,7 +224,9 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 						(assocobj)["Distance"].ToDouble();
 				pick.associationinfo.azimuth = (assocobj)["Azimuth"].ToDouble();
 
-				if (pick.isvalid() == false) {
+        // DK 20180730 REVIEW
+        // seems like this validation check should be mentioned in function def
+        if (pick.isvalid() == false) {
 					std::vector<std::string> errors = pick.geterrors();
 
 					glass3::util::log("error", "Error validating pick.");
@@ -351,7 +362,9 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 				correlation.associationinfo.azimuth = (assocobj)["Azimuth"]
 						.ToDouble();
 
-				if (correlation.isvalid() == false) {
+        // DK 20180730 REVIEW
+        // seems like this validation check should be mentioned in function def
+        if (correlation.isvalid() == false) {
 					std::vector<std::string> errors = correlation.geterrors();
 					glass3::util::log(
 							"error",
@@ -387,7 +400,10 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 			detection.tojson(detectiondocument,
 								detectiondocument.GetAllocator()));
 
-	// done
+
+  // DK 20180730 REVIEW
+  // seems like I should verify that there is 100% code coverage (at least for successful conditions) in the tests/ subdir.
+  // Not even sure I know how to do that, but still should be done.
 	return (OutputData);
 }
 
@@ -440,7 +456,9 @@ std::string cancelToJSONRetract(std::shared_ptr<json::Object> data,
 	try {
 		// required values
 		retract.id = ID;
-		retract.source.agencyid = outputAgencyID;
+    // DK 20180730 REVIEW
+    // seems like this use of outputAgencyID and outputAuthor should be explicitly detailed in funciton definition comment
+    retract.source.agencyid = outputAgencyID;
 		retract.source.author = outputAuthor;
 	} catch (const std::exception &e) {
 		glass3::util::log(
@@ -471,7 +489,7 @@ std::string siteListToStationList(std::shared_ptr<json::Object> data) {
 					"siteListToStationList(): Bad json data object passed in.");
 		return ("");
 	}
-
+  
 	if ((*data)["Cmd"].ToString() != "SiteList") {
 		glass3::util::log(
 				"error",
@@ -577,7 +595,9 @@ std::string siteLookupToStationInfoRequest(std::shared_ptr<json::Object> data,
 					+ json::Serialize(*data) + "|.");
 
 	std::string OutputString = "";
-	std::string site = "";
+  // DK 20180730 REVIEW
+  // seems like these defaults should be mentioned in the function definition.
+  std::string site = "";
 	std::string comp = "";
 	std::string net = "";
 	std::string loc = "";
@@ -618,6 +638,8 @@ std::string siteLookupToStationInfoRequest(std::shared_ptr<json::Object> data,
 		stationInfoRequest.site.channel = comp;
 		stationInfoRequest.site.network = net;
 		stationInfoRequest.site.location = loc;
+    // DK 20180730 REVIEW
+    // seems like this use of outputAgencyID and outputAuthor should be explicitly detailed in funciton definition comment
 		stationInfoRequest.source.agencyid = outputAgencyID;
 		stationInfoRequest.source.author = outputAuthor;
 	} catch (const std::exception &e) {
@@ -628,7 +650,9 @@ std::string siteLookupToStationInfoRequest(std::shared_ptr<json::Object> data,
 	}
 
 	// check if valid
-	if (stationInfoRequest.isvalid() == true) {
+  // DK 20180730 REVIEW
+  // seems like this validation check should be mentioned in function def
+  if (stationInfoRequest.isvalid() == true) {
 		// build string
 		rapidjson::Document requestdocument;
 		OutputString = detectionformats::ToJSONString(

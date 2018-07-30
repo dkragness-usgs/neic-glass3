@@ -25,6 +25,11 @@ Parser::~Parser() {
 
 // ---------------------------------------------------------getAgencyId
 const std::string& Parser::getAgencyId() {
+// DK 20180730 REVIEW
+// no tear protection here(m_AgencyID is non atomic).  You good with that, or you want to wrap
+// in same mutex as setAgencyID()?  Especially since you are using one in getAuthor()
+//  std::lock_guard<std::mutex> guard(getMutex());
+
 	return (m_AgencyID);
 }
 

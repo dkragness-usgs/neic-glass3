@@ -34,6 +34,8 @@ std::shared_ptr<json::Object> JSONParser::parse(const std::string &input) {
 	std::shared_ptr<json::Object> newobject;
 	try {
 		json::Value deserializedvalue = json::Deserialize(input);
+    // DK20180730 REVIEW
+    // seems like this should be mentioned in function definition (relies on use of a specific external library(SuperEasyAwesomeFunWithJSON json) to perform parse and validation)
 
 		// make sure we got valid json
 		if (deserializedvalue.GetType() == json::ValueType::NULLVal) {
@@ -82,8 +84,15 @@ bool JSONParser::validate(std::shared_ptr<json::Object> &input) {
 	// convert to string
 	std::string inputstring = json::Serialize(*input);
 
+  // DK20180730 REVIEW
+  // this seems kinda awkard, since everything else in this class seems to generic to JSON
+  // format, but this function goes rogue and starts evaluating different detectionformats
+  // type-specific validations.  Seems like this is functionality that either belongs in
+  // detectionformats class, or in some set of friend function(s).
+
 	// validate based on the provided type
 	int type = detectionformats::GetDetectionType(inputstring);
+
 
 	// pick
 	if (type == detectionformats::picktype) {

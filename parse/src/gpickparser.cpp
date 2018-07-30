@@ -71,6 +71,12 @@ std::shared_ptr<json::Object> GPickParser::parse(const std::string &input) {
 		newpick.id = splitgpick[1];
 
 		// build the site object
+    // DK 20180730 REVIEW
+    // nitpicky, because of the size of the function and number of functions that reference it...
+    // be better to use constants with meaningful names instead of magic numbers here:
+    // #define GPICK_FIELD_INDEX_STATION_CODE 3
+    // newpick.site.station = splitgpick[GPICK_FIELD_INDEX_STATION_CODE];
+
 		newpick.site.station = splitgpick[3];
 		newpick.site.channel = splitgpick[4];
 		newpick.site.network = splitgpick[5];
@@ -209,6 +215,8 @@ bool GPickParser::validate(std::shared_ptr<json::Object> &input) {
 	// convert to detectionformats::pick
 	std::string pickstring = json::Serialize(*input);
 	rapidjson::Document pickdocument;
+  // DK20180730 REVIEW
+  // seems like this should be mentioned in function definition (relies on use of a specific external library(detectionformats::pick) to perform validation)
 	detectionformats::pick pickobject(
 			detectionformats::FromJSONString(pickstring, pickdocument));
 
