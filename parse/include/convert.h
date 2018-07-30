@@ -23,6 +23,10 @@ namespace parse {
  *
  * \param data - A pointer to a json::Object containing the data to be
  * converted.
+ // DK 2018/07/30 review
+ // data is missing a name in the function definition (1st param is unnamed)
+ // The param formerly known as "data" should be a shared_ptr to a const object,
+ // unless you have great plans to change it.
  * \param outputAgencyID - A std::string containing the agency id to use for
  * output
  // DK 2018/07/30 review - how/where/why is outputAgencyID used?
@@ -73,6 +77,10 @@ std::string cancelToJSONRetract(std::shared_ptr<json::Object>,
  *
  * \param data - A pointer to a json::Object containing the data to be
  * converted.
+ // DK 2018/07/30 review
+ // data is missing a name in the function definition (1st param is unnamed)
+ // The param formerly known as "data" should be a shared_ptr to a const object,
+ // unless you have great plans to change it.
  * \return Returns a string containing the converted json detection, empty
  * string otherwise
  // DK 2018/07/30 review
@@ -90,6 +98,10 @@ std::string siteListToStationList(std::shared_ptr<json::Object>);
  *
  * \param data - A pointer to a json::Object containing the data to be
  * converted.
+ // DK 2018/07/30 review
+ // data is missing a name in the function definition (1st param is unnamed)
+ // The param formerly known as "data" should be a shared_ptr to a const object,
+ // unless you have great plans to change it.
  * \param outputAgencyID - A std::string containing the agency id to use for
  * output
  * \param outputAuthor - A std::string containing the author to use for output
