@@ -60,11 +60,15 @@ class Parser : public glass3::util::BaseClass {
 	 * \brief parsing function
 	 *
 	 * Virtual parsing function to be overridden by deriving classes, used to
-	 * parse input
+	 * parse input.  Function parser a string into a json::Object, returning
+   * a shared_ptr to the resulting object.
 	 *
+   // DK 2018/07/30 review
+   // if defaultAgencyID and/or defaultAuthor are expected to be applied in
+   // any way, as part of this function, then please indicate that.
 	 * \param input - The std::string to parse
 	 * \return Returns a shared pointer to the json::Object containing
-	 * the data.
+	 * the parsed data.
 	 */
 	virtual std::shared_ptr<json::Object> parse(const std::string &input) = 0;
 
@@ -73,7 +77,14 @@ class Parser : public glass3::util::BaseClass {
 	 *
 	 * Virtual validation function to be overridden by deriving classes, used
 	 * to validate parsed input
-	 *
+   // DK 2018/07/30 review
+   // I don't understand what this function is supposed to do, or where it is to be called in the scheme of parsing.
+   // Could you PLEASE give some more info and add an example (hypothetical or otherwise).
+
+   // DK 2018/07/30 review
+   // if defaultAgencyID and/or defaultAuthor are expected to be applied in
+   // any way, as part of this function, then please indicate that.
+   *
 	 * \param input - A shared pointer to a json::Object containing the data to
 	 * validate.
 	 * \return Returns true if valid, false otherwise.
@@ -98,7 +109,11 @@ class Parser : public glass3::util::BaseClass {
 	 *
 	 * \param id = A std::string containing the default agency id to set
 	 */
-	void setAgencyId(std::string id);
+   // DK 2018/07/30 review
+   // id should be const, or you should explain how modifying it is part of your plan for world domination!
+  // Also, I would think codacy might complain if you don't pass it as a reference.  Pretty sure it's gonna be short
+  // so doubt it will make much performance difference.
+  void setAgencyId(std::string id);
 
 	/**
 	 * \brief Function to retrieve the name of the default author
@@ -118,7 +133,9 @@ class Parser : public glass3::util::BaseClass {
 	 *
 	 * \param author = A std::string containing the default author to set
 	 */
-	void setAuthor(std::string author);
+   // DK 2018/07/30 review
+   // author should be const, or you should explain how modifying it is part of your plan for world domination!
+  void setAuthor(std::string author);
 
  private:
 	/**
