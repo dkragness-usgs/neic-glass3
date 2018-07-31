@@ -303,12 +303,14 @@ std::string hypoToJSONDetection(std::shared_ptr<json::Object> data,
 				}
 
 				// phase
+        // DK REVIEW 20180730  - this comment seems wrong
 				correlation.correlationvalue = (dataobject)["Correlation"]
 						.ToDouble();
 
 				// optional values
 				// phase
-				if (dataobject.HasKey("EventType")) {
+        // DK REVIEW 20180730  - this comment seems wrong
+        if (dataobject.HasKey("EventType")) {
 					correlation.eventtype =
 							(dataobject)["EventType"].ToString();
 				}
@@ -539,6 +541,10 @@ std::string siteListToStationList(std::shared_ptr<json::Object> data) {
 		stationobject.enable = (siteObject)["Use"].ToBool();
 		stationobject.useforteleseismic = (siteObject)["UseForTele"].ToBool();
 
+    // DK REVIEW 20180730
+    // good lord this is convoluted. string to detectionformats::stationInfo object
+    // to json string to json object to .....
+    // maybe it just needs better/more-complete comments.
 		// build json string
 		rapidjson::Document stationdocument;
 		std::string stationjson = detectionformats::ToJSONString(
