@@ -32,6 +32,11 @@ input::input()
 	clear();
 }
 
+// DK REVIEW 20180731
+// seems like a long time to have a 100 msec sleep between inputs.  That limits your max input to 10 items / sec, BEFORE you take into account work
+// time.  I can understand having a 100 msec (0.1 second) sleep after an IDLE status is encountered, but worry that 
+// having one in between work iterations (when there is a backlog of work to be done) is artificially limiting performance.
+// see comments added for threadbaseclass::work()
 input::input(std::shared_ptr<const json::Object> config)
 		: glass3::util::ThreadBaseClass("input", 100) {
 	m_GPickParser = NULL;
@@ -100,6 +105,7 @@ bool input::setup(std::shared_ptr<const json::Object> config) {
 	// default agencyid
 	if (!(config->HasKey("DefaultAgencyID"))) {
 		// agencyid is optional
+    // DK REVIEW 20180731 - this "US" should not be here.  It should not be here while your mother is out!
 		setDefaultAgency("US");
 		glass3::util::log("info", "input::setup(): Defaulting to US as AgencyID.");
 	} else {
@@ -113,7 +119,9 @@ bool input::setup(std::shared_ptr<const json::Object> config) {
 	// default author
 	if (!(config->HasKey("DefaultAuthor"))) {
 		// author is optional
-		setDefaultAuthor("glassConverter");
+    // DK REVIEW 20180731 - this "glassConverter" should not be here.  It should not be here while your mother is out!
+    // Make these REQUIRED config variable if they're not required to be in the message data.
+    setDefaultAuthor("glassConverter");
 		glass3::util::log("info",
 					"input::setup(): Defaulting to glassConverter as Author.");
 	} else {
@@ -140,6 +148,7 @@ bool input::setup(std::shared_ptr<const json::Object> config) {
 						+ std::to_string(getQueueMaxSize()) + ".");
 	}
 
+  // Create Parser class objects and setupt pointers to them.
 	if (m_GPickParser != NULL) {
 		delete (m_GPickParser);
 	}
@@ -210,6 +219,7 @@ int input::getInputDataCount() {
 // ---------------------------------------------------------work
 bool input::work() {
 	// check to see if we have room
+  // DK REVIEW 20180731 - should this not be >= m_QueueMaxSize  ??
 	if ((m_QueueMaxSize != -1) && (m_DataQueue->size() > m_QueueMaxSize)) {
 		// we don't, yet
 		return(true);

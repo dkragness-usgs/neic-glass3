@@ -202,6 +202,20 @@ class ThreadBaseClass : public util::BaseClass {
 	 * function
 	 * \return This function returns true if the work was successful, false
 	 * if it was not.
+   // DK REVIEW 20180731 
+   // Seems to me that work should have 3 possible return values:
+   // 1) I did something. (STATUS_WORK_COMPLETED)
+   // 2) Stuff is broken.  I can't go on!  I can't go on! (STATUS_BROKEN)
+   // 3) There was nothing for me to do. (STATUS_IDLE)
+   // then workLoop() can take appropriate action:
+   //  STATUS_WORK_COMPLETED = continue the loop, update status and call work() again.
+   //  STATUS_BROKEN = abort!  run away!
+   //  STATUS_IDLE = continue the loop, update status, but then take a short sleep, before calling work() again.
+   //
+   //  Otherwise I think there needs to be something written in this comment for the work() function
+   //  that says the work function() is responsible for sleeping in between tasks if there is nothing for it to do.
+   //  I'm not a fan of the current code that always sleeps after each piece of work.  I think that introduces
+   //  artificial bottlenecks.
 	 */
 	virtual bool work() = 0;
 

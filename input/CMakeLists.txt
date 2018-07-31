@@ -18,24 +18,50 @@ include(${CMAKE_DIR}/base.cmake)
 
 # ----- EXTERNAL LIBRARIES ----- #
 # SuperEasyJSON
+include(${CMAKE_DIR}/include_SuperEasyJSON.cmake)
+# util
+include(${CMAKE_DIR}/include_glass3_util.cmake)
+# detectionformats
+include(${CMAKE_DIR}/include_detectionformats.cmake)
+# parse
+include(${CMAKE_DIR}/include_glass3_parse.cmake)
+
+# ----- Library boilerplate ----- #
+include(${CMAKE_DIR}/glass3_library_boilerplate.cmake)
+
+# DK REVIEW 20180730
+# I would like to see the cmake files cleaned up a bit more.
+# I *THINK* but am not certain, that the following pieces could
+# be extracted into cmake include files that live in the base cmake
+# directory.  This would shorten each libraries cmake, make it 
+# more insulated from changes in included libraries, and make
+# files even less redundant, reducing the number of places things
+# need to be changed if stuff changes.
+
+
+# New files to be added to cmake directory, that are referenced above:
+
+# include_SuperEasyJSON.cmake:
 find_package(SuperEasyJSON CONFIG REQUIRED)
 include_directories(${SuperEasyJSON_INCLUDE_DIRS})
 
-# util
+# include_glass3_util.cmake:
 find_package(util CONFIG REQUIRED)
 include_directories(${util_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS}/..)
 include_directories(${spdlog_INCLUDE_DIRS})
 
-# detection-formats
+# include_detectionformats.cmake:
 find_package(DetectionFormats CONFIG REQUIRED)
 include_directories(${DetectionFormats_INCLUDE_DIRS})
 include_directories(${RapidJSON_INCLUDE_DIRS})
 
-# parse
+# include_parse.cmake:
 find_package(parse CONFIG REQUIRED)
 include_directories(${parse_INCLUDE_DIRS})
 
+# glass3_library_boilerplate.cmake:
+#-----------------------------------------------------#
 # ----- SET INCLUDE DIRECTORIES ----- #
 include_directories ("${PROJECT_BINARY_DIR}")
 include_directories(${PROJECT_SOURCE_DIR}/include)
@@ -61,9 +87,12 @@ include(${CMAKE_DIR}/cpplint.cmake)
 
 # ----- RUN UNIT TESTS ----- #
 file(GLOB TESTS ${PROJECT_SOURCE_DIR}/tests/*.cpp)
-# NOTE: Order libraries are linked matters for G++
+# WARNING: linking Order of libraries  matters for G++
 # set(TEST_LIBRARIES ${parse_LIBRARIES} ${DetectionFormats_LIBRARIES} ${util_LIBRARIES} ${SuperEasyJSON_LIBRARIES})
 # include(${CMAKE_DIR}/test.cmake)
 
 # ----- INSTALL LIBRARY ----- #
 include(${CMAKE_DIR}/install_lib.cmake)
+
+#-----------------------------------------------------#
+# end - glass3_library_boilerplate.cmake:

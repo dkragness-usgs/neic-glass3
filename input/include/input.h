@@ -7,6 +7,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+
+// DK REVIEW 20180731
+// Wow!  That's a lot of include files!
 #include <json.h>
 #include <threadbaseclass.h>
 #include <inputinterface.h>
@@ -29,6 +32,13 @@
 namespace glass3 {
 namespace input {
 
+
+  // DK REVIEW 20180731
+  // these seem awkward at best.
+  // They should probably become static const members of the "input" class.
+  // Some comment should be made about their intended use.
+  // Also, I don't see any difference in the treatment of GPICK_TYPE and GPICKS_TYPE
+  // so do we really need both?
 #define GPICK_TYPE "gpick"
 #define GPICKS_TYPE "gpicks"
 #define JSON_TYPE "json"
@@ -41,6 +51,9 @@ namespace input {
  * The input class handles reading input data, parsing it, validating  it, and
  * queuing it for later use by the associator class
  *
+ // DK REVIEW 20180731
+ // you should discuss behavior when internal Queue is full.  
+
  * input inherits from the threadbaseclass class.
  * input implements the ioutput interface.
  */
@@ -48,18 +61,19 @@ class input
 		: public glass3::util::iInput, public glass3::util::ThreadBaseClass {
  public:
 	/**
-	 * \brief input advanced constructor
+  // DK REVIEW 20180731
+  // this word "advanced"  I do not think it means what you think it means....
+  * \brief input advanced constructor
 	 *
-	 * The advanced constructor for the input class.
-	 * Initializes members to default values.
-	 *
-	 * \param linesleepms - An integer value holding the time to sleep
-	 * between reading input lines from a file, in milliseconds
+	 * Default constructor for the input class.
 	 */
 	input();
 
 	/**
-	 * \brief input advanced constructor
+  // DK REVIEW 20180731
+  // Go for an "advanced" comment and describe how this constructor is different from the default
+  // in terms of BOTH: input params and behavior.
+  * \brief input advanced constructor
 	 *
 	 * The advanced constructor for the input class.
 	 * Initializes members to default values.
@@ -81,10 +95,14 @@ class input
 	/**
 	 * \brief input configuration function
 	 *
-	 * The this function configures the input class, and the tracking cache it
+	 * This function configures the input class, and the tracking cache it
 	 * contains.
+   // DK REVIEW 20180731 -  Add comment about how setup() can be called
+   // multiple times, in order to reload/update configuration information.
+   // point out that it will delete already allocated data and any data in
+   // the queue if it is called on an already setup object instance.
 	 *
-	 * \param config - A pointer to a json::Object containing to the
+	 * \param config - A pointer to a json::Object containing the
 	 * configuration to use
 	 * \return returns true if successful.
 	 */
@@ -105,7 +123,8 @@ class input
 	 * The function (from iinput) used to get input data from the data queue.
 	 *
 	 * \return Returns a pointer to a json::Object containing the data.
-	 */
+   // DK REVIEW 20180731 - What does it return if there is no data in the queue?
+   */
 	std::shared_ptr<json::Object> getInputData() override;
 
 	/**
@@ -114,7 +133,7 @@ class input
 	 * The function (from iinput) used to get the count of how much data is in
 	 * the data queue.
 	 *
-	 * \return Returns a integer containing the current data count.
+	 * \return Returns a POSITIVE integer containing the count of data currently in the queue.
 	 */
 	int getInputDataCount() override;
 
@@ -125,7 +144,8 @@ class input
 	 * generating input messages
 	 *
 	 * \param id = A std::string containing the agency id to set
-	 */
+   // DK REVIEW 20180731 -  Probably not worth doing, but more efficient to pass as const &
+   */
 	void setDefaultAgency(std::string agency);
 
 	/**
@@ -136,7 +156,8 @@ class input
 	 *
 	 * \return A std::string containing the agency id
 	 */
-	const std::string getDefaultAgencyId();
+   // DK REVIEW 20180731 -  Probably not worth doing, but more efficient to pass as const &
+  const std::string getDefaultAgencyId();
 
 	/**
 	 * \brief Function to set the name of the default author
@@ -146,7 +167,8 @@ class input
 	 *
 	 * \param author = A std::string containing the author to set
 	 */
-	void setDefaultAuthor(std::string author);
+   // DK REVIEW 20180731 -  Probably not worth doing, but more efficient to pass as const &
+  void setDefaultAuthor(std::string author);
 
 	/**
 	 * \brief Function to retrieve the name of the default author
@@ -156,13 +178,15 @@ class input
 	 *
 	 * \return A std::string containing the author
 	 */
-	const std::string getDefaultAuthor();
+   // DK REVIEW 20180731 -  Probably not worth doing, but more efficient to pass as const &
+  const std::string getDefaultAuthor();
 
 	/**
 	 * \brief Function to set the maximum queue size
 	 *
 	 * This function sets the maximum allowable size of the input data queue
 	 *
+   // DK REVIEW 20180731 -  What happens when this value is 0 or < 0
 	 * \param delay = An integer value containing the maximum queue size
 	 */
 	void setQueueMaxSize(int size);
@@ -184,7 +208,8 @@ class input
 	 * reports on output throughput and performance
 	 *
 	 * \param interval = An integer value containing the interval in seconds
-	 */
+   // DK REVIEW 20180731 -  What is the result of setting this value to 0 or < 0?
+   */
 	void setReportInterval(int interval);
 
 	/**
@@ -213,6 +238,19 @@ class input
 	 *
 	 * \param type - A std::string containing the type of data to parse
 	 * \return returns a shared pointer to a json::Object containing the parsed
+   // DK REVIEW 20180731 -  containing the parsed???
+   // Why is there a parse function in input class?  Does it call something from the "parse" library?
+   // looks like it exists so it can evaluate a "type" variable that is specific to the input library
+   // and decide which of the parse-library parsers to call based on that "type" value.
+   // Double checking that this "type" value is something specific to the input mechanism and that
+   // it doesn't make sense to call something like
+   // for(ilib = parselibrarylist->begin(); ilib < parselibrarylist->end; ilib++)
+   //      if ilib->acceptable_type("type")
+   //      {
+   //          ilib->parse();
+   //          break;
+   //      }
+
 	 * \param input - A std::string containing the input line to parse
 	 * data
 	 */
@@ -226,6 +264,12 @@ class input
 	 *
 	 * \param type - A std::string containing the type of data to validate
 	 * \param input - A json::Object containing the data to validate
+   // DK REVIEW 20180731 
+   // Why is there a validate function in input class?  Does it call some validate function from the "parse" library?
+   // I think just coming from parse/ , I'm worried about either duplication of functionality, or too many 
+   // beauracractic do-nothing functions.
+   // Ah. This seems fine.  Just see the comment for the parse() function and evaluate where the parse-library-selector should 
+   // live (now lives in this function).
 	 * \return returns true if valid, false otherwise
 	 */
 	virtual bool validate(std::string type,
@@ -236,7 +280,9 @@ class input
 	 *
 	 * A pure virutal function that determines the input data type
 	 *
-	 * \param input - A json::Object containing the data to validate
+   // DK REVIEW 20180731  - This comment doesn't look right.  input params is a std::string
+   * \param input - A json::Object containing the data to validate
+
 	 * \return returns a std::string containing the input data type
 	 */
 	virtual std::string getDataType(std::string input) = 0;
@@ -249,6 +295,9 @@ class input
 	 *
 	 * \return returns a std::string containing the input data message
 	 */
+   // DK REVIEW 20180731  -  These seem like they are likely to be longer strings.  Do we want to 
+  //  pass a shared ptr, or even a reference(input class doesn't care about it any more after it's been pulled from the queue)
+  //  to save on constructing a new string?
 	virtual std::string fetchRawData() = 0;
 
  private:
@@ -292,6 +341,10 @@ class input
 	 */
 	glass3::util::Queue* m_DataQueue;
 
+  // DK REVIEW 20180731  
+  // seems kinda klunky to me to have input library maintaining 3 pointers to different parsers in the parse library.
+  // seems like maybe that should be internalized to parse library.
+  // I'm also thinking you could probably combine input and parse into the same library.
 	/**
 	 * \brief the global pick format parsing object
 	 */
