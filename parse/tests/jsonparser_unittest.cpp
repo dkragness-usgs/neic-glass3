@@ -51,6 +51,11 @@ TEST_F(JSONParser, Construction) {
 	<< "Author check";
 }
 
+// DK20180730 REVIEW
+// Deferring evaluation of everything below here, pending comments about the
+// code in  JSONParser::validate() not seeming to conceptually belong as part
+// of this class
+
 // test detections
 TEST_F(JSONParser, DetectionParsing) {
 	std::string detectionstring = std::string(TESTDETECTIONSTRING);
