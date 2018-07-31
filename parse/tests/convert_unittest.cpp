@@ -8,8 +8,22 @@
 #include <string>
 #include <memory>
 
-#define HYPOSTRING "{\"Bayes\":2.087726,\"Cmd\":\"Hypo\",\"Data\":[{\"Type\":\"Correlation\",\"ID\":\"12GFH48776857\",\"Site\":{\"Station\":\"BMN\",\"Network\":\"LB\",\"Channel\":\"HHZ\",\"Location\":\"01\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"TestAuthor\"},\"Phase\":\"P\",\"Time\":\"2015-12-28T21:32:24.017Z\",\"Correlation\":2.65,\"Hypocenter\":{\"Latitude\":40.3344,\"Longitude\":-121.44,\"Depth\":32.44,\"Time\":\"2015-12-28T21:30:44.039Z\"},\"EventType\":\"earthquake\",\"Magnitude\":2.14,\"SNR\":3.8,\"ZScore\":33.67,\"DetectionThreshold\":1.5,\"ThresholdType\":\"minimum\",\"AssociationInfo\":{\"Phase\":\"P\",\"Distance\":0.442559,\"Azimuth\":0.418479,\"Residual\":-0.025393,\"Sigma\":0.086333}},{\"Amplitude\":{\"Amplitude\":0.000000,\"Period\":0.000000,\"SNR\":3.410000},\"AssociationInfo\":{\"Azimuth\":146.725914,\"Distance\":0.114828,\"Phase\":\"P\",\"Residual\":0.000904,\"Sigma\":1.000000},\"Filter\":[{\"HighPass\":1.050000,\"LowPass\":2.650000}],\"ID\":\"100725\",\"Phase\":\"P\",\"Picker\":\"raypicker\",\"Polarity\":\"up\",\"Site\":{\"Channel\":\"BHZ\",\"Location\":\"--\",\"Network\":\"AK\",\"Station\":\"SSN\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"228041013\"},\"Time\":\"2015-08-14T03:35:25.947Z\",\"Type\":\"Pick\"}],\"Depth\":24.717898,\"Gap\":110.554774,\"ID\":\"20311B8E10AF5649BDC52ED099CF173E\",\"IsUpdate\":false,\"Latitude\":61.559315,\"Longitude\":-150.877897,\"MinimumDistance\":0.110850,\"Source\":{\"AgencyID\":\"US\",\"Author\":\"glass\"},\"T\":\"20150814033521.219\",\"Time\":\"2015-08-14T03:35:21.219Z\",\"Type\":\"Hypo\"}" // NOLINT
+
+// DK REVIEW 20180730  
+// Please add some comments describing test data
+// For the first successful data, it is sufficient to say
+// Input data that should work.
+// If you have multiple sets of working input data, then add some comment about how secondary and tertiary(really wanted to use the word) test data is different than primary.
+// If you have input data that doesn't work, please indicate WHY it shouldn't work (i.e. field XX is required but omitted or field YY is incorrectly formatted(not a valid timestamp))
+// Comment applies TO ALL TEST DATA in this directory.
+// Example comments included for some data bleow.
+#define HYPOSTRING  "{\"Bayes\":2.087726,\"Cmd\":\"Hypo\",\"Data\":[{\"Type\":\"Correlation\",\"ID\":\"12GFH48776857\",\"Site\":{\"Station\":\"BMN\",\"Network\":\"LB\",\"Channel\":\"HHZ\",\"Location\":\"01\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"TestAuthor\"},\"Phase\":\"P\",\"Time\":\"2015-12-28T21:32:24.017Z\",\"Correlation\":2.65,\"Hypocenter\":{\"Latitude\":40.3344,\"Longitude\":-121.44,\"Depth\":32.44,\"Time\":\"2015-12-28T21:30:44.039Z\"},\"EventType\":\"earthquake\",\"Magnitude\":2.14,\"SNR\":3.8,\"ZScore\":33.67,\"DetectionThreshold\":1.5,\"ThresholdType\":\"minimum\",\"AssociationInfo\":{\"Phase\":\"P\",\"Distance\":0.442559,\"Azimuth\":0.418479,\"Residual\":-0.025393,\"Sigma\":0.086333}},{\"Amplitude\":{\"Amplitude\":0.000000,\"Period\":0.000000,\"SNR\":3.410000},\"AssociationInfo\":{\"Azimuth\":146.725914,\"Distance\":0.114828,\"Phase\":\"P\",\"Residual\":0.000904,\"Sigma\":1.000000},\"Filter\":[{\"HighPass\":1.050000,\"LowPass\":2.650000}],\"ID\":\"100725\",\"Phase\":\"P\",\"Picker\":\"raypicker\",\"Polarity\":\"up\",\"Site\":{\"Channel\":\"BHZ\",\"Location\":\"--\",\"Network\":\"AK\",\"Station\":\"SSN\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"228041013\"},\"Time\":\"2015-08-14T03:35:25.947Z\",\"Type\":\"Pick\"}],\"Depth\":24.717898,\"Gap\":110.554774,\"ID\":\"20311B8E10AF5649BDC52ED099CF173E\",\"IsUpdate\":false,\"Latitude\":61.559315,\"Longitude\":-150.877897,\"MinimumDistance\":0.110850,\"Source\":{\"AgencyID\":\"US\",\"Author\":\"glass\"},\"T\":\"20150814033521.219\",\"Time\":\"2015-08-14T03:35:21.219Z\",\"Type\":\"Hypo\"}" // NOLINT
+// DK REVIEW 20180730 - try another string 
+// with phase code = "?" and with Hypo error parameters(lat/lon/depth/time).  
+// Also include Onset, but no "isUpdate".  Use "Pid" for identification instead of "ID"
 #define HYPOSTRING2 "{\"Bayes\":2.087726,\"Cmd\":\"Hypo\",\"Data\":[{\"Type\":\"Correlation\",\"ID\":\"12GFH48776857\",\"Site\":{\"Station\":\"BMN\",\"Network\":\"LB\",\"Channel\":\"HHZ\",\"Location\":\"01\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"TestAuthor\"},\"Phase\":\"?\",\"Time\":\"2015-12-28T21:32:24.017Z\",\"Correlation\":2.65,\"Hypocenter\":{\"Latitude\":40.3344,\"LatitudeError\":0.3344,\"Longitude\":-121.44,\"LongitudeError\":-1.44,\"Depth\":32.44,\"DepthError\":30.0,\"Time\":\"2015-12-28T21:30:44.039Z\",\"TimeError\":3.12},\"EventType\":\"earthquake\",\"Magnitude\":2.14,\"SNR\":3.8,\"ZScore\":33.67,\"DetectionThreshold\":1.5,\"ThresholdType\":\"minimum\",\"AssociationInfo\":{\"Phase\":\"P\",\"Distance\":0.442559,\"Azimuth\":0.418479,\"Residual\":-0.025393,\"Sigma\":0.086333}},{\"Amplitude\":{\"Amplitude\":0.000000,\"Period\":0.000000,\"SNR\":3.410000},\"AssociationInfo\":{\"Azimuth\":146.725914,\"Distance\":0.114828,\"Phase\":\"P\",\"Residual\":0.000904,\"Sigma\":1.000000},\"Filter\":[{\"HighPass\":1.050000,\"LowPass\":2.650000}],\"ID\":\"100725\",\"Phase\":\"?\",\"Picker\":\"raypicker\",\"Polarity\":\"up\",\"Onset\":\"impulsive\",\"Site\":{\"Channel\":\"BHZ\",\"Location\":\"--\",\"Network\":\"AK\",\"Station\":\"SSN\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"228041013\"},\"Time\":\"2015-08-14T03:35:25.947Z\",\"Type\":\"Pick\"}],\"Depth\":24.717898,\"Gap\":110.554774,\"Pid\":\"20311B8E10AF5649BDC52ED099CF173E\",\"Latitude\":61.559315,\"Longitude\":-150.877897,\"MinimumDistance\":0.110850,\"Source\":{\"AgencyID\":\"US\",\"Author\":\"glass\"},\"T\":\"20150814033521.219\",\"Time\":\"2015-08-14T03:35:21.219Z\",\"Type\":\"Hypo\"}" // NOLINT
+
+// DK REVIEW 20180730 - what in this string is incorrect or deficient?  
 #define BADHYPOSTRING1 "{\"Bayes\":2.087726,\"Cmd\":\"Hypo\",\"Data\":[{\"Amplitude\":{\"Amplitude\":0.000000,\"Period\":0.000000,\"SNR\":3.410000},\"AssociationInfo\":{\"Azimuth\":146.725914,\"Distance\":0.114828,\"Phase\":\"P\",\"Residual\":0.000904,\"Sigma\":1.000000},\"Filter\":[{\"HighPass\":1.050000,\"LowPass\":2.650000}],\"ID\":\"100725\",\"Phase\":\"P\",\"Picker\":\"raypicker\",\"Polarity\":\"up\",\"Site\":{\"Channel\":\"BHZ\",\"Location\":\"--\",\"Network\":\"AK\",\"Station\":\"SSN\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"228041013\"},\"Time\":\"2015-08-14T03:35:25.947Z\",\"Type\":\"Pick\"}],\"Depth\":24.717898,\"Gap\":110.554774,\"ID\":\"20311B8E10AF5649BDC52ED099CF173E\",\"IsUpdate\":false,\"Latitude\":61.559315,\"Longitude\":-150.877897,\"MinimumDistance\":0.110850,\"Source\":{\"AgencyID\":\"US\",\"Author\":\"glass\"},\"T\":\"20150814033521.219\",\"Time\":\"2015-08-14T03:35:21.219Z\"}" // NOLINT
 #define BADHYPOSTRING2 "{\"Bayes\":2.087726,\"Cmd\":\"Hypo\",\"Data\":[{\"Amplitude\":{\"Amplitude\":0.000000,\"Period\":0.000000,\"SNR\":3.410000},\"AssociationInfo\":{\"Azimuth\":146.725914,\"Distance\":0.114828,\"Phase\":\"P\",\"Residual\":0.000904,\"Sigma\":1.000000},\"Filter\":[{\"HighPass\":1.050000,\"LowPass\":2.650000}],\"ID\":\"100725\",\"Phase\":\"P\",\"Picker\":\"raypicker\",\"Polarity\":\"up\",\"Site\":{\"Channel\":\"BHZ\",\"Location\":\"--\",\"Network\":\"AK\",\"Station\":\"SSN\"},\"Source\":{\"AgencyID\":\"US\",\"Author\":\"228041013\"},\"Time\":\"2015-08-14T03:35:25.947Z\",\"Type\":\"Pick\"}],\"Depth\":24.717898,\"Gap\":110.554774,\"IsUpdate\":false,\"Latitude\":61.559315,\"Longitude\":-150.877897,\"MinimumDistance\":0.110850,\"Source\":{\"AgencyID\":\"US\",\"Author\":\"glass\"},\"T\":\"20150814033521.219\",\"Time\":\"2015-08-14T03:35:21.219Z\",\"Type\":\"Hypo\"}" // NOLINT
 
@@ -50,6 +64,9 @@ TEST(Convert, HypoTest) {
 			glass3::parse::hypoToJSONDetection(std::make_shared<json::Object>(json::Object(json::Deserialize(CANCELSTRING))), agencyid, author).c_str(),  // NOLINT
 			"");
 
+  // DK REVIEW 20180730 - overkill to throw in an ASSERT_STRNEQ() for parse of your success string?
+
+
 	// Hypo
 	std::string detectionoutput = glass3::parse::hypoToJSONDetection(
 			std::make_shared<json::Object>(
@@ -63,8 +80,73 @@ TEST(Convert, HypoTest) {
 	// check valid code
 	ASSERT_TRUE(detectionobject.isvalid())<< "Converted detection is valid";
 
+//  DK REVIEW 20180730
+// here is a list of fields that are supported by the hypoToJSONDetection() function.
+// Should we be verifying all of them, or is that too much work?
+// We should at least put something in about, "not testing these fields because it seems like it's not worth the effort"
+//  "P"  indicates part of pick Data   "C" indicates part of correlation Data  "PC" is both
+// 	Type
+// 	ID
+// 	Pid
+// 	Latitude
+// 	Longitude
+// 	Time
+// 	Depth
+// 	IsUpdate
+// 	MinimumDistance
+// 	Gap
+// 	Bayes
+// 	Data
+// 	 Site
+// 	  Station  PC
+// 	  Network  PC
+// 	  Channel  PC
+// 	  Location PC
+// 	 Source
+// 	  AgencyID PC
+// 	  Author   PC
+// 	 ID        PC
+// 	 AssociationInfo PC
+// 	  Phase          PC
+// 	  Residual       PC
+// 	  Sigma          PC
+// 	  Distance       PC
+// 	  Azimuth        PC
+// 	 Type (Pick, Correlation)
+// 	 Time            PC
+// 	 Phase           PC
+// 	 Picker          P
+// 	 Polarity        P
+// 	 Onset           P
+// 	 Filter          P
+// 	  HighPass       P
+// 	  LowPass        P
+// 	 Amplitude       P
+// 	  Amplitude      P
+// 	  Period         P
+// 	  SNR            P
+// 	 Hypocenter       C
+// 	  Latitude        C
+// 	  Longitude       C
+// 	  Depth           C
+// 	  Time            C
+// 	  LatitudeError   C
+// 	  LongitudeError  C
+// 	  DepthError      C
+// 	  TimeError       C
+// 	 Correlation      C
+// 	 EventType        C
+// 	 Magnitude        C
+// 	 SNR              C
+// 	 ZScore           C
+// 	 DetectionThreshold C
+// 	 ThresholdType    C
+
+
+
 	// check id
 	std::string detectionid = detectionobject.id;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
 	std::string expectedid = "20311B8E10AF5649BDC52ED099CF173E";
 	ASSERT_STREQ(detectionid.c_str(), expectedid.c_str());
 
@@ -80,17 +162,20 @@ TEST(Convert, HypoTest) {
 
 	// check latitude
 	double latitude = detectionobject.hypocenter.latitude;
-	double expectedlatitude = 61.559315;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedlatitude = 61.559315;
 	ASSERT_EQ(latitude, expectedlatitude);
 
 	// check longitude
 	double longitude = detectionobject.hypocenter.longitude;
-	double expectedlongitude = -150.877897;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedlongitude = -150.877897;
 	ASSERT_EQ(longitude, expectedlongitude);
 
 	// check detectiontime
 	double time = detectionobject.hypocenter.time;
-	double expectedtime = detectionformats::ConvertISO8601ToEpochTime(
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedtime = detectionformats::ConvertISO8601ToEpochTime(
 			"2015-08-14T03:35:21.219Z");
 	ASSERT_NEAR(time, expectedtime, 0.0001);
 
@@ -101,23 +186,32 @@ TEST(Convert, HypoTest) {
 
 	// check detectiontype
 	std::string detectiondetectiontype = detectionobject.detectiontype;
-	std::string expecteddetectiontype = "New";
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  std::string expecteddetectiontype = "New";
 	ASSERT_STREQ(detectiondetectiontype.c_str(), expecteddetectiontype.c_str());
 
 	// check bayes
 	double detectionbayes = detectionobject.bayes;
-	double expectedbayes = 2.087726;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedbayes = 2.087726;
 	ASSERT_EQ(detectionbayes, expectedbayes);
 
 	// check minimumdistance
 	double detectionminimumdistance = detectionobject.minimumdistance;
-	double expectedminimumdistancee = 0.11085;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedminimumdistancee = 0.11085;
 	ASSERT_EQ(detectionminimumdistance, expectedminimumdistancee);
 
 	// check gap
 	double detectiongap = detectionobject.gap;
-	double expectedgap = 110.554774;
+  // DK REVIEW 20180730 - This value should be #defined if not declared (curse you codacy) next to the string you extracted it from.
+  double expectedgap = 110.554774;
 	ASSERT_EQ(detectiongap, expectedgap);
+
+  // DK REVIEW 20180730 
+  // looks like you did end to end checks for the most important values.
+  // What do you think about doing them for all values derived from the original string?  Overkill?
+  // Diminishing returns and not worth the effort?
 
 	// Hypo2
 	std::string detectionoutput2 = glass3::parse::hypoToJSONDetection(
@@ -133,6 +227,7 @@ TEST(Convert, HypoTest) {
 	// check valid code
 	ASSERT_TRUE(detectionobject2.isvalid())<< "Converted detection is valid";
 }
+
 
 TEST(Convert, CancelTest) {
 	// glass3::util::log_init("converttest", spdlog::level::debug, ".", true);
@@ -180,7 +275,7 @@ TEST(Convert, CancelTest) {
 	std::string expectedauthor = std::string(TESTAUTHOR);
 	ASSERT_STREQ(sourceauthor.c_str(), expectedauthor.c_str());
 
-	// Cancel2
+	// Cancel2  - Only checks to see that a valid detectionformats::retract object is generated
 	std::string retractoutput2 = glass3::parse::cancelToJSONRetract(
 			std::make_shared<json::Object>(
 					json::Object(json::Deserialize(CANCELSTRING2))),
@@ -236,6 +331,24 @@ TEST(Convert, SiteListTest) {
 
 	ASSERT_TRUE(stationlistobject->HasKey("StationList"));
 	ASSERT_EQ((*stationlistobject)["StationList"].ToArray().size(), numsites);
+
+  // DK REVIEW 20180730
+  // The following fields are supported by the siteListToStationList() function:
+  // Cmd = SiteList
+  //   SiteList
+  //   Sta
+  //   Comp
+  //   Net
+  //   Loc
+  //   Lat
+  //   Lon
+  //   Z
+  //   Qual
+  //   Use
+  //   UseForTele
+  //
+  //   Should we be testing them all?  Please answer in complete sentences and don't forget to use
+  //   a #2 pencil.
 }
 
 TEST(Convert, SiteLookupTest) {
@@ -304,4 +417,7 @@ TEST(Convert, SiteLookupTest) {
 	std::string sourceauthor = stationrequestobject.source.author;
 	std::string expectedauthor = std::string(TESTAUTHOR);
 	ASSERT_STREQ(sourceauthor.c_str(), expectedauthor.c_str());
+
+  // DK REVIEW 20180730
+  // should we be doing one test with a non-NULL loc code?
 }
