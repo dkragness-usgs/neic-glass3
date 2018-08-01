@@ -7,7 +7,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include <json.h>
+ #include <json.h>
 #include <threadbaseclass.h>
 #include <outputinterface.h>
 #include <associatorinterface.h>
@@ -32,7 +32,13 @@ namespace output {
  *
  * The glass output class is a thread class encapsulating the detection output
  * logic.  The output class handles output messages from from glasscore,
- * and writes the messages out to disk.
+
+ // DK REVIEW 20180801 - I feel like this class is woefully under-commented.  Seems like there should be at least 4 paragraphs in this section alone:
+ * Purpose or purposes:  Theres a little bit of this above, but it could be broken out in much more detail.
+ * Inputs: (who(what other threads/objects) does this class/thread get data from, how, what types, and in what formats
+ * Outputs: does this class/thread send data to (objects/threads/processes/files), how, what types, and in what formats.
+ * Threads: what various thread or threadgroups does this object employ.  List them and give a not-too-brief description of what each does (and how it
+ *          interacts with the other threads)
  *
  * output inherits from the threadbaseclass class.
  * output implements the ioutput interface.
@@ -59,11 +65,13 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief output configuration function
 	 *
-	 * The this function configures the output class, and the tracking cache it
+	 * The function configures the output class, and the tracking cache it
 	 * contains.
 	 *
-	 * \param config - A pointer to a json::Object containing to the
+	 * \param config - A pointer to a json::Object containing the
 	 * configuration to use
+   // DK REVIEW 20180801 - what happens if setup() a second time
+   // or if it's called after clear()?
 	 * \return returns true if successful.
 	 */
 	bool setup(std::shared_ptr<const json::Object> config) override;
@@ -93,6 +101,8 @@ class output : public glass3::util::iOutput,
 	 * checkEventsLoop() function, and starts it, setting m_bEventThreadStarted to be
 	 * true, then calls ThreadBaseClass::start() to start the ThreadBaseClass
 	 * work thread
+   // DK REVIEW 20180801 - is this comment up to date, or did any of this change
+   // at the same time  util was redone with different thread state flags?
 	 *
 	 * \return returns true if successful, false if the thread creation failed
 	 * or if a thread had already been started
@@ -122,6 +132,14 @@ class output : public glass3::util::iOutput,
 	 */
 	bool healthCheck() override;
 
+  // DK REVIEW 20180801 - seems like you have a lot of this
+  // AgencyID and Author stuff.
+  // seems like you should have a baseclass that implements
+  // storage, manipulation, and retrieval of these values
+  // so that you don't have to have the same code in 8 places
+  // (this isn't mag modules, you know....)
+
+  // 
 	/**
 	 * \brief Function to set the name of the output agency id
 	 *
@@ -162,6 +180,9 @@ class output : public glass3::util::iOutput,
 	 */
 	const std::string getOutputAuthor();
 
+  // DK REVIEW 20180801 - I don't understand the next two functions
+  // What are they for, and why are they in outputs?
+
 	/**
 	 * \brief Function to set the delay in requesting the site list
 	 *
@@ -182,6 +203,9 @@ class output : public glass3::util::iOutput,
 	 * \return Returns an integer value containing the delay in seconds
 	 */
 	int getSiteListDelay();
+
+  // DK REVIEW 20180801 - I don't understand the next two functions
+  // What are they for, and why are they in outputs?
 
 	void setStationFile(std::string filename);
 
@@ -212,7 +236,10 @@ class output : public glass3::util::iOutput,
 	 *
 	 * This function sets the associator interface pointer used by output to
 	 * communicate with the associator via the sendToAssociator() function
-	 *
+   // DK REVIEW 20180801 - I don't understand the associator/outputs relationship.
+   // Do they each have a pointer to the other?  Or does output track associator
+   // or vice versa?
+   *
 	 * \param associator = A pointer to an object that implements the
 	 * glass3::util::iAssociator interface.
 	 */
@@ -265,6 +292,9 @@ class output : public glass3::util::iOutput,
 	 * since initial report that events should generate detection messages
 	 */
 	std::vector<int> getPubTimes();
+  // DK REVIEW 20180801  - this is liable to be a pretty short list, so probably not worth
+  // doing, but ideally, this would be a const pointer or reference return to avoid
+  // copy-constructing the vector.
 
 	/**
 	 * \brief Function to set the publication times
@@ -278,11 +308,14 @@ class output : public glass3::util::iOutput,
 	 * since initial report that events should generate detection messages
 	 */
 	void setPubTimes(std::vector<int> pubTimes);
+  // DK REVIEW 20180801  - this is liable to be a pretty short list, so probably not worth
+  // doing, but ideally, this would be a const reference param to avoid
+  // double copy-constructing the vector.
 
 	/**
 	 * \brief Function to add a single publication time to the list
 	 *
-	 * This function adds a single publication times in seconds to the list used
+	 * This function adds a single publication time in seconds to the list used
 	 * to determine when to generate detection messages for events. An event
 	 * will not generate a message if it has not changed, and will not generate
 	 * a message if all publication times have passed (unless m_bPubOnExpiration
@@ -305,12 +338,19 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief Checks to see if the event thread should still be running
 	 *
+   // DK REVIEW 20180801 - grammar check
 	 * This function checks to see if the event thread should still running by
 	 * returning the value of m_bRunWorkThread.
 	 * \return Returns true if the thread should still running, false if it
 	 * has been stopped
 	 */
 	bool isEventThreadRunning();
+
+  // DK REVIEW 20180801 - Define "TrackingData" preferably
+  // near the top of the class, where there's a request to 
+  // define all the output messages.
+  // Would be good to define any communication that this thread/class has with
+  // other parts of the world.
 
 	/**
 	 * \brief add data to the output tracking cache
@@ -473,6 +513,9 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief output file writing function
 	 *
+   // DK REVIEW - from the doc, I have no idea what this function does.  Please improve
+   // with a plethora of more detail.  Should this be a pure virtual function
+   // since it's writing something to an output system and this is already an abstract class?
 	 * The function used output detection data
 	 *
 	 * \param data - A pointer to a json::Object containing the data to be
@@ -531,11 +574,16 @@ class output : public glass3::util::iOutput,
 	 *
 	 * This function is used to manage the tracking cache, and to send request
 	 * data (such as hypocenters) from the associator
-	 */
+   // DK REVIEW 20180801 -need more documentation with more details.  Maybe give an example?
+   */
 	void checkEventsLoop();
 
 	/**
 	 * \brief Send output data
+   // DK REVIEW 20180801
+   // Rejecting your comment.  I don't understand if this is something from iOutput that the Associator or 
+   // some other module/library calls to pass data to Output, or if this is something that Output
+   // calls to write data to specific output format.
 	 *
 	 * This pure virtual function is implemented by a class to support writing
 	 * a message, be it to disk, memory, kafka, etc.
@@ -552,7 +600,8 @@ class output : public glass3::util::iOutput,
 	 *
 	 * This function signifies the wcwnr thread state by setting
 	 * m_bEventThreadState to the provided value.
-	 *
+   // DK REVIEW 20180801 what does wcwnr stand for?
+   *
 	 * \param state = A glass3::util::ThreadState enumeration value indicating
 	 * the new event thread state
 	 */
@@ -621,7 +670,7 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief the std::string containing the station file name.
 	 */
-	std::string m_sStationFile;
+	std::string m_sStationFileName;
 
 	/**
 	 * \brief pointer to the glass3::util::cache class used to
@@ -631,20 +680,26 @@ class output : public glass3::util::iOutput,
 	std::mutex m_TrackingCacheMutex;
 
 	/**
-	 * \brief pointer to the glass3::util::queue class used to manage
+	 * \brief  pointer to the glass3::util::queue class used to manage
 	 * incoming output messages
 	 */
 	glass3::util::Queue* m_OutputQueue;
 
 	/**
-	 * \brief pointer to the glass3::util::queue class used to manage
+	 * \brief  pointer to the glass3::util::queue class used to manage
 	 * incoming lookup messages
+   // DK REVIEW 20180801 Site lookup, or hypo lookup, or directions lookup?
+
 	 */
 	glass3::util::Queue* m_LookupQueue;
 
 	/**
-	 * \brief the total messages performance counter
-	 */
+  // DK REVIEW 20180801 These are lazy comments that make the purpose of the variable at least somewhat unclear.
+  // Please be more descriptive for the next 10+ attributes.
+  * \brief performance counter
+  A better description would be something like(assuming I correctly guessed what this class attribute is used for):
+  * \brief A performance counter indicating the total messages processed in the last interval
+  */
 	int m_iMessageCounter;
 
 	/**
@@ -676,6 +731,10 @@ class output : public glass3::util::iOutput,
 	 * \brief the sitelist messages performance counter
 	 */
 	int m_iSiteListCounter;
+  // DK REVIEW 20180801
+  // I am probably the most guilty of this offense, but I think you're supposed to use
+  // 'n' as the Hungarian Notation prefix for an int, whereas 'i' is supposed to be used
+  // for an iterator.  Just an observation.
 
 	/**
 	 * \brief the last time a performance report was generated
@@ -690,6 +749,10 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief pointer to the glass3::util::threadpool used to queue and
 	 * perform output.
+   // DK REVIEW 20180801 - Really?  there are so many outputs that we need a pool of threads?
+   // or easier to create a pool and then tune the number of threads used?
+   // seems like having a separate thread to asynchronously produce outputs, makes a lot of sense.
+   // I struggle to imagine that we need a pool of them though...
 	 */
 	glass3::util::ThreadPool *m_ThreadPool;
 
@@ -697,6 +760,9 @@ class output : public glass3::util::iOutput,
 	 * \brief the std::thread pointer to the event thread
 	 */
 	std::thread *m_EventThread;
+  // DK REVIEW 20180801 - I don't understand.  We have a base thread, AND an EventThread (whatever that's for),
+  // AND a Threadpool for ouputs.
+  // Where's the Watch Watcher and Watch Watcher Watcher thread?
 
 	/**
 	 * \brief glass3::util::ThreadState enumeration used to track event thread
