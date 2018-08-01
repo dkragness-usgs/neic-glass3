@@ -20,6 +20,17 @@ JSONParser::~JSONParser() {
 }
 
 // ------------------------------------------------------------------------parse
+// DK REVIEW 20180801  - parse() should be responsible for taking an input message
+// and turning it into the JSON string representation of an object from
+// the detectionformats namespace.
+// the string should be self-determining, in that the JSON string should
+// contain information that identifies which class it's an object of(it's type),
+// such that detectionformats::validate() or similar can be called on the string
+// to ensure it can generate a valid detectionformats object.
+// Seems reasonable taht a detectionformats::validate() function could exist, that
+// is aware of the supported detectionformats datatypes and can deal with the
+// detectionformats json library.  This doesn't seem conceptually to be too much
+// of a stretch from detectionformats::ToJSONString() and detectionformats::FromJSONString()
 std::shared_ptr<json::Object> JSONParser::parse(const std::string &input) {
 	// make sure we got something
 	if (input.length() == 0) {
@@ -89,6 +100,11 @@ bool JSONParser::validate(std::shared_ptr<json::Object> &input) {
   // format, but this function goes rogue and starts evaluating different detectionformats
   // type-specific validations.  Seems like this is functionality that either belongs in
   // detectionformats class, or in some set of friend function(s).
+  //
+  // See comments above parse().  I think parse() shoud do more and then the
+  // "if type == " logic should be pushed onto detection formats
+  // some sort of a detectionformats::validate() or detectionformats::validatejsonstring()
+  // or  detectionformats::is_json_string_a_valid_object()
 
 	// validate based on the provided type
 	int type = detectionformats::GetDetectionType(inputstring);

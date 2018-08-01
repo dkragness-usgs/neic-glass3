@@ -19,6 +19,17 @@ CCParser::CCParser(const std::string &newAgencyID, const std::string &newAuthor)
 CCParser::~CCParser() {
 }
 
+// DK REVIEW 20180801  - parse() should be responsible for taking an input message
+// and turning it into the JSON string representation of an object from
+// the detectionformats namespace.
+// the string should be self-determining, in that the JSON string should
+// contain information that identifies which class it's an object of(it's type),
+// such that detectionformats::validate() or similar can be called on the string
+// to ensure it can generate a valid detectionformats object.
+// Seems reasonable taht a detectionformats::validate() function could exist, that
+// is aware of the supported detectionformats datatypes and can deal with the
+// detectionformats json library.  This doesn't seem conceptually to be too much
+// of a stretch from detectionformats::ToJSONString() and detectionformats::FromJSONString()
 // -----------------------------------------------------------------------parse
 std::shared_ptr<json::Object> CCParser::parse(const std::string &input) {
 	// make sure we got something

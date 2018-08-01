@@ -226,6 +226,12 @@ bool input::work() {
 	}
 
 	// get next data
+  // DK REVIEW 20180731
+  // I think fetchRawData should be modified to take a second output parameter:  DataType
+  // so that you grab the data and the type at the same time.
+  // Then you parse it into a JSON Object
+  // Then you validate it
+  // Then you add it to the queue.
 	std::string message = fetchRawData();
 
 	if (message != "") {
