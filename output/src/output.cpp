@@ -994,6 +994,8 @@ bool output::work() {
 		std::time(&tNowRequest);
 
 		// every interval
+    // DK REVIEW 20180802 - siteListDelay seems like it should be renamed siteListRequestInterval or siteListInterval or tSiteListRequestIntervalSecs
+    // It doesn't seem like it's a delay, but more like an interval between getting a new copy of the station list.
 		if ((tNowRequest - m_tLastSiteRequest) >= siteListDelay) {
 			// Request the sitelist from associator
 			if (getAssociator() != NULL) {

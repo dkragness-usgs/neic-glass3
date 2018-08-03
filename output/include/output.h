@@ -29,15 +29,21 @@ namespace glass3 {
 namespace output {
 
   // DK REVIEW 20180802
-  // I feel like output could be streamlined and enhanced, but I'd like to hold off until after review of 
+  // The biggest problem is the lack of (meaningful) documentation, including a description of the outputs framework,
+  // the messages exchanged with the associator, the internal messages, and what all the threads and data-stores are for.
+  // I feel like output could be streamlined and enhanced, but maybe that's just me being curmudgeouny...  I'd like to hold off until after review of 
   // glass core, before making any big suggestions.
   // Some possibilities might include adding more info to event messages(something akin to Hydra notifier messages), so that full Hypo
   // contents are only needed at publication time, not during pub evaluation.
   // Having output directly access the current version of an event from glass core, or access it via an associator callback function.
   // Separating the event output stream(where seconds are critically important) from station-info related output streams (where multi-minute delays seem reasonable)
   // Storing more publication info than just version.
+  // I also would pull any of the WriteOutput() stuff from the dequeue thread, moving it to a work thread.  I understand there are extenuating circumstances for
+  // Expire, but I think those can be overcome.
   // 
   // Could also make pub algorithm more advanced, taking into account time since detection, as well as change in number of supporting data, location change, or location quality.
+  // Again, I'd like to avoid proposing or making any big changes until after reviewing Glass core
+  // DK REVIEW 20180802
 
 /**
  * \brief glass output class

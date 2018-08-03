@@ -54,6 +54,10 @@
 #define SITEREQUESTFILE "siterequest.txt"
 #define SITELISTFILE "sitelist.txt"
 
+// DK REVIEW 20180802
+// Seems like it would be good to have (as a regression test)
+// examples to properly process one event (preferably a large one with lots of different stuff in it)
+
 std::shared_ptr<json::Object> GetDataFromString(std::string line) {
 	if (line.length() == 0)
 		return (NULL);
@@ -172,6 +176,8 @@ class AssociatorStub : public glass3::util::iAssociator {
 	virtual ~AssociatorStub() {
 	}
 
+  // DK REVEW 20180802 - overriding sendToAssociator() which is the associator function
+  // that's called by outputs, for the purpose of testing.
 	void sendToAssociator(std::shared_ptr<json::Object> &message) override {
 		if (message == NULL) {
 			return;
