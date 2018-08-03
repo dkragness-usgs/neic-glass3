@@ -27,6 +27,18 @@
 
 namespace glass3 {
 namespace output {
+
+  // DK REVIEW 20180802
+  // I feel like output could be streamlined and enhanced, but I'd like to hold off until after review of 
+  // glass core, before making any big suggestions.
+  // Some possibilities might include adding more info to event messages(something akin to Hydra notifier messages), so that full Hypo
+  // contents are only needed at publication time, not during pub evaluation.
+  // Having output directly access the current version of an event from glass core, or access it via an associator callback function.
+  // Separating the event output stream(where seconds are critically important) from station-info related output streams (where multi-minute delays seem reasonable)
+  // Storing more publication info than just version.
+  // 
+  // Could also make pub algorithm more advanced, taking into account time since detection, as well as change in number of supporting data, location change, or location quality.
+
 /**
  * \brief glass output class
  *
@@ -43,6 +55,7 @@ namespace output {
  * output inherits from the threadbaseclass class.
  * output implements the ioutput interface.
  */
+
 class output : public glass3::util::iOutput,
 		public glass3::util::ThreadBaseClass {
  public:
@@ -307,7 +320,7 @@ class output : public glass3::util::iOutput,
 	 * \param pubTimes = A std::vector of integers containing the times in seconds
 	 * since initial report that events should generate detection messages
 	 */
-	void setPubTimes(std::vector<int> pubTimes);
+	void setPubTimes(std::vector<int> pubTimes);  // DK REVIEW 20180802 - function is never called.  addPubTime() is always called piecemeal instead.  Should be removed.
   // DK REVIEW 20180801  - this is liable to be a pretty short list, so probably not worth
   // doing, but ideally, this would be a const reference param to avoid
   // double copy-constructing the vector.
@@ -344,6 +357,9 @@ class output : public glass3::util::iOutput,
 	 * \return Returns true if the thread should still running, false if it
 	 * has been stopped
 	 */
+  // DK REVIEW 20180802
+  // Seems like this should be more of a protected function, as the "EventThread" is
+  // an internal thing and it's running should be part of an "is this object healthy" check.
 	bool isEventThreadRunning();
 
   // DK REVIEW 20180801 - Define "TrackingData" preferably
@@ -377,6 +393,9 @@ class output : public glass3::util::iOutput,
 	/**
 	 * \brief get data from the output tracking cache
 	 *
+   // DK REVIEW 20180802  -  I'm not sure I understand what this function is supposed
+   // to do.  Could you take another attempt at documenting it with a little more
+   // detail and clarity.  PLEASE.
 	 * Get the first available detection data from the cache of data pending for
 	 * output that is ready
 	 *
@@ -394,7 +413,7 @@ class output : public glass3::util::iOutput,
 	 * \param data - A pointer to a json::Object containing the detection data.
 	 * \return Returns true if the data is in the cache, false otherwise
 	 */
-	bool haveTrackingData(std::shared_ptr<json::Object> data);
+	bool haveTrackingData(std::shared_ptr<json::Object> data);  // DK REVIEW 20180802 - this function is not used outside of unit testing - consider moving it into unit-test code.
 
 	/**
 	 * \brief check if data is in output tracking cache by id
@@ -405,7 +424,7 @@ class output : public glass3::util::iOutput,
 	 * \param ID - A std::string containing the id of the detection data to check.
 	 * \return Returns true if the data is in the cache, false otherwise
 	 */
-	bool haveTrackingData(std::string ID);
+	bool haveTrackingData(std::string ID);   // DK REVIEW 20180802 - this function is not used outside of unit testing - consider moving it into unit-test code.
 
 	/**
 	 * \brief remove data from the output tracking cache
@@ -453,6 +472,7 @@ class output : public glass3::util::iOutput,
 	 * \param data - A pointer to the json::Object containing the detection
 	 * data to check
 	 * \return Returns true if the data is has been changed, false if not.
+   // DK REVIEW 20180802 - this looks more like hasThisVersionBeenPublished()
 	 */
 	bool isDataChanged(std::shared_ptr<const json::Object> data);
 
@@ -479,6 +499,19 @@ class output : public glass3::util::iOutput,
 	 */
 	bool isDataFinished(std::shared_ptr<const json::Object> data);
 
+
+  // DK REVIEW 20180802
+  // I'm confused as to why you have declared the EventThread as a std:thread
+  // and then added all this EventThread health stuff that you already have
+  // in ThreadBaseClass.  Perhaps it's an order thing, and you did it all
+  // before you invented ThreadBaseClass, or perhaps there's something more
+  // significant that I haven't caught on to.
+  // I would recommend you ditch the std::thread implementation
+  // and all the added health stuff here, and move to 
+  // a threadbaseclass implementation with the thread health
+  // stuff embedded there.
+  // new std::thread(&output::checkEventsLoop, this);
+
 	/**
 	 * \brief Function to retrieve the last time the event thread health status
 	 * was checked
@@ -488,7 +521,7 @@ class output : public glass3::util::iOutput,
 	 *
 	 * \return A std::time_t containing the last check time
 	 */
-	std::time_t getLastEventHealthCheck();
+	std::time_t getLastEventHealthCheck();   // DK REVIEW 20180802  This function is never called and should be removed or called.
 
 	/**
 	 * \brief Function to check thread health
@@ -499,7 +532,8 @@ class output : public glass3::util::iOutput,
 	 * \return Returns true if the thread is alive, false if the thread has
 	 * not responded yet
 	 */
-	bool getEventThreadHealth();
+	bool getEventThreadHealth();    // DK REVIEW 20180802  This function is never called and should be removed or called.
+
 
 	/**
 	 *\brief Retrieves whether the event thread has been started
@@ -508,7 +542,7 @@ class output : public glass3::util::iOutput,
 	 * whether the event thread has been created and started
 	 * \returns true if the event thread has been started, false otherwise
 	 */
-	bool isEventThreadStarted();
+	bool isEventThreadStarted();   // DK REVIEW 20180802  This function is never called and should be removed or called.
 
 	/**
 	 * \brief output file writing function

@@ -1,20 +1,14 @@
+// DK REVIEW 20180802
+// Most of these includes are already part of output.h and are redundant here,
+// and would be removed in a more perfect world.
+
 #include <output.h>
-#include <json.h>
 #include <convert.h>
 #include <detection-formats.h>
 #include <logger.h>
 #include <fileutil.h>
 #include <timeutil.h>
 
-#include <thread>
-#include <mutex>
-#include <future>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <vector>
 
 namespace glass3 {
 namespace output {
@@ -27,6 +21,9 @@ output::output()
 	setEventThreadState(glass3::util::ThreadState::Initialized);
 	std::time(&tLastWorkReport);
 	std::time(&m_tLastSiteRequest);
+  // DK REVIEW 20180802
+  // or
+  // tLastWorkReport = m_tLastSiteRequest = std::time(NULL);
 
 	// thread will be declared dead
 	// if it doesn't report within this interval
@@ -72,19 +69,22 @@ output::~output() {
 	if (m_TrackingCache != NULL) {
 		m_TrackingCache->clear();
 		delete (m_TrackingCache);
+    // DK REVIEW 20180802  for completeness, you should set m_TrackingCache to NULL here.
 	}
 
 	// cppcheck-suppress nullPointerRedundantCheck
 	if (m_OutputQueue != NULL) {
 		m_OutputQueue->clear();
 		delete (m_OutputQueue);
-	}
+    // DK REVIEW 20180802  for completeness, you should set m_OutputQueue to NULL here.
+  }
 
 	// cppcheck-suppress nullPointerRedundantCheck
 	if (m_LookupQueue != NULL) {
 		m_LookupQueue->clear();
 		delete (m_LookupQueue);
-	}
+    // DK REVIEW 20180802  for completeness, you should set m_LookupQueue to NULL here.
+  }
 }
 
 // configuration
@@ -114,12 +114,19 @@ bool output::setup(std::shared_ptr<const json::Object> config) {
 	if (!(config->HasKey("PublishOnExpiration"))) {
 		// publish on expiration is optional, default to false
 		setPubOnExpiration(false);
+    // DK REVIEW 20180802  - interesting that you apply the default here, rather than in the
+    // constructor.  Makes it harder to find, but allows you to properly update a config
+    // while running.  No change requested, just a comment.
 		glass3::util::log(
 				"info",
 				"output::setup(): PublishOnExpiration not specified, using default "
 				"of false.");
 	} else {
 		setPubOnExpiration((*config)["PublishOnExpiration"].ToBool());
+    // DK REVIEW 20180802  -  What happens when a string is passed as the value parameter for 
+    // PublishOnExpiration - do we get a cast exception out of ToBool() and more importantly
+    // do we get any kind of indication as to why parsing fails?  Be a good unit test
+    // (which you may have already added).
 
 		glass3::util::log(
 				"info",
@@ -154,7 +161,7 @@ bool output::setup(std::shared_ptr<const json::Object> config) {
 	// agencyid
 	if (!(config->HasKey("OutputAgencyID"))) {
 		// agencyid is optional
-		setOutputAgency("US");
+		setOutputAgency("US");   // DK REVIEW 20180802  -  No magic strings here.  Output agency/author information should be a required config param!  No default!
 		glass3::util::log("info",
 					"output::setup(): Defaulting to US as OutputAgencyID.");
 	} else {
@@ -168,7 +175,7 @@ bool output::setup(std::shared_ptr<const json::Object> config) {
 	// author
 	if (!(config->HasKey("OutputAuthor"))) {
 		// agencyid is optional
-		setOutputAuthor("glass3");
+		setOutputAuthor("glass3");  // DK REVIEW 20180802  -  No magic strings here.  Output agency/author information should be a required config param!  No default!
 		glass3::util::log("info",
 					"output::setup(): Defaulting to glass as OutputAuthor.");
 	} else {
@@ -182,6 +189,9 @@ bool output::setup(std::shared_ptr<const json::Object> config) {
 	// SiteListDelay
 	if (!(config->HasKey("SiteListDelay"))) {
 		glass3::util::log("info", "output::setup(): SiteListDelay not specified.");
+    // DK REVIEW 20180802  - to be consistent with the rest of this function, you should set a default value here.
+    // There should be no magic number in the code, but instead you should use preferably a private static const inst
+    // from the class, or alternatively a #define
 	} else {
 		setSiteListDelay((*config)["SiteListDelay"].ToInt());
 
@@ -194,7 +204,8 @@ bool output::setup(std::shared_ptr<const json::Object> config) {
 	// StationFile
 	if (!(config->HasKey("StationFile"))) {
 		glass3::util::log("info", "output::setup(): StationFile not specified.");
-	} else {
+    // DK REVIEW 20180802  - to be consistent with the rest of this function, you should set a default value here.
+  } else {
 		setStationFile((*config)["StationFile"].ToString());
 
 		glass3::util::log(
@@ -241,7 +252,12 @@ void output::clear() {
 	setSiteListDelay(-1);
 	setStationFile("");
 
-	setOutputAgency("US");
+  // DK REVIEW 20180802  -  No magic strings here.  Output agency/author information should be a required config param!  No default!
+  // To be clear, this is two complaints
+  // 1) No magic strings here.  You should use private static const string members of the class if you want to use a constant.
+  // 2) Agency/Author should not have a default.  This is important information that MUST be required to be specificed in a config file.
+  // #2 outweighs #1 in importance, and should be followed.
+  setOutputAgency("US");
 	setOutputAuthor("glass3");
 
 	// finally do baseclass clear
@@ -256,6 +272,12 @@ void output::sendToOutput(std::shared_ptr<json::Object> message) {
 
 	// get the message type
 	std::string messagetype;
+  // DK REVIEW 20180802  -  No magic strings here.  I missed this in other places, but
+  // these key names are part of the specification of the message, and they should be
+  // commonly defined someplace, so that if the message needs to change, it can be
+  // changed in one place, instead of having X different places in code where it needs to
+  // be changed.  You can claim this code is grandfathered in, if that seems to arduous
+  // of a task.
 	if (message->HasKey("Cmd")) {
 		messagetype = (*message)["Cmd"].ToString();
 	} else if (message->HasKey("Type")) {
@@ -269,6 +291,7 @@ void output::sendToOutput(std::shared_ptr<json::Object> message) {
 
 	// send site messages to their own queue, because they can be
 	// very chatty and we don't want anything to slowdown output messages
+  // DK REVEW 20180802
 	if ((messagetype == "SiteList") || (messagetype == "SiteLookup")) {
 		if (m_LookupQueue != NULL) {
 			m_LookupQueue->addDataToQueue(message);
@@ -311,6 +334,8 @@ bool output::start() {
 // ---------------------------------------------------------stop
 bool output::stop() {
 	// check if we're running
+  // DK REVIEW 20180802  -  This looks like code that was commented on in ThreadBaseClass implementation.
+  // do the right thing:  use ThreadBaseClass here, so we don't need to rereview duplicate code.
 	if ((getEventThreadState() == glass3::util::ThreadState::Stopping)
 			|| (getEventThreadState() == glass3::util::ThreadState::Stopped)
 			|| (getEventThreadState() == glass3::util::ThreadState::Initialized)) {
@@ -362,10 +387,16 @@ bool output::healthCheck() {
 	if (m_ThreadPool != NULL) {
 		// check threadpool
 		if (m_ThreadPool->healthCheck() == false) {
+      // DK REVIEW 20180802  -  Maybe log a message here that says healthCheck() failed due to ThreadPool?
 			return (false);
 		}
 	}
 
+  // DK REVIEW 20180802  -  I don't understand the logic in this paragraph....
+  // IF ( a bunch of checks on thread health) then
+  //    if EventThread !Started then
+  //      return(False) and complain
+  // Could you splain?
 	if ((getThreadState() != glass3::util::ThreadState::Starting)
 			&& (getThreadState() != glass3::util::ThreadState::Initialized)
 			&& (getHealthCheckInterval() > 0)) {
@@ -378,7 +409,7 @@ bool output::healthCheck() {
 			return (false);
 		}
 
-		// see if it's time to check
+		// see if it's time to complain
 		time_t tNow;
 		std::time(&tNow);
 		int lastCheckInterval = (tNow - getEventLastHealthy());
@@ -401,6 +432,10 @@ bool output::healthCheck() {
 }
 
 // ---------------------------------------------------------addTrackingData
+// DK REVIEW 20180802  -  addTrackingData() seems like a messed up function name.
+//                        isn't this really adding an EVENT to a list of EVENTs
+//                        that are being tracked for publication?
+//                        or are there other types of data that are tracked by the underlying cache?
 bool output::addTrackingData(std::shared_ptr<json::Object> data) {
 	std::lock_guard<std::mutex> guard(m_TrackingCacheMutex);
 	if (data == NULL) {
@@ -423,7 +458,7 @@ bool output::addTrackingData(std::shared_ptr<json::Object> data) {
 
 	// don't do anything if we didn't get an ID
 	if (id == "") {
-		glass3::util::log("error",
+		glass3::util::log("error", // DK REVIEW 20180802  -  Does this log a timestamp?  Seems like a timestamp would be very useful here.
 					"output::addtrackingdata(): Bad ID from data json.");
 		return (false);
 	}
@@ -461,7 +496,7 @@ bool output::addTrackingData(std::shared_ptr<json::Object> data) {
 			"output::addTrackingData(): New tracking data: "
 					+ json::Serialize(*data));
 
-	// add, cache handles updates
+	// addToCache (is really add_or_update_cache), so call it and it will ensure the data ends up properly in the cache
 	return (m_TrackingCache->addToCache(data, id));
 }
 
@@ -503,26 +538,42 @@ bool output::removeTrackingData(std::string ID) {
 	} else {
 		return (false);
 	}
-}
+}  // DK REVIEW 20180801  - how come when I ask for two blank lines at the end
+   // of a function, it's an impossibility, and yet there are 3 here?  -- yes, I know this is a petty complaint...
 
 
 
 
 // ---------------------------------------------------------getTrackingData
 std::shared_ptr<const json::Object> output::getTrackingData(std::string id) {
+  // DK REVIEW 20180802
+  // I hate this style of code.  With the '{' on the same line as 
+  // the function definition, and then a bunch of '::' on the following 
+  // lines, it looks like these are all initiation clauses to the function
+  // declaration, not local variables.
+  // then you throw in no blank lines before the actual executing code starts.
+  // just makes it hard for me to read....
+  // </end old guy rant>
 	std::lock_guard<std::mutex> guard(m_TrackingCacheMutex);
-	std::shared_ptr<json::Object> nullObj;
+	std::shared_ptr<json::Object> nullObj;   // DK REVIEW 20180802 - this doesn't seem necessary.  Returning NULL will create an empty shared_ptr object.
+                                           // as in this line from getFromCache():
+                                           // 		return (NULL);
+
+
 	if (id == "") {
 		glass3::util::log("error",
 					"output::removetrackingdata(): Empty ID passed in.");
 		return (nullObj);
-	} else if (id == "null") {
+	} else if (id == "null") {   // DK REVIEW 20180802 -  really?  someone creates an Event message with id (literally) = "null"  ?
 		glass3::util::log("warn",
 					"output::removetrackingdata(): Invalid ID passed in.");
 		return (nullObj);
 	}
 
 	// return the value
+  // DK REVIEW 20180802 - superfluous call to isInCache()
+  // should be
+  // 	return (m_TrackingCache->getFromCache(id));  // will return NULL if not in cache.
 	if (m_TrackingCache->isInCache(id) == true) {
 		return (m_TrackingCache->getFromCache(id));
 	} else {
@@ -534,6 +585,7 @@ std::shared_ptr<const json::Object> output::getTrackingData(std::string id) {
 std::shared_ptr<const json::Object> output::getNextTrackingData() {
 	std::lock_guard<std::mutex> guard(m_TrackingCacheMutex);
 	// get the data
+  // DK REVIEW 20180802  - what data?
 	std::shared_ptr<const json::Object> data =
 			m_TrackingCache->getNextFromCache(true);
 
@@ -621,7 +673,8 @@ void output::checkEventsLoop() {
 						"getNextTrackingData(), no ID, skipping data.");
 
 				// remove the message we found from the cache, since it is bad
-				removeTrackingData(data);
+				removeTrackingData(data);  // DK REVIEW 20180802  - did this ever happen?  seems like a really fringe case.
+
 
 				// keep working
 				continue;
@@ -632,7 +685,7 @@ void output::checkEventsLoop() {
 			if ((*data).HasKey("Cmd")) {
 				command = (*data)["Cmd"].ToString();
 			} else {
-				glass3::util::log(
+				glass3::util::log(   // DK REVIEW 20180802  - did this ever happen?  seems like a really fringe case.
 						"warning",
 						"output::checkEventsLoop(): Bad data object received from "
 						"getNextTrackingData(), no Cmd, skipping data.");
@@ -644,6 +697,9 @@ void output::checkEventsLoop() {
 				continue;
 			}
 
+      // DK REVIEW 20180802  - I don't get it.
+      // If it's time to publish an event, then I send a message to the associator asking for the Hypo and then
+      // move on with my life....?
 			// process the data based on the tracking message
 			if (command == "Event") {
 				// Request the hypo from associator
@@ -674,6 +730,9 @@ void output::checkEventsLoop() {
 
 // ---------------------------------------------------------work
 bool output::work() {
+  // DK REVIEW 20180802  - I don't understand how the comment is related to the line of code?
+  // comment talks about pulling the config, and the code grabs a sitelistdelay.
+
 	// pull data from our config at the start of each loop
 	// so that we can have config that changes
 	int siteListDelay = getSiteListDelay();
@@ -862,8 +921,7 @@ bool output::work() {
 								std::bind(&output::writeOutput, this, hypo));
 					}
 				}
-				// first try to remove any pending events
-				// from the tracking cache
+				// remove event from the tracking cache
 				removeTrackingData(message);
 			}
 			m_iExpireCounter++;
@@ -1015,7 +1073,13 @@ void output::writeOutput(std::shared_ptr<json::Object> data) {
 	}
 }
 
-
+// DK REVIEW 20180802
+// I think it's JSON-Overkill to store the Pub data as a json string.
+// The data isn't used outside of outputs and I see no need for it to be
+// passed, which means there's no need for a text representation that must be
+// repeatedly parsed.  It just seems like unneeded complication and inefficiency.
+// I understand in programmer terms that you already have a cache of json::Object
+// that you are using, so may make sense to leave things as is...  but meh....
 // ---------------------------------------------------------isDataReady
 bool output::isDataReady(std::shared_ptr<const json::Object> data) {
 	if (data == NULL) {
@@ -1070,6 +1134,10 @@ bool output::isDataReady(std::shared_ptr<const json::Object> data) {
 		int pubVersion = pubLog[i].ToInt();
 
 		// has this pub time been published at all?
+    // DK REVIEW 20180802 - this looks more like:  has this event been published at all...?
+    // oh... too bad there wasn't any documentation, instead, after going through the code
+    // it looks like the pubLog gets pre-loaded for all the pub-iterations, with version set
+    // to 0, which is secret code speak for this pub schedule item hasn't been filled yet.
 		if (pubVersion > 0) {
 			// yes, move on
 			continue;
@@ -1130,6 +1198,7 @@ bool output::isDataReady(std::shared_ptr<const json::Object> data) {
 }
 
 // ---------------------------------------------------------isDataChanged
+// DK REVIEW 20180802 - isn't this basically !isDataPublished()  ?
 bool output::isDataChanged(std::shared_ptr<const json::Object> data) {
 	if (data == NULL) {
 		glass3::util::log("error",
@@ -1245,6 +1314,9 @@ bool output::isDataFinished(std::shared_ptr<const json::Object> data) {
 
 	// get the pub log
 	json::Array pubLog = (*data)["PubLog"].ToArray();
+
+  // DK REVIEW 20180802 - instead of iterating through all the pubLog, couldn't you
+  // just check the last entry?
 
 	// for each entry in the pub log
 	for (int i = 0; i < pubLog.size(); i++) {
