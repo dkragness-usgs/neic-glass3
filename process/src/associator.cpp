@@ -83,6 +83,10 @@ Associator::~Associator() {
 	}
 }
 
+// DK REVIEW 20180802  - 
+// I thought the comment in the header file says this function always returns false!?!
+// looks to me like it doesn't do that, but instead checks for interfaces and passes
+// a config to Glass-core.
 bool Associator::setup(std::shared_ptr<const json::Object> config) {
 	if (Input == NULL) {
 		glass3::util::log("error",
@@ -120,6 +124,8 @@ void Associator::clear() {
 	}
 	// create the glass object
 	m_pGlass = new glasscore::CGlass();
+  // DK REVIEW 20180802  -   Why does Clear() create a new glass instance?  Seems like that's
+  // more the job of setup() or the constructor.  Clear() should just delete if do anything.
 
 	// hook up glass communication with Associator class
 	m_pGlass->piSend = dynamic_cast<glasscore::IGlassSend *>(this);
@@ -152,6 +158,7 @@ void Associator::logGlass(glassutil::logMessageStruct message) {
 void Associator::Send(std::shared_ptr<json::Object> communication) {
 	// this probably could be the same function as dispatch...
 	// ...except the interface won't let it be
+  // DK REVIEW 20180802  -  Could you shed some more light on this comment?
 	dispatch(communication);
 }
 
@@ -187,6 +194,8 @@ bool Associator::work() {
 
 	// now grab whatever input might have for us and send it into glass
 	std::shared_ptr<json::Object> data = Input->getInputData();
+  // DK REVIEW 20180802  - Do we only grab one pick at a time?
+  // Or is it a chunk of picks or correlations or blasts or whatever?
 
 	// only send in something if we got something
 	if (data != NULL) {
@@ -206,6 +215,8 @@ bool Associator::work() {
 	}
 
 	if ((tNow - tLastWorkReport) >= ReportInterval) {
+    // DK REVIEW 20180802  -  I don't really understand this part...
+    // could you please add some comments?
 		int pendingdata = Input->getInputDataCount();
 		double averageglasstime = tGlassDuration.count() / m_iWorkCounter;
 
@@ -300,6 +311,10 @@ bool Associator::dispatch(std::shared_ptr<json::Object> communication) {
 	// send to output
 	if (Output != NULL) {
 		Output->sendToOutput(communication);
+    // DK REVIEW 20180802  - Naming wise, I'd like these (and possibly it's another interface you can add),
+    // to be  Class->acceptMessage(), instead of sendTo...,  since you're calling a method of that class, and
+    // the method is used to accept messages from other classes.  Otherwise it sounds like Outputs->SendToOutput() is gonna
+    // send data someplace, instead of receiving it from Associator
 	} else {
 		glass3::util::log(
 				"error",
@@ -311,3 +326,7 @@ bool Associator::dispatch(std::shared_ptr<json::Object> communication) {
 	return (true);
 }
 }  // namespace glass
+
+   // DK REVIEW 20180802  -   Seems like there's enough here to merit some sort of unit testing.
+   // PLEASE add unit tests or justify their lack of existence at the top of the .h file and possibly  
+   // in the README.md file.

@@ -27,6 +27,8 @@
  * of glass, including the input, output, associator, lookup, parsing, and
  * station information classes.
  */
+// DK REVIEW 20180802  - why is this in the "glass" namespace and not "glass3" or "glass3::associator" or similar?
+
 namespace glass {
 /**
  * \brief glass association class
@@ -55,8 +57,8 @@ class Associator : public glasscore::IGlassSend,
 	/**
 	 * \brief associator advanced constructor
 	 *
-	 * The advanced constructor for the associator class.
-	 * Initializes members to default values.
+	 * Parameterized constructor for the associator class, which:
+	 * Initializes members to default values;
 	 * Sets the interface pointers to other classes
 	 *
 	 * \param inputint - A glass3::util::iinput pointer to the input class.
@@ -76,7 +78,9 @@ class Associator : public glasscore::IGlassSend,
 	 * \brief basic associator configuration
 	 *
 	 * The this function is inherited from baseclass, but SHOULD NOT BE CALLED
-	 * instead use the advanced setup function.  Function is overridden to
+	 * instead use the advanced setup function.  
+   // DK REVIEW 20180802  - eh? the advanced setup function????
+   * Function is overridden to
 	 * always return false to avoid the appearance that the associator class is
 	 * configurable via this method.
 	 *
@@ -113,6 +117,9 @@ class Associator : public glasscore::IGlassSend,
 	 * \param message - A json::Object containing the message to send to
 	 * glasscore.
 	 */
+  // DK REVIEW 20180802  - not wild about the name of this method.  Sounds like it's sending data
+  // to someone, when it's receiving it.
+  // maybe something like acceptDataFromDifferentModule()  or acceptMessage()
 	void sendToAssociator(std::shared_ptr<json::Object> &message) override;
 
 	/**
@@ -124,6 +131,8 @@ class Associator : public glasscore::IGlassSend,
 	 */
 	bool healthCheck() override;
 
+  // DK REVIEW 20180802  -  Why are Input and Output public?
+
 	/**
 	 * \brief Pointer to Input class
 	 *
@@ -134,7 +143,7 @@ class Associator : public glasscore::IGlassSend,
 	/**
 	 * \brief Pointer to Output class
 	 *
-	 * A glass3::util::ioutput pointer to the class that handles output input for glass
+	 * A glass3::util::ioutput pointer to the class that handles output input for glass  // Output Input?  -- add your preferred snarky reply...
 	 */
 	glass3::util::iOutput* Output;
 
@@ -166,6 +175,7 @@ class Associator : public glasscore::IGlassSend,
 	 * glasscore.
 	 * \return returns true if the dispatch was successful, false otherwise.
 	 */
+  // DK REVIEW 20180802  - sendMessage()?
 	bool dispatch(std::shared_ptr<json::Object> communication);
 
 	/**
@@ -189,16 +199,19 @@ class Associator : public glasscore::IGlassSend,
 	 * \brief Integer holding the count of input data sent to glasscore since
 	 * the last informational report.
 	 */
+  // DK REVIEW 20180802  - why is this called WorkCounter?  m_nInputCounter  ?
 	int m_iWorkCounter;
 
 	/**
 	 * \brief Integer holding the count of input data sent to glasscore overall
 	 */
-	int m_iTotalWorkCounter;
+	int m_iTotalWorkCounter;  // m_nTotalSinceBeginningOfInstanceInputCounter  ?
 
 	/**
-	 * \brief Integer holding the count of used to compute the running average
+	 * \brief Integer holding the count of used compute the running average
 	 * of data per second
+   // DK REVIEW 20180802  - I don't get it.  Is this the count of input data in the last second
+   // or is it the same as m_iWorkCounter ?
 	 */
 	int m_iRunningAverageCounter;
 
