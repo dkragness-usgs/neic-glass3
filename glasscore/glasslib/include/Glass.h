@@ -112,7 +112,7 @@ class CGlass {
 	 * \return Returns true if the initialization was successful,
 	 * false otherwise
 	 */
-	bool initialize(std::shared_ptr<json::Object> com);
+	bool initialize(std::shared_ptr<json::Object> com);  // DK REVIEW 20180820  - how come this funciton isn't called setup()  ?
 
 	/**
 	 * \brief CGlass clear function
@@ -130,7 +130,7 @@ class CGlass {
 	 * \param sig - A double value containing the sigma,
 	 * \return Returns a double value containing significance function result
 	 */
-	double sig(double tdif, double sig);
+	double sig(double tdif, double sig);  // DK REVIEW 20180820  -  Rename something meaningful.
 
 	/**
 	 * \brief CGlass laplacian significance function (PDF)
@@ -157,6 +157,22 @@ class CGlass {
 	 */
 	bool statusCheck();
 
+  // DK REVIEW 20180821
+  // Seems like processing is broken up into two pieces:
+  // 1) Nucleation/Event-Detection
+  // 2) Hypocenter refinement/verification/consolidation
+  // Glass tuning parameters should be split along these lines as well.
+  // All application is probably done at the Hypo/Pick level, which is global to Glass
+  // but detection properties should be web based  Glass->Web->Node->Hypo.
+  // Group 1 params should be properties of the detection web, but defaults should be loadable into the Glass class/object
+  // Group 2 params should be properties of either Glass or the detection Web depending on whether all events are
+  // expected to meet the same standards for survival/publication or whether there are different requirements depending
+  // on the detection web they came from.  I'd vote for them being general to Glass, but I could understand if they were
+  // made web-specific.
+  //  Params should be put into a struct to help make the code easier to read:
+  // NucleationParamsStruct
+  // HypocenterRefinementParamsStruct
+  // RandomGlassSh1tStruct
 	/**
 	 * \brief Average delta getter
 	 * \return the average delta
@@ -392,11 +408,17 @@ class CGlass {
 	bool getTestTimes() const;
 
  private:
+
+/*** The next X params exist here as a configuration convenience.  They are applied
+   * at the Node level, but are inherited Glass->Web->Node
+ */
 	/**
-	 * \brief A double value containing the default number of picks that
+	 * \brief A double value containing the default number of picks that  // DK REVIEW 20180821  -it's not a tumor!  I mean, it's an int, not a double...
 	 * that need to be gathered to trigger the nucleation of an event.
 	 * This value can be overridden in a detection grid (Web) if provided as
 	 * part of a specific grid setup.
+   * This param exists here as a configuration convenience.  It is applied
+   * at the Node level, but is inherited Glass->Web->Node
 	 */
 	int nNucleate;
 
@@ -405,7 +427,9 @@ class CGlass {
 	 * to use  when generating a node for a detection array.
 	 * This value can be overridden in a detection grid (Web) if provided as
 	 * part of a specific grid setup.
-	 */
+   * This param exists here as a configuration convenience.  It is applied
+   * at the Node level, but is inherited Glass->Web->Node
+   */
 	int nDetect;
 
 	/**
@@ -438,6 +462,8 @@ class CGlass {
 	 * \brief A double value containing the average station distance in degrees,
 	 * used as the defining value for a taper compensate for station density in
 	 * Hypo::weights()
+   // DK REVIEW 20180821  - I don't understand the point of avgDelta and avgSigma
+   // at a Glass level.
 	 */
 	double avgDelta;
 

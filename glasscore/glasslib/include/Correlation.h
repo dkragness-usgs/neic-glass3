@@ -40,6 +40,13 @@ class CHypo;
  *
  * CCorrelation uses smart pointers (std::shared_ptr).
  */
+
+// DK 20180822  REVIEW   I would recommend not having a separate independent CCorrelation class.  Either 
+// derive CCorrelation from Pick (it's a special pick that comes with it's own hypocenter), or integrate
+// the corelation stuff into Pick, making it essentially optional fields.
+// I think derivation would be the more C++-ish way to do it, adding a Private-Hypo and anything else
+// that's unique to a Correlation.
+
 class CCorrelation {
  public:
 	/**
@@ -48,7 +55,7 @@ class CCorrelation {
 	CCorrelation();
 
 	/**
-	 * \brief CCorrelation alternate constructor
+	 * \brief CCorrelation alternate constructor // DK REVIEW 20180820 - alternate constructor that does what or is special/different how?
 	 *
 	 * Constructs a CCorellation using the provided values
 	 *
@@ -75,14 +82,14 @@ class CCorrelation {
 					double orgLon, double orgZ, double corrVal);
 
 	/**
-	 * \brief CCorrelation alternate constructor
+	 * \brief CCorrelation alternate constructor // DK REVIEW 20180820 - alternate constructor that does what or is special/different how?
 	 *
 	 * Constructs a CCorrelation class from the provided json object and id, using
-	 * a CGlass pointer to convert times and lookup stations.
+	 * a CGlass pointer to convert times and lookup stations.   // DK REVIEW 20180820 -  is this supposed to say CSiteList instead of CGlass?
 	 *
 	 * \param correlation - A pointer to a json::Object to construct the correlation from
 	 * \param correlationId - An integer containing the correlation id to use.
-	 * \param pSiteList - A pointer to the CSiteList class
+	 * \param pSiteList - A pointer to the CSiteList class  // DK REVIEW 20180820 - what is "the CSiteList class" and what's it used for here?
 	 */
 	CCorrelation(std::shared_ptr<json::Object> correlation, int correlationId,
 					CSiteList *pSiteList);
@@ -124,7 +131,7 @@ class CCorrelation {
 					double correlationTime, int correlationId,
 					std::string correlationIdString, std::string phase,
 					double orgTime, double orgLat, double orgLon, double orgZ,
-					double corrVal);
+					double corrVal);  // DK REVIEW 20180820 - Where's the mag value from the correlation, or something as a size or propogation distance proxy?
 
 	/**
 	 * \brief Add hypo reference to this correlation
@@ -144,14 +151,16 @@ class CCorrelation {
 	 */
 	void addHypo(std::shared_ptr<CHypo> hyp, std::string ass = "", bool force =
 							false);
+  // DK REVIEW 20180820 - "ass"?  
 
 	/**
 	 * \brief Remove hypo specific reference to this correlation
 	 *
-	 * Remove a shared_ptr reference from the given hypo to this correlation,
+	 * Remove a shared_ptr reference to the given hypo from this correlation,
 	 * breaking the graph database link between this correlation and the
 	 * hypocenter.
 	 *
+   // DK REVIEW 20180820 -  a correlation can have more than one hypo? <insert scooby doo noise here....>
 	 * Note that this correlation may or may not be still linked
 	 * to other hypocenters
 	 *
@@ -163,7 +172,7 @@ class CCorrelation {
 	/**
 	 * \brief Remove hypo specific reference to this correlation
 	 *
-	 * Remove a shared_ptr reference from the given hypo id to this correlation,
+	 * Remove a shared_ptr reference to the given hypo id from this correlation,
 	 * breaking the graph database link between this correlation and the
 	 * hypocenter.
 	 *
@@ -172,7 +181,9 @@ class CCorrelation {
 	 *
 	 * \param pid - A std::string identifying the the hypocenter to unlink.
 	 */
-	void remHypo(std::string pid);
+	void remHypo(std::string pid);   // DK REVIEW 20180820 -  Could we have a better name.  The 3 extra letters in removeHypo() is not gonna kill us.
+                                   // otherwise I might confuse this function with a batch file remark or a band from the 80's.
+                                   //  I've got my spine, I've got my ORANGE CRUSH!
 
 	/**
 	 * \brief Remove hypo reference to this correlation
@@ -180,7 +191,7 @@ class CCorrelation {
 	 * Remove any shared_ptr reference from this correlation, breaking the graph
 	 * database link between this correlation and any hypocenter.
 	 */
-	void clearHypo();
+	void clearAllHypos();   // DK REVIEW 20180820 -  Name change might be clearer?
 
 	/**
 	 * \brief Correlation value getter
@@ -246,13 +257,16 @@ class CCorrelation {
 	 * \brief Association string getter
 	 * \return the association string
 	 */
-	const std::string& getAss() const;
+	const std::string& getAssoc() const;
+
+  // DK REVIEW 20180820 -  While better than grabAssoc(), still not good.  Fix, Please.
 
 	/**
 	 * \brief Association string setter
 	 * \param ass - the association string
 	 */
-	void setAss(std::string ass);
+	void setAssoc(std::string ass);
+  // DK REVIEW 20180820 - ditto.
 
 	/**
 	 * \brief Phase getter
@@ -272,11 +286,13 @@ class CCorrelation {
 	 */
 	double getTCorrelation() const;
 
+  // DK REVIEW 20180820  what is TCorrelation?  arrival time at the site?  beginning of correlation-window time at the site?
 	/**
 	 * \brief Creation time getter
 	 * \return the creation time
 	 */
 	double getTGlassCreate() const;
+  // DK REVIEW 20180820  what is "Creation time"?  Time this correlation was first inserted into Glass?
 
  private:
 	/**
@@ -290,13 +306,15 @@ class CCorrelation {
 	 * \brief A std::weak_ptr to a CHypo object
 	 * representing the links between this correlation and associated hypocenter
 	 */
-	std::weak_ptr<CHypo> wpHypo;
+	std::weak_ptr<CHypo> wpHypo;  // DK REVIEW 20180820  comments and func declarations above make it seem like
+                                // A correlation can be assoc'd with more than one Hypo, but this definition
+                                // makes it look like a binary relationship.
 
 	/**
 	 * \brief A std::string containing a character representing the action
 	 * that caused this correlation to be associated
 	 */
-	std::string sAss;
+	std::string sAssoc;
 
 	/**
 	 * \brief A std::string containing the phase name of this correlation
@@ -365,7 +383,16 @@ class CCorrelation {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex correlationMutex;
+	mutable std::recursive_mutex correlationMutex;  // DK REVIEW 20180820 - so all the get*() functions are
+                                                  // declared const, so they can operate on a const object
+                                                  // and/or to indicate they are not changing anything in the
+                                                  // object, but they need to be able to lock they object so
+                                                  // that no one else can change it, so the mutex is defined
+                                                  // as mutable beceause it needs to be changed during locking/unlocking.
+                                                  // To boot, we are using a recursive_mutex here, so that we don't have to
+                                                  // worry about hangups when we call a get method (which tries to lock the mutex)
+                                                  // from a method that already has the mutex locked.
+                                                  // huh....
 };
 }  // namespace glasscore
 #endif  // CORRELATION_H

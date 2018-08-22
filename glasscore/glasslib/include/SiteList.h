@@ -35,7 +35,9 @@ class CGlass;
  *
  * CSiteList uses smart pointers (std::shared_ptr).
  */
-class CSiteList {
+class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes could be derived from a base list class that
+                    // could handle a bunch of the functionality.  Maybe even throw in some template action, if you don't
+                    // want to derive all the data classes from a base class.
  public:
 	/**
 	 * \brief CSiteList constructor

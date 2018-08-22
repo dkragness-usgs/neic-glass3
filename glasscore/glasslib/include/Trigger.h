@@ -28,7 +28,8 @@ class CWeb;
  * The CTrigger class represents a single detection trigger from the
  * detection graph database.  A CTrigger consists of the location (latitude,
  * longitude, and depth) of the triggering node, the spatial resolution of the
- * triggering node, and a list of picks that made the trigger
+ * triggering node, and a list of picks that made the trigger     // DK REVIEW 20180820  - how is a Trigger different from a Hypo.  I don't see the difference, just seems like it 
+                                                                  // is a hypo in a trial state.
  *
  * CTrigger uses smart pointers (std::shared_ptr).
  */

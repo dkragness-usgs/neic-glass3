@@ -69,13 +69,13 @@ class CHypo {
 	 * \param z - A double containing the geocentric depth in kilometers to use
 	 * \param time - A double containing the julian time in seconds to use
 	 * \param pid - A std::string containing the id of this hypo
-	 * \param web - A std::string containing the name of the web that nucleated
+	 * \param web - A std::string containing the name of the web that nucleated   // DK 20180820 REVIEW - Really, we need a string for web?  couldn't just use a pointer?
 	 * this hypo
-	 * \param bayes - A double containing the bayesian value for this hypo.
+	 * \param bayes - A double containing the bayesian value for this hypo.  // DK 20180820 REVIEW -  uggg.. such clever names....
 	 * \param thresh - A double containing the threshold value for this hypo
 	 * \param cut - An integer containing the Bayesian stack threshold for this
 	 * hypo
-	 * \param firstTrav - A traveltime::CTravelTime containing the first travel
+	 * \param firstTrav - A traveltime::CTravelTime containing the first travel   // DK 20180820 REVIEW -  These seem more like properties of the associator or nucleator than properties of the Hypo.
 	 * time used in creating this hypo
 	 * \param secondTrav - A traveltime::CTravelTime containing the second travel
 	 * time used in creating this hypo
@@ -83,8 +83,7 @@ class CHypo {
 	 * \param resolution - A double value containing the web resolution used
 	 * \param aziTaper = A double value containing the azimuth taper to be used,
 	 * defaults to 360
-	 * \param aziTaper = A double value containing the azimuth taper to be used,
-	 * defaults to 360
+	 * \param maxDep = A double value containing the blee blee blah blah blue blue, defaults to 800
 	 * \return Returns true if successful, false otherwise.
 	 */
 	CHypo(double lat, double lon, double z, double time, std::string pid,
@@ -95,7 +94,7 @@ class CHypo {
 			double aziTap = 360., double maxDep = 800.);
 
 	/**
-	 * \brief CHypo alternate constructor
+	 * \brief CHypo alternate constructor   // DK 20180820 REVIEW -  Ugg.. quality \brief documentation
 	 *
 	 * Alternate constructor for the CHypo class that uses a CNode to create
 	 * a CHypo
@@ -162,7 +161,7 @@ class CHypo {
 	 * \param secondTrav - A traveltime::CTravelTime containing the second travel
 	 * time used in creating this hypo
 	 * \param ttt - A traveltime::CTTT to be used for association for this hypo
-	 * \param resolution - A double value containing the web resolution used
+	 * \param resolution - A double value containing the web resolution used   // DK 20180820 REVIEW - oh goody, more obfuscation.
 	 * \param aziTaper = A double value containing the azimuth taper to be used,
 	 * defaults to 360
 	 * \param maxDepth = A double value the maximum event depth for the locator
@@ -180,7 +179,7 @@ class CHypo {
 	/**
 	 * \brief Add pick reference to this hypo
 	 *
-	 * Adds a shared_ptr reference to the given pick to this hypo,
+	 * Adds a shared_ptr reference to the given pick, to this hypo,
 	 * representing a graph database link between this hypocenter
 	 * and the pick.  This link also represents a phase association.
 	 *
@@ -313,7 +312,7 @@ class CHypo {
 	 *
 	 * \return Returns the generated json object.
 	 */
-	std::shared_ptr<json::Object> hypo(bool send = true);
+	std::shared_ptr<json::Object> hypo(bool send = true);   // DK 20180820 REVIEW -  needs a better name.  sendAsJSONHypo()  ?
 
 	/**
 	 * \brief Generate Event message
@@ -322,7 +321,7 @@ class CHypo {
 	 * "Event" format and send a pointer to this object to CGlass
 	 * (and out of glasscore) using the send function (pGlass->send)
 	 */
-	std::shared_ptr<json::Object> event(bool send = true);
+	std::shared_ptr<json::Object> event(bool send = true);    // DK 20180820 REVIEW -  needs a better name.  sendAsJSONEvent()  ?
 
 	/**
 	 * \brief Generate cancel message
@@ -331,7 +330,7 @@ class CHypo {
 	 * and send a pointer to this object to CGlass (and out of glasscore) using
 	 * the send function (pGlass->send)
 	 */
-	std::shared_ptr<json::Object> cancel(bool send = true);
+	std::shared_ptr<json::Object> cancel(bool send = true);  // DK 20180820 REVIEW -  needs a better name.  sendAsJSONCancel()  ?
 
 	/**
 	 * \brief Generate expire message
@@ -340,15 +339,17 @@ class CHypo {
 	 * and send a pointer to this object to CGlass (and out of glasscore) using
 	 * the send function (pGlass->send)
 	 */
-	std::shared_ptr<json::Object> expire(bool send = true);
-
+	std::shared_ptr<json::Object> expire(bool send = true);  // DK 20180820 REVIEW -  needs a better name.  sendAsJSONExpire()  ?
+                                                           // DK 20180820 REVIEW -  ick!!  Hypo should not be in the module communications business.  double ick!!!
 	/**
 	 * \brief Print basic hypocenter values to screen
 	 *
 	 * Causes CHypo to print the current hypocenter values
 	 * (latitude, longitude, depth, etc.) to the console
 	 */
-	void summary();
+	void summary();   // DK 20180820 REVIEW -  ick!!  Hypo should handle tracking it's properties and converting to/from a json-object or string
+                    // it should not be involved in inter-module passing or screen printing.
+                    // ick! ick! ick!
 
 	/**
 	 * \brief Print advanced hypocenter values to screen
@@ -359,7 +360,10 @@ class CHypo {
 	 * \param src - A std::string indicating a context / reason
 	 * for printing hypocenter values.
 	 */
-	void list(std::string src);
+	void list(std::string src);   // DK 20180820 REVIEW -  ick!!  
+                                // Glass should do something like 
+                                // glassutil::CLogit::log(Hypo.getParamsAsHumanReadableString());
+                                // instead of having Hypo call CLogit functions.
 
 	/**
 	 * \brief Check to see if pick could be associated
@@ -451,7 +455,7 @@ class CHypo {
 	 *
 	 * Evaluate whether the hypocenter is suitable to be reported,
 	 *
-	 * \return Returns true if the hypocenter can be reported, false otherwise
+	 * \return Returns true if the hypocenter can be reported, false otherwise  // DK REVIEW 20180820 - can be or should be?
 	 */
 	bool reportCheck();
 
@@ -461,7 +465,7 @@ class CHypo {
 	 * Calculate the statistical distribution of the supporting data in
 	 * distance.  The values are reflected to give a mean of 0.  These
 	 * statistics are used in the automatic supporting data disassocation
-	 * process cull()
+	 * process cull()   // DK REVIEW 20180820 -  WTF?
 	 */
 	void stats();
 
@@ -487,7 +491,7 @@ class CHypo {
 	 * \return Returns a double value containing the final baysian fit.
 	 */
 	double anneal(int nIter = 250, double dStart = 100.0, double dStop = 1.0,
-					double tStart = 5., double tStop = .5);
+					double tStart = 5., double tStop = .5);    // DK REVIEW 20180820 - Buzzword Bingo!
 
 	/**
 	 * \brief Localize this hypo
@@ -513,7 +517,7 @@ class CHypo {
 	/**
 	 * \brief perform the grid search
 	 *
-	 * NOTE: Need more detailed description from Will
+	 * NOTE: Need more detailed description from Will   // DK REVIEW 20180820 -   You should never have let Will check it in without doc!
 	 *
 	 * \param distLimit - A double value containing the distance limit
 	 * \param distStep - A double value containing the distance step
@@ -607,7 +611,7 @@ class CHypo {
 	 * \brief Write files for plotting output
 	 *
 	 */
-	void graphicsOutput();
+	void graphicsOutput();   // DK REVIEW 20180820 - Make it a JSON message that can be passed to a "plotting" module.
 
 	/**
 	 * \brief Calculate station weights
@@ -637,7 +641,7 @@ class CHypo {
 	 * Causes CHypo to print any picks in vPick that are either improperly
 	 * linked or do not belong to this CHypo.
 	 */
-	void trap();
+	void trap() // DK REVIEW 20180820 - Make it a JSON message that is passed to the caller.
 
 	/**
 	 * \brief aziTaper
@@ -1189,7 +1193,7 @@ class CHypo {
 	/**
 	 * \brief A random engine used to generate random numbers
 	 */
-	std::default_random_engine m_RandomGenerator;
+	std::default_random_engine m_RandomGenerator;  // DK REVIEW 20180820 - Why does Hypo have a random number generator?
 };
 }  // namespace glasscore
 #endif  // HYPO_H

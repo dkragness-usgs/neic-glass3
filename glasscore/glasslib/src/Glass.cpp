@@ -338,7 +338,7 @@ bool CGlass::initialize(std::shared_ptr<json::Object> com) {
 					"CGlass::initialize: Using association phase: " + phs);
 
 			// get the Range if present, otherwise look for an Assoc
-			if (obj.HasKey("Range")
+			if (obj.HasKey("Range")   // DK REVIEW 20180821  - WTF is "Range"?  Shortname for the Lone Ranger?
 					&& (obj["Range"].GetType() == json::ValueType::ArrayVal)) {
 				// get the range array
 				json::Array arr = obj["Range"].ToArray();
@@ -401,7 +401,7 @@ bool CGlass::initialize(std::shared_ptr<json::Object> com) {
 				rng = NULL;
 
 				// set assoc pointer
-				ass = assoc;
+				ass = assoc;    // DK REVIEW 20180821 - No.
 			} else {
 				glassutil::CLogit::log(
 						glassutil::log_level::error,
@@ -1194,9 +1194,9 @@ double CGlass::sig(double x, double sigma) {
 	return (exp(-0.5 * x * x / sigma / sigma));
 }
 // ---------------------------------------------------------Sig
-// Calculate the laplacian significance function, which is just
+// Calculate the laplacian significance function, which is just        // DK 20180820 REVIEW - just AWESOME!?!
 // It is used for pruning and association, and is roughly
-// analogous to residual pruning in L1 approach.
+// analogous to residual pruning in L1 approach.  // DK 20180820 REVIEW -  This function seems to peak at 0.5, whereas sig() peaks at 1.
 double CGlass::sig_laplace_pdf(double x, double sigma) {
 	if (x > 0) {
 		return ((1. / (2. * sigma)) * exp(-1. * x / sigma));
@@ -1206,13 +1206,13 @@ double CGlass::sig_laplace_pdf(double x, double sigma) {
 }
 
 // ---------------------------------------------------------statusCheck
-bool CGlass::statusCheck() {
+bool CGlass::statusCheck() {   // DK 20180820 REVIEW - seems akin to Patton's healthCheck()   could we standardize on one name, and make the code easier to read?
 	// nullcheck
 	if (pPickList == NULL) {
 		return (false);
 	}
 
-	// check pick list
+	// check pick list   // DK 20180820 REVIEW -  Appears every glass instance has 1 pickList, HypoList, SiteList, and WebList  - could those become static?
 	if (pPickList->statusCheck() == false) {
 		return (false);
 	}

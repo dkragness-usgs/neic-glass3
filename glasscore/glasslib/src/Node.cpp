@@ -301,7 +301,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 			double tObs = tPick - tOrigin;
 
 			// Ignore arrivals past earlier than this potential origin and
-			// past 1000 seconds (about 100 degrees)
+			// past 1000 seconds (about 100 degrees)  // DK REVIEW 20180821  - not sure about the math here.....  looks suspect and nasty hardcoded.
 			// NOTE: Time cutoff is hard coded
 			if (tObs < 0 || tObs > 1000.0) {
 				continue;
@@ -349,7 +349,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 
 			// get the best significance from the observed time and the
 			// link
-			double dSig = getBestSig(tObs, link);
+			double dSig = getBestSig(tObs, link); 
 
 			// only count if this pick is significant (better than
 			// previous)
@@ -360,7 +360,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 				// remember the best pick
 				pickBest = pick;
 			}
-		}
+		}  // DK REVIEW 20180821  - this needs an end comment, to give you a clue where you are in the code.
 
 		// check to see if the pick with the highest significance at this site
 		// should be added to the overall sum from this site
@@ -415,7 +415,7 @@ double CNode::getBestSig(double tObservedTT, SiteLink link) {
 	double travelTime2 = std::get< LINK_TT2>(link);
 
 	// use observed travel time, travel times to site, and a dT/dKm of
-	// 0.1 s/km to calculate distance residuals
+	// 0.1 s/km to calculate distance residuals  // DK REVIEW 20180821  -  bwah?
 	double tRes1 = -1;
 	if (travelTime1 > 0) {
 		// calculate time residual
@@ -434,12 +434,23 @@ double CNode::getBestSig(double tObservedTT, SiteLink link) {
 		// NOTE:  dT/dKm is hard coded
 		// dRes2 = tRes2 / 0.1;
 	}
+
+  // DK REVIEW 20180821  - uh... aren't the residuals signed...?  Don't you have to take an abs()
+  // DK REVIEW 20180821  -  WTF?  What am I missing here?  Why does this work?  Why does residual have to be positive to be evaluated....?
+
 	// compute significances using residuals
 	// pick sigma is defined as resolution / 5.0 * 2.0
 	// should trigger be a looser cutoff than location cutoff
 	double dSig1 = 0;
 	if (tRes1 > 0) {
-		dSig1 = pWeb->getGlass()->sig(tRes1, dResolution);
+		dSig1 = pWeb->getGlass()->sig(tRes1, dResolution);  // DK REVIEW 20180821 - I'm not a fan of overloading functionality into the associator
+                                                        // but ideally, the TT entries would include
+                                                        // 1) dTdD, dTdZ(I'm guessing this is used in the Locator part), relative observability, residual width,
+                                                        // and absolute observability(probability) would be the cherry on top.
+                                                        // seems to me that sig->sigma should be something like
+                                                        // convolution of (Resolution/2)##get radius##/ttphase.dTdD) in seconds and distribution of residuals for ttPhase.
+                                                        // if you wanted to get super-fancy you could include 1/2 DepthShell distance / dTdZ
+                                                        // too slow?
 	}
 	double dSig2 = 0;
 	if (tRes2 > 0) {

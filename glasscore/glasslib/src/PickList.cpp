@@ -143,7 +143,7 @@ bool CPickList::dispatch(std::shared_ptr<json::Object> com) {
 	}
 
 	// Input pick data can have Type keys
-	if (com->HasKey("Type")
+	if (com->HasKey("Type")    // DK REVIEW 2080821 - why do Pick's come in either Cmd or Review flavor.  Seem's F'd.
 			&& ((*com)["Type"].GetType() == json::ValueType::StringVal)) {
 		// dispatch to appropriate function based on Cmd value
 		json::Value v = (*com)["Type"].ToString();
@@ -715,6 +715,8 @@ void CPickList::processPick() {
 		// associate
 		pGlass->getHypoList()->associate(pck);
 
+    // DK REVIEW 20180821 - why nucleate?  If you were successful associating, then it's a waste to go nucleate.
+    // using up a bunch of CPU cycles....
 		// nucleate
 		pck->nucleate();
 

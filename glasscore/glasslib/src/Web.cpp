@@ -43,7 +43,7 @@ bool sortSite(const std::pair<double, std::shared_ptr<CSite>> &lhs,
 }
 
 // ---------------------------------------------------------CWeb
-CWeb::CWeb(int numThreads, int sleepTime, int checkInterval) {
+CWeb::CWeb(int numThreads, int sleepTime, int checkInterval) {  // DK REVIEW 20180820 - any of this code that is shared between constructors should go into a function that's called by both.
 	// setup threads
 	if (numThreads > 0) {
 		m_bRunProcessLoop = true;
@@ -289,7 +289,8 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 	double maxDepth = 800.;
 	// get grid configuration from json
 	// name
-	if (((*com).HasKey("Name"))
+	if (((*com).HasKey("Name"))  // DK REVIEW 20180821 - too much parsing crap in this function.  Makes the funciton too hard to follow.  
+                               // move common parsing routines to their own function.
 			&& ((*com)["Name"].GetType() == json::ValueType::StringVal)) {
 		name = (*com)["Name"].ToString();
 	}
@@ -434,7 +435,7 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 	}
 
 	// Generate equally spaced grid of nodes over the globe (more or less)
-	// Follows Paper (Gonzolez, 2010) Measurement of Areas on a Sphere Using
+	// Follows Paper (Gonzalez, 2010) Measurement of Areas on a Sphere Using
 	// Fibonacci and Latitude Longitude Lattices
 	// std::vector<std::pair<double, double>> vVert;
 	int iNodeCount = 0;

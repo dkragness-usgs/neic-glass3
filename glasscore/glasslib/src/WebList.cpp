@@ -38,7 +38,7 @@ void CWebList::clear() {
 }
 
 // ---------------------------------------------------------Dispatch
-bool CWebList::dispatch(std::shared_ptr<json::Object> com) {
+bool CWebList::dispatch(std::shared_ptr<json::Object> com) {   // DK REVIEW 20180821 - dispatch() should become receiveMsg() or something similar
 	// null check json
 	if (com == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::error,

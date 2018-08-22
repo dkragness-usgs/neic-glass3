@@ -10,7 +10,7 @@
 #include <tuple>
 #include <memory>
 
-namespace glasscore {
+namespace glasscore {  // DK REVIEW 20180820 -  ugg... WTF?
 
 // forward declarations
 class CNode;

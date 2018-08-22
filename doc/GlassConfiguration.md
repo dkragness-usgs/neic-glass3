@@ -118,23 +118,23 @@ being determined.
 
 * **Thresh** - The default viability threshold needed to exceed for a nucleation
 to be successful. This value can be overridden in a detection grid (Web) if
-provided as part of a specific grid configuration.
+provided as part of a specific grid configuration.   // DK REVIEW 20180821 - Is this the number of  transhumanists that +1 the location?
 * **Nucleate** - The default number of data that need to be gathered to trigger
 the nucleation of an event. This value can be overridden in a detection grid
 (Web) if provided as part of a specific grid configuration.
 * **sdAssociate** - The standard deviation cutoff used for associating a pick
 with a hypocenter.
-* **expAffinity** - The exponential factor used when calculating the affinity of
+* **expAffinity** - The exponential factor used when calculating the affinity of   // DK REVIEW 20180821 -  cheese wiz?
 a pick with a hypocenter. **This value has little effect and likely does not need
 to be changed.**
 * **avgDelta** - The average station distance in degrees.  Used as the defining
-value for a taper compensate for station density.
+value for a taper compensate for station density.    // DK REVIEW 20180821 - How?
 * **avgSigma** - The exponent of the gaussian weighting kernel in degrees.  It
-is used to compensate for station density.
+is used to compensate for station density.    // DK REVIEW 20180821 - How?
 * **dCutFactor** - The distance factor used in calculating a hypocenter's
 association distance cutoff.
 * **dCutPercentage** - The percentage used to calculate a hypocenter's
-association distance cutoff.
+association distance cutoff.   // DK REVIEW 20180821 - bwah?
 * **dCutMin** - The hypocenter's minimum association distance cutoff.
 * **iCycleLimit** - The maximum number of processing cycles a hypocenter can run
 without having new data associated.
@@ -195,7 +195,7 @@ if not present, the grid will use the DefaultNucleationPhase
 		* **PhaseName** - The name of the secondary nucleation phase
 		* **TravFile** - The path to the travel-time lookup file for the secondary
     nucleation phase.
-* **Nets** - A list of network codes to filter the stations available to a grid.
+* **Nets** - A list of network codes to filter the stations available to a grid.   // DK REVIEW 20180821 - one more time, in English?
 * **Sites** - A list of SCNL codes to filter the stations available to a grid,
 generally used only in very small local grids.
 * **UseOnlyTeleseismicStations** - A flag indicating that the grid should only
@@ -218,8 +218,8 @@ interest, with the provided depth layers.
 	"Cmd": "Grid",
 	"Name": "Oklahoma",
 	"Thresh": 0.5,
-	"Nucleate": 6,
-	"Detect": 10,
+	"Nucleate": 6,  // DK REVIEW 20180821 - Should be NumStationsRequiredToNucleate
+	"Detect": 10,   // DK REVIEW 20180821 - Should be NumStationsToUseForNucleation
 	"NucleationPhases":{
 	    "Phase1": {
       		"PhaseName": "P",

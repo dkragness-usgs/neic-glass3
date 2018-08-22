@@ -26,16 +26,18 @@ class CGlass;
 /**
  * \brief glasscore correlation list class
  *
- * The CCorrelationList class is the class that encapsulates everything
- * necessary to represent a waveform arrival correlation, including arrival
- * time, phase id,and an unique identifier.  The CCorrelationList class is also
- * a node in the detection graph database.
+ * Glass maintains a single list of all Correlation's it knows about.  
+ * The CCorrelationList class is the class that encapsulates this list.
+  // DK 20180820 review - seems like if there's only one instance, that this should be a static class, no?
+
+ *  See Correlation.h for a description of what a Correlation is.
+ * The CCorrelationList class is also a node in the detection graph database.  DK 20180820 review -WTF?  How?
  *
  * CCorrelationList contains functions to support nucleation of a new event
  * basedon the correlation.
  *
  * CCorrelationList maintains a graph database link between it and the the site
- * (station)the correlation was made at.
+ * (station)the correlation was made at.   DK 20180820 review -WTF?   This seems like a Correlation attribute, not a CorrelationList attribute
  *
  * CCorrelationList also maintains a vector of CHypo objects represent the graph
  * database links between  this correlation and various hypocenters.  A single
@@ -104,7 +106,7 @@ class CCorrelationList {
 	 * \return Returns true if the correlation was usable and added by
 	 * CCorrelationList, false otherwise
 	 */
-	bool addCorrelation(std::shared_ptr<json::Object> com);
+	bool addCorrelationFromJSON(std::shared_ptr<json::Object> com);
 
 	/**
 	 * \brief CCorrelationList get correlation function
@@ -123,44 +125,51 @@ class CCorrelationList {
 	 *
 	 * This function looks up the proper insertion index for the vector given an
 	 * arrival time using a binary search to identify the index element
-	 * is less than the time provided, and the next element is greater.
+	 * is less than the time provided, and the next element is greater.  // DK REVIEW 20180820 - try again in English?
 	 *
 	 * \param tCorrelation - A double value containing the arrival time to use, in
 	 * julian seconds of the correlation to add.
 	 * \return Returns the insertion index, if the insertion is before
 	 * the beginning, -1 is returned, if insertion is after the last element,
-	 * the id of the last element is returned, if the vector is empty,
+	 * the id of the last element is returned, if the vector is empty, 
 	 * -2 is returned.
 	 */
 	int indexCorrelation(double tCorrelation);
+  // DK REVIEW 20180820 - this function doesn't make sense to me, or maybe it's the comment.
+  // This function is only used to figure out retrieval indexes, like 'Give me all the Correlations in this time range'.
+  // Doesn't seem to have anything to do with insertion.
+  // Should replaced with something like 
+  // bool getCorrelationIteratorRange(double tStart, double tEnd, int & iStart, int & iEnd);
+  // where iStart is the index of the first correlation with tCorrelation >= tStart
+  // and iEnd is the index of the last correlation with tCorrelation <= tEnd 
 
 	/**
-	 * \brief Checks if picks is duplicate
+	 * \brief Checks if correlations is duplicate
 	 *
-	 * Takes a new pick and compares with list of picks.
+	 * Takes a new correlation and compares with list of correlations.
 	 *
 	 * \param newCorrelation - A shared pointer to the correlation to check
 	 * \param tWindow - A double containing the allowable matching time window
 	 * in seconds
 	 * \param xWindow - A double containing the allowable matching distance
 	 * window in degrees
-	 * True if pick is a duplicate
+	 * True if correlation is a duplicate
 	 */
 	bool checkDuplicate(CCorrelation * newCorrelation, double tWindow,
 						double xWindow);
 
 	/**
-	 * \brief Search for any associable picks that match hypo
+	 * \brief Search for any associable correlations that match hypo
 	 *
-	 * Search through all picks within a provided number seconds from the origin
-	 * time of the given hypocenter, adding any picks that meet association
+	 * Search through all correlations within a provided number seconds from the origin
+	 * time of the given hypocenter, adding any correlations that meet association
 	 * criteria to the given hypocenter.
 	 *
 	 * \param hyp - A shared_ptr to a CHypo object containing the hypocenter
 	 * to attempt to associate to.
-	 * \param tDuration - A double value containing the duration to search picks
+	 * \param tDuration - A double value containing the duration to search correlations
 	 * from origin time in seconds, defaults to 2.5
-	 * \return Returns true if any picks were associated to the hypocenter,
+	 * \return Returns true if any correlations were associated to the hypocenter,
 	 * false otherwise.
 	 */
 	bool scavenge(std::shared_ptr<CHypo> hyp, double tDuration = 2.5);
@@ -168,17 +177,18 @@ class CCorrelationList {
 	/**
 	 * \brief Generate rogue list for tuning process
 	 *
-	 * Search through all picks within a provided number of seconds from the
-	 * given origin time, creating a vector of all picks that could be
-	 * associated with given hypocenter ID, but are actually either unassociated
-	 * or associated with another hypocenter
+	 * Search through all correlations within a provided number of seconds from the
+	 * given origin time, creating a vector of all correlations that could be
+	 * associated with given hypocenter ID(regardless of whether they are already
+   * associated with any hypocenter or not.
 	 *
 	 * \param pidHyp - A std::string containing the id of the hypocenter to use
 	 * \param tOrg - A double value containing the origin time in julian seconds
 	 * of the hypocenter to use.
-	 * \param tDuration - A double value containing the duration to search picks
+	 * \param tDuration - A double value containing the duration to search correlations
 	 * from origin time in seconds, defaults to 2.5
 	 */
+  // DK 20180820 REVIEW  - the "rogue" name either needs to be explained or dropped in favor of something more sensible.
 	std::vector<std::shared_ptr<CCorrelation>> rogues(std::string pidHyp,
 														double tOrg,
 														double tDuration = 2.5);
@@ -195,6 +205,8 @@ class CCorrelationList {
 	 */
 	void setGlass(CGlass* glass);
 
+  // DK REVIEW 20180820 - replace this senseless auto comment with something that contains a meaningful description of the property begin set/get
+
 	/**
 	 * \brief CSiteList getter
 	 * \return the CSiteList pointer
@@ -208,7 +220,7 @@ class CCorrelationList {
 	void setSiteList(CSiteList* siteList);
 
 	/**
-	 * \brief nCorrelation getter
+	 * \brief nCorrelation getter  // DK REVIEW 20180820 - replace this senseless auto comment with something that contains a meaningful description of the property begin set/get
 	 * \return the nCorrelation
 	 */
 	int getNCorrelation() const;
@@ -234,7 +246,7 @@ class CCorrelationList {
 	/**
 	 * \brief Get the current size of the correlation list
 	 */
-	int getVCorrelationSize() const;
+	int getVCorrelationListSize() const;
 
  private:
 	/**

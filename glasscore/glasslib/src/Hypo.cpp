@@ -8,7 +8,7 @@
 #include "Pid.h"
 #include "Date.h"
 #include "TTT.h"
-#include "Brent.h"
+// #include "Brent.h" - no longer needed.  John claims Will has saved us all.
 #include "Hypo.h"
 #include "Site.h"
 #include "PickList.h"

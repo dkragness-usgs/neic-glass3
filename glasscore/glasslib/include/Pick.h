@@ -118,11 +118,11 @@ class CPick {
 	 *
 	 * \param hyp - A std::shared_ptr to an object containing the hypocenter
 	 * to link.
-	 * \param ass - A std::string containing a note about the association reason
+	 * \param assoc - A std::string containing a note about the association reason
 	 * \param force - A boolean flag indicating whether to force the association,
 	 * defaults to false.
 	 */
-	void addHypo(std::shared_ptr<CHypo> hyp, std::string ass = "", bool force =
+	void addHypo(std::shared_ptr<CHypo> hyp, std::string assoc = "", bool force =
 							false);
 
 	/**
@@ -165,7 +165,7 @@ class CPick {
 	 *
 	 * Attempt to nucleate a new event based on the addition of this
 	 * pick. First scan all nodes linked to this pick's site. Then, for each
-	 * one, calculate the stacked agoric at that node. Then, for each node who's
+	 * one, calculate the stacked agoric at that node. Then, for each node who's   // DK REVIEW 20180820 - feeling a little transhumanist today...
 	 * agoric surpassed the threhold, try to generate a new hypocenter. If that
 	 * hypocenter survives, add it to the list.
 	 */
@@ -217,13 +217,13 @@ class CPick {
 	 * \brief Association string getter
 	 * \return the association string
 	 */
-	const std::string& getAss() const;
+	const std::string& getAssoc() const;
 
 	/**
 	 * \brief Association string setter
-	 * \param ass - the association string
+	 * \param assoc - the association string
 	 */
-	void setAss(std::string ass);
+	void setAssoc(std::string assoc);
 
 	/**
 	 * \brief Phase getter
@@ -265,7 +265,7 @@ class CPick {
 	 * \brief A std::string containing a character representing the action
 	 * that caused this pick to be associated
 	 */
-	std::string sAss;
+	std::string sAssoc;
 
 	/**
 	 * \brief A std::string containing the phase name of this pick

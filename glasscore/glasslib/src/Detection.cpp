@@ -48,7 +48,7 @@ bool CDetection::dispatch(std::shared_ptr<json::Object> com) {
 		// dispatch to appropriate function based on Cmd value
 		json::Value v = (*com)["Cmd"].ToString();
 
-		// clear all data
+		// clear all data  // DK REVIEW 20180820 - why does this function look for "ClearGlass"?  it doesn't do anything with it!
 		if (v == "ClearGlass") {
 			// ClearGlass is also relevant to other glass
 			// components, return false so they also get a
