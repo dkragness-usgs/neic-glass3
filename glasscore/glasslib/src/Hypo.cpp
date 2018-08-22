@@ -2724,7 +2724,7 @@ void CHypo::stats() {
 		// compute the distance delta
 		double delta = geo.delta(&site->getGeo()) / DEG2RAD;
 
-		// add to distance vactor
+		// add to distance vector
 		dis.push_back(delta);
 
 		// compute the azimuth
@@ -2738,12 +2738,13 @@ void CHypo::stats() {
 	// and not N-1, since a mean of 0 is pre-ordained.
 	// The skewness is also 0, since the distribution
 	// is exactly symmetric
+  // DK REVIEW 20180821 - WTF?
 	double sum = 0.0;
 	int ndis = dis.size();
 	for (int i = 0; i < ndis; i++) {
 		double d = dis[i];
 		sum += d * d;
-	}
+	}  // DK REVIEW 20180821 - Sum = Sum of square of the distances
 	double var = sum / ndis;
 	dSig = sqrt(var);
 

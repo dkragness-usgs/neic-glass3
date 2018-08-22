@@ -46,6 +46,57 @@ struct IGlassSend;
  * CGlass is via deserialized json messages as pointers to supereasyjson
  * json::objects.
  */
+
+
+/*
+DK REVIEW 20180821
+Glass parameters should be reorganized, grouped into sub-structs, and dup's should be jetisoned if possible.
+
+NucleationParams
+int nNucleate;   nNumPicksRequiredToNucleate
+int nDetect;     nNumBestStationsToUseForNucleation
+double dThresh;  dNucleationTestThresholdValueBasedOnWhoKnowsWhat
+
+
+HypoRefinementParams
+double sdAssociate; dMaxResidualInSDsToAssoc
+double sdPrune;  dMinResidualInSDsToPrune
+double expAffinity;  dHypoPickAffinity
+double dCutFactor;   dMaxStaDistMultFactor
+double dCutPercentage; dMaxStaDistBaseStaSelectionPcntg
+double dCutMin;      dMinAllowMaxStaDistDeg
+double beamMatchingDistanceWindow; dBeamMatchingDistWindowDeg
+double beamMatchingAzimuthWindow; dBeamMatchingAzmWindowDeg
+double correlationMatchingTWindow; dCorrelationMatchingTimeWinSec
+double correlationMatchingXWindow; dCorrelationMatchingHypoDistWinDeg
+
+
+RefinementProcessingControlParams
+int iCycleLimit;
+int correlationCancelAge; dCorrelationCancelAgeSecs
+
+
+
+GlassCrazyParamsToDeprecate
+double avgDelta;
+double avgSigma;
+bool minimizeTTLocator;
+double dReportThresh;  limitation of reporting should be handled in outputs
+double nReportCut;
+int nSitePickMax;       // should be parameter of SiteList
+int nHypoMax;           // Should be parameter of HypoList
+int nCorrelationMax;    // Should be parameter of CorrelationList (or PickList if we can make Correlation a glorified Pick)
+int nPickMax;           // Should be parameter of PickList
+double pickDuplicateWindow;  // Should parameter of PickList, since that is entry point for picks
+
+DebugOutputParams
+int graphicsSteps;
+double graphicsStepKM;
+std::string graphicsOutFolder;
+bool graphicsOut;
+bool testLocator;
+bool testTimes;
+*/
 class CGlass {
  public:
 	/**
@@ -81,7 +132,7 @@ class CGlass {
 	 * \return Returns true if the communication was handled by CGlass,
 	 * false otherwise
 	 */
-	bool dispatch(std::shared_ptr<json::Object> com);
+	bool dispatch(std::shared_ptr<json::Object> com);  // DK REVIEW 20180821 - name should be changed to receiveMsg()
 
 	/**
 	 * \brief CGlass communication sending function
@@ -155,7 +206,9 @@ class CGlass {
 	 *
 	 * Checks each thread to see if it is still responsive.
 	 */
-	bool statusCheck();
+	bool statusCheck();      // DK REVIEW 20180821 - John has healthCheck() funciton that I think is the same
+                           // as this.  Seems like we could bring Glasscore stuff into the John standard
+                           // architecture fold.
 
   // DK REVIEW 20180821
   // Seems like processing is broken up into two pieces:

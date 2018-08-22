@@ -290,7 +290,7 @@ class CHypo {
 	 * \param std - The standard deviation value to use in the Box-Muller method
 	 * \return Returns the Gaussian random sample
 	 */
-	double gauss(double avg, double std);
+	double gauss(double avg, double std);   // DK REVIEW 20180821 - This function is not related to this class/Object.  Move to util.
 
 	/**
 	 * \brief Generate Random Number
