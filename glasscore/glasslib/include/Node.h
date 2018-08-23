@@ -160,7 +160,7 @@ class CNode {
 	/**
 	 * \brief CNode significance function
 	 *
-	 * Given an observed time and a like to a site, compute the best
+	 * Given an observed time and a link to a site, compute the best
 	 * significance value from the traveltime(s) contained in the link
 	 *
 	 * \param tObservedTT - A double value containing the observed travel time
@@ -168,7 +168,7 @@ class CNode {
 	 * \return Returns best significance if there is at least one valid travel
 	 * time, -1.0 otherwise
 	 */
-	double getBestSig(double tObservedTT, SiteLink link);
+	double getBestSig(double tObservedTT, SiteLink link);  // DK REVIEW 20180822 -  Move to Web
 
 	/**
 	 * \brief CNode get site function
@@ -179,7 +179,7 @@ class CNode {
 	 * \return Returns a shared pointer to the CSite object if found, null
 	 * otherwise
 	 */
-	std::shared_ptr<CSite> getSite(std::string sScnl);
+	std::shared_ptr<CSite> getSite(std::string sScnl);   // DK REVIEW 20180822 -  Input should be a siteID, and then maybe there should be a static CSite function called buildSiteIDFromSCNL()
 
 	/**
 	 * \brief CNode get last site function
@@ -189,20 +189,20 @@ class CNode {
 	 * \return Returns a shared pointer to the last CSite object if found, null
 	 * otherwise
 	 */
-	std::shared_ptr<CSite> getLastSite();
+	std::shared_ptr<CSite> getLastSite();   // DK REVIEW 20180822 -  see unlinkLastSite() comment
 
 	/**
 	 * \brief CNode site link sort function
 	 *
 	 * Sort the list of sites linked to this node
 	 */
-	void sortSiteLinks();
+	void sortSiteLinks();    // DK REVIEW 20180822 - Sort them how?  If it's variable, then it should be indicated how site-order can be controlled.  If order is hardcoded, then spell it out!
 
 	/**
 	 * \brief Sites string getter
 	 * \return the sites string
 	 */
-	std::string getSitesString();
+	std::string getSitesString();   // DK REVIEW 20180822 - WTF is a SitesString  - needs better documentation, way to many WTF knee jerk reactions to missing/bad documentation.  (time to meditate and remember that everything is relative, and this is probably the best commented Caryl's code has ever been...)
 
 	/**
 	 * \brief Site links count getter
@@ -262,19 +262,19 @@ class CNode {
 	 * \brief CWeb pointer setter
 	 * \param web - the CWeb pointer
 	 */
-	void setWeb(CWeb* web);
+	void setWeb(CWeb* web);  // DK REVIEW 20180822 - I don't understand the need for this.  Seems like this should be set in the constructor and constant ever after.
 
 	/**
 	 * \brief Name getter
 	 * \return the name
 	 */
-	const std::string& getName() const;
+	const std::string& getName() const;  // DK REVIEW 20180822 - Why is there a Name and a Pid Only need one.  Ditch the Pid and build the name from the parent Web + Hypo
 
 	/**
 	 * \brief Pid getter
 	 * \return the pid
 	 */
-	const std::string& getPid() const;
+	const std::string& getPid() const;  // DK REVIEW 20180822 - Why is there a Name and a Pid Only need one.  Ditch the Pid and build the name from the parent Web + Hypo
 
  private:
 	/**
@@ -288,12 +288,12 @@ class CNode {
 	 * This attribute is used for web level tracking and dynamics such
 	 * as removing a named subnet with the 'RemoveWeb' command.
 	 */
-	std::string sName;
-
+	std::string sName;   // DK REVIEW 20180822 - I see benefit to a unique name for auditing and possibly Hypo ID.  RemoveWeb should be handled via pointers.
+                       // DK REVIEW 20180822 - Why is there a Name and a Pid Only need one.  Ditch the Pid and build the name from the parent Web + Hypo
 	/**
 	 * \brief A std::string containing the string unique id of this node
 	 */
-	std::string sPid;
+	std::string sPid; // DK REVIEW 20180822 - Why is there a Name and a Pid Only need one.  Ditch the Pid and build the name from the parent Web + Hypo
 
 	/**
 	 * \brief A double value containing this node's latitude in degrees.
@@ -314,13 +314,13 @@ class CNode {
 	 * \brief A double value containing this node's spatial resolution
 	 * (to other nodes) in kilometers.
 	 */
-	double dResolution;
+	double dResolution;  // DK REVIEW 20180822 - Property of the Web, don't put it here unless it's a performance improvement compromise
 
 	/**
 	 * \brief A boolean flag indicating whether this node is enabled for
 	 * nucleation
 	 */
-	bool bEnabled;
+	bool bEnabled;   // DK REVIEW 20180822 -  Why?  Why would it not be enabled?  
 
 	/**
 	 * \brief A std::vector of tuples linking node to site
@@ -329,12 +329,12 @@ class CNode {
                                                           // but there is no such label/claim made here.  To be clear, either list
                                                           // the sort order here, or indicate that sites are in random order.
 	 */
-	std::vector<SiteLink> vSite;
+	std::vector<SiteLink> vSite;  // m_vSiteLinkList
 
 	/**
 	 * \brief A mutex to control threading access to vSite.
 	 */
-	mutable std::mutex vSiteMutex;
+	mutable std::mutex vSiteMutex;   // m_mSiteLinkListMutex
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CNode.
@@ -343,7 +343,11 @@ class CNode {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex nodeMutex;
+	mutable std::recursive_mutex nodeMutex;  // m_mNodeConfigMutex
+                                           // If you're gonna have config mutex (i.e. something to prevent you from changing and using config at same time, on all these
+                                           // objects), then throw it in a base-class, and derive from it.
+                                           // that way if we come up with a better (more efficient) locking mechanism for our code,
+                                           // we only have to change it in one place.  
 };
 }  // namespace glasscore
 #endif  // NODE_H

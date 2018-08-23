@@ -437,6 +437,8 @@ bool CPickList::checkDuplicate(CPick *newPick, double window) {
 	// set default return to no match
 	bool matched = false;
 
+  // DK REVIEW 20180822 -  Go to Site and search it's list of picks.  MUCH FASTER!
+
 	std::lock_guard<std::recursive_mutex> listGuard(m_vPickMutex);
 
 	// get the index of the earliest possible match

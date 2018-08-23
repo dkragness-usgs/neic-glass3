@@ -103,7 +103,7 @@ class CPick {
 	 * \param slowness - A double containing the optional slowness, -1 to omit
 	 * \return Returns true if successful, false otherwise.
 	 */
-	bool initialize(std::shared_ptr<CSite> pickSite, double pickTime,
+	bool initialize(std::shared_ptr<CSite> pickSite, double pickTime,   // DK REVIEW 20180822 - break these properties down by group (Pick, Arrival, Beam)
 					int pickId, std::string pickIdString, double backAzimuth,
 					double slowness);
 
@@ -114,13 +114,14 @@ class CPick {
 	 * representing a graph database link between this pick and the hypocenters.
 	 *
 	 * Note that this pick may or may not also be linked
-	 * to other hypocenters
+	 * to other hypocenters  // DK REVIEW 20180822 - How?  via what mechanism?
 	 *
 	 * \param hyp - A std::shared_ptr to an object containing the hypocenter
 	 * to link.
-	 * \param assoc - A std::string containing a note about the association reason
+	 * \param assoc - A std::string containing a note about the association reason // DK REVIEW 20180822 - More description and discussion of "assoc" param
 	 * \param force - A boolean flag indicating whether to force the association,
-	 * defaults to false.
+	 * defaults to false.  // DK REVIEW 20180822 - please describe Force=false, Force=true behavior.  Is it related to overwriting the 
+                         // Pick's wpHypo pointer?
 	 */
 	void addHypo(std::shared_ptr<CHypo> hyp, std::string assoc = "", bool force =
 							false);
@@ -137,7 +138,9 @@ class CPick {
 	 * \param hyp - A std::shared_ptr to an object containing the hypocenter
 	 * to unlink.
 	 */
-	void remHypo(std::shared_ptr<CHypo> hyp);
+	void remHypo(std::shared_ptr<CHypo> hyp);  // DK REVIEW 20180822 - why are we removing the Hypo (it's bad, it's old, why?)
+                                             // maybe rename to deleteInvalidHypo() or expireHypo()
+
 
 	/**
 	 * \brief Remove hypo specific reference to this pick
@@ -150,7 +153,8 @@ class CPick {
 	 *
 	 * \param pid - A std::string identifying the the hypocenter to unlink.
 	 */
-	void remHypo(std::string pid);
+	void remHypo(std::string pid);  // DK REVIEW 20180822 - why do we need to delete by ID instead of a direct pointer?  remove, or justify.
+                                  // maybe rename to deleteInvalidHypoByID() or expireHypoByID()
 
 	/**
 	 * \brief Remove hypo reference to this pick
@@ -158,7 +162,7 @@ class CPick {
 	 * Remove any shared_ptr reference from this pick, breaking the graph
 	 * database link between this pick and any hypocenter.
 	 */
-	void clearHypo();
+	void clearHypo();   // DK REVIEW 20180822 - removeAnyHypoLink()
 
 	/**
 	 * \brief Nucleate new event based on the addition of this pick
@@ -175,7 +179,9 @@ class CPick {
 	 * \brief Back azimuth getter
 	 * \return the back azimuth
 	 */
-	double getBackAzimuth() const;
+	double getBackAzimuth() const;  // DK REVIEW 20180822 - Since these are optional params, how do we indicate whether valid or not.
+                                  // These sounded like they are tied together (BAzm and Slow), so should we return them together
+                                  // along with a flag indicating whether they're valid?
 
 	/**
 	 * \brief Slowness getter
@@ -184,10 +190,10 @@ class CPick {
 	double getSlowness() const;
 
 	/**
-	 * \brief Pick id getter
+	 * \brief Pick id getter  // DK REVIEW 20180822 - all these get/set methods need better doc.
 	 * \return the pick id
 	 */
-	int getIdPick() const;
+	int getIdPick() const;   // DK REVIEW 20180822 - why?  who needs it?
 
 	/**
 	 * \brief Json pick getter
@@ -199,13 +205,13 @@ class CPick {
 	 * \brief Hypo getter
 	 * \return the hypo
 	 */
-	const std::shared_ptr<CHypo> getHypo() const;
+	const std::shared_ptr<CHypo> getHypo() const;   // DK REVIEW 20180822 - return a weak pointer here?  what's it used for?
 
 	/**
 	 * \brief Pid getter
 	 * \return the pid
 	 */
-	const std::string getHypoPid() const;
+	const std::string getHypoPid() const;   // DK REVIEW 20180822 - meh....
 
 	/**
 	 * \brief Site getter
@@ -261,16 +267,19 @@ class CPick {
 	 */
 	std::weak_ptr<CHypo> wpHypo;
 
+
+  // DK REVIEW 20180822 - break these properties down by group (Pick, Arrival, Beam)
+  // put them in structs for clearer organization and more readable code
 	/**
 	 * \brief A std::string containing a character representing the action
 	 * that caused this pick to be associated
 	 */
-	std::string sAssoc;
+	std::string sAssoc;  // DK REVIEW 20180822 - make this a code or a char array , then it can be atomic.
 
 	/**
 	 * \brief A std::string containing the phase name of this pick
 	 */
-	std::string sPhs;
+	std::string sPhs;  // DK REVIEW 20180822 - make this a phase code or a char array , then it can be atomic.
 
 	/**
 	 * \brief A std::string containing the string unique id of this pick
@@ -290,12 +299,15 @@ class CPick {
 	/**
 	 * \brief A double value containing the arrival time of the pick
 	 */
-	double tPick;
+	double tPick;  // DK REVIEW 20180822 - I have a personal preference for dt as the prefix for time values that are doubles
+                 // eliminates confusion with t for time_t values.  Just my little contribution....
 
 	/**
 	 * \brief An integer value containing the numeric id of the pick
 	 */
-	int idPick;
+	int idPick;  // DK REVIEW 20180822 - Why why why??  Why do se need an idPick and an sPid?  Performance improvement?  Justify!
+               // Do we need either one of these?  Can we use a pointer for internal reference to a Pick, and then use
+               // jPick for external reference info?
 
 	/**
 	 * \brief A std::shared_ptr to a json object

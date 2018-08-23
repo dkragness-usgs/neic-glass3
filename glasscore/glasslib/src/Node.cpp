@@ -409,7 +409,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 
 double CNode::getBestSig(double tObservedTT, SiteLink link) {
 	// get traveltime1 to site
-	double travelTime1 = std::get< LINK_TT1>(link);
+	double travelTime1 = std::get< LINK_TT1>(link);   // DK REVIEW 20180822 - this coulda been a struct....
 
 	// get traveltime2 to site
 	double travelTime2 = std::get< LINK_TT2>(link);
@@ -454,7 +454,8 @@ double CNode::getBestSig(double tObservedTT, SiteLink link) {
 	}
 	double dSig2 = 0;
 	if (tRes2 > 0) {
-		dSig2 = pWeb->getGlass()->sig(tRes2, dResolution);
+		dSig2 = pWeb->getGlass()->sig(tRes2, dResolution);    // DK REVIEW 20180822  dResolution shoud be  a property of Web, as should this function getBestSig()
+                                                          // since it's doing standard math, given input parameters(of node-site-link properties) and the Resolution property.
 	}
 	// printf("getBestSig %.2f, %.2f, %.2f, %.2f, %.2f\n", tRes1, dSig1, tRes2,
 	//	   dSig2, dResolution);

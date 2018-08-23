@@ -242,10 +242,10 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	std::map<std::string, std::shared_ptr<CSite>> mSite;
 
 	/**
-	 * \brief A std::map containing a std::shared_ptr to each site
+	 * \brief A std::map containing a std::shared_ptr to each site   // DK REVIEW 20180822 - no shared_prt here.  looks like a string instead...
 	 * in CSiteList indexed by the std::string scnl id.
 	 */
-	std::map<std::string, int> mLookup;
+	std::map<std::string, int> mLookup;   // DK REVIEW 20180822 -  hmmm..  m is used a lot here for map.  maybe Mutex should be abbreviated mtx, that would be crystal clear!
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CSiteList.

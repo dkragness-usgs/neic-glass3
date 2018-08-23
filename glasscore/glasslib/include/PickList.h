@@ -126,7 +126,7 @@ class CPickList {
 	 * \return Returns a shared_ptr to the found CPick, or null if no pick
 	 * found.
 	 */
-	std::shared_ptr<CPick> getPick(int idPick);
+	std::shared_ptr<CPick> getPick(int idPick);  // DK REVIEW 20180822 - this function isn't used anywhere other than in unit test.  Toss it, or move it into unittest derived class.
 
 	/**
 	 * \brief Get insertion index for pick
@@ -142,7 +142,7 @@ class CPickList {
 	 * the id of the last element is returned, if the vector is empty,
 	 * -2 is returned.
 	 */
-	int indexPick(double tPick);
+	int indexPick(double tPick);   // DK REVIEW 20180822 -  DK CLEANUP - review  functionality of indexPick, make sure it works the way we think.
 
 	/**
 	 * \brief Print basic values to screen for pick list
