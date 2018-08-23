@@ -36,7 +36,8 @@ struct IGlassSend;
  * CGlass initializes the traveltime library, allocates the site, pick, and
  * hypo lists, creates and maintains the detection web, and manages
  * communication between glasscore and clients via the dispatch function
- * (receiving) and an IGlassSend interface pointer variable (sending).
+ * (receiving) and an IGlassSend interface pointer variable (sending).   // DK REVIEW 20180823  -  So, why don't we define an iGlassCommunicate interface that has two functions:
+                                                                         // one for sending and one for receiving.  It could be like UDP Caryl Tolken Ring.
  *
  * CGlass also performs traveltime library testing during initialization,
  * time encoding/decoding as well as calculating the significance functions
@@ -132,7 +133,7 @@ class CGlass {
 	 * \return Returns true if the communication was handled by CGlass,
 	 * false otherwise
 	 */
-	bool dispatch(std::shared_ptr<json::Object> com);  // DK REVIEW 20180821 - name should be changed to receiveMsg()
+	bool dispatch(std::shared_ptr<json::Object> com);  // DK REVIEW 20180821 - name should be changed to receiveMsg()  or receiveMsgFromTheWorld() or stargateReceive(), etc...
 
 	/**
 	 * \brief CGlass communication sending function
@@ -199,7 +200,8 @@ class CGlass {
 	 * \brief An IGlassSend interface pointer used to send communication
 	 * (such as output data), to outside the glasscore library
 	 */
-	glasscore::IGlassSend *piSend;
+	glasscore::IGlassSend *piSend;  // DK REVIEW 20180822 - there should be a public set() method for this, instead of 
+                                  // making the class attribute public.
 
 	/**
 	 * \brief check to see if each thread is still functional

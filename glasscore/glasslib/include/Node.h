@@ -66,7 +66,8 @@ class CNode {
 	 * \param nodeID - A std::string containing the node id.
 	 */
 	CNode(std::string name, double lat, double lon, double z, double resolution,
-			std::string nodeID);
+			std::string nodeID);  // DK REVIEW 20180822 - seems like a Web pointer should be required here.  Resolution and any other nucleation criteria could
+                            // be gotten therefrom.  Ditch the GUID nodeID, and build it from Web.lat.lon.z
 
 	/**
 	 * \brief CNode destructor
@@ -118,7 +119,7 @@ class CNode {
 	 * \param node - A shared_ptr<CNode> to the node to link (should be itself)
 	 * \return - Returns true if successful, false otherwise
 	 */
-	bool linkSite(std::shared_ptr<CSite> site, std::shared_ptr<CNode> node,
+	bool linkSite(std::shared_ptr<CSite> site, std::shared_ptr<CNode> node,   // DK REVIEW 20180822 - why are we passing a node pointer here?  a node only needs to deal with itself.
 					double travelTime1, double travelTime2 = -1);
 
 	/**
@@ -138,7 +139,7 @@ class CNode {
 	 *
 	 * \return - Returns true if successful, false otherwise
 	 */
-	bool unlinkLastSite();
+	bool unlinkLastSite();  // DK REVIEW 20180822 -  Maybe change to removeWorstSite() or removeFurthestSite() or removeLeastAdvantageousSite()
 
 	/**
 	 * \brief CNode Nucleation function
@@ -152,7 +153,9 @@ class CNode {
 	 * to use in julian seconds
 	 * \return Returns true if the node nucleated an event, false otherwise
 	 */
-	std::shared_ptr<CTrigger> nucleate(double tOrigin);
+	std::shared_ptr<CTrigger> nucleate(double tOrigin);  // DK REVIEW 20180822 - to me it would make more sense to call nucleate(Pick)
+                                                       // then you can avoid re-using the same pick, handle (possibly both traveltimes)
+                                                       // at once, and return just the best one.  Also makes debug logging more informative.
 
 	/**
 	 * \brief CNode significance function
@@ -321,7 +324,10 @@ class CNode {
 
 	/**
 	 * \brief A std::vector of tuples linking node to site
-	 * {shared site pointer, travel time 1, travel time 2}
+	 * {shared site pointer, travel time 1, travel time 2}  // DK REVIEW - in CWeb there is an assumption made about Site's in this list being
+                                                          // in distance order, such that the last one is assumed to be the worst. 
+                                                          // but there is no such label/claim made here.  To be clear, either list
+                                                          // the sort order here, or indicate that sites are in random order.
 	 */
 	std::vector<SiteLink> vSite;
 

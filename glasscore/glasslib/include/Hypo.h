@@ -301,7 +301,8 @@ class CHypo {
 	 * \param y - The maximum random number
 	 * \return Returns the random sample
 	 */
-	double Rand(double x, double y);
+	double Rand(double x, double y);  // DK REVIEW 20180821 - Why does Hypo have a random number generator?  Remove it.  Add it to util
+                                                 // if you think there's benefit in reducing 3 lines to 2.
 
 	/**
 	 * \brief Generate Hypo message
@@ -1193,7 +1194,8 @@ class CHypo {
 	/**
 	 * \brief A random engine used to generate random numbers
 	 */
-	std::default_random_engine m_RandomGenerator;  // DK REVIEW 20180820 - Why does Hypo have a random number generator?
+	std::default_random_engine m_RandomGenerator;  // DK REVIEW 20180820 - Why does Hypo have a random number generator?  Remove it.  Add it to util
+                                                 // if you think there's benefit in reducing 3 lines to 2.
 };
 }  // namespace glasscore
 #endif  // HYPO_H

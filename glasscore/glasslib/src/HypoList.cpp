@@ -428,10 +428,12 @@ bool CHypoList::associate(std::shared_ptr<CCorrelation> corr) {
 
 // ---------------------------------------------------------clear
 void CHypoList::clear() {
-	std::lock_guard<std::recursive_mutex> hypoListGuard(m_HypoListMutex);
+	std::lock_guard<std::recursive_mutex> hypoListGuard(m_HypoListMutex);  // DK REVIEW 20180822 - use m_vHypoMutex here instead?
+                                                                         
 
 	clearHypos();
-	pGlass = NULL;
+	pGlass = NULL;   // DK REVIEW 20180822 - WTF?  Why are we nulling the pGlass pointer?
+                   // somebody gonna create a new instance of Glass?
 }
 
 // ---------------------------------------------------------clearHypos

@@ -16,7 +16,8 @@ namespace glasscore {
  * \interface IGlassSend
  * \brief glasscore messaging interface
  *
- * The IGlassSend interface is implemented by concrete classes
+ * The IGlassSend interface is implemented by a GLASS wrapper, providing it a way to get data from CGlass.
+ * Wrapper implements a Send method, and sets it's send method to be called by calling Glass->SetMsgReceiver() or Glass->SetWrapperCalloutInterface()
  * providing a standardized interface for other classes to send
  * information to the glasscore library via the Send()
  * function.
@@ -31,7 +32,7 @@ struct IGlassSend {
 	 * \param com - A pointer to a json::object containing the data
 	 * to send to glasscore.
 	 */
-	virtual void Send(std::shared_ptr<json::Object> com) = 0;
+	virtual void Send(std::shared_ptr<json::Object> com) = 0;  // if you're receiving data from Glass
 };
 }  // namespace glasscore
 #endif  // IGLASSSEND_H

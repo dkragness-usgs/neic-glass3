@@ -32,7 +32,7 @@ TEST(HypoListTest, Construction) {
 	glasscore::CHypoList * testHypoList = new glasscore::CHypoList();
 
 	// assert default values
-	ASSERT_EQ(-1, testHypoList->getNHypoTotal())<< "nPickTotal is 0";
+	ASSERT_EQ(-1, testHypoList->getNHypoTotal())<< "nHypoTotal is 0";
 	ASSERT_EQ(0, testHypoList->getNHypo())<< "nHypo is 0";
 
 	// lists

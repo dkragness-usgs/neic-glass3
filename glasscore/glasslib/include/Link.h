@@ -25,11 +25,13 @@ class CSite;
  * \brief Typedef to simplify use of a site-node link uses weak_ptr to
  * prevent a cyclical reference
  */
-typedef std::tuple<std::weak_ptr<CNode>, double, double> NodeLink;
+typedef std::tuple<std::weak_ptr<CNode>, double, double> NodeLink;  // DK REVIEW 20180822 - to me, it seems like this code would be easier to read if these were structs instead of fancy tuples
+                                                                    // but maybe this is a personal preference.
 
 /**
  * \brief Typedef to simplify use of a node-site link
  */
-typedef std::tuple<std::shared_ptr<CSite>, double, double> SiteLink;
+typedef std::tuple<std::shared_ptr<CSite>, double, double> SiteLink;  // DK REVIEW 20180822 - to me, it seems like this code would be easier to read if these were structs instead of tuples
+                                                                    // but maybe this is a personal preference.
 }  // namespace glasscore
 #endif  // LINK_H

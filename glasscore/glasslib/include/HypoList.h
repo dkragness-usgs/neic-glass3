@@ -143,7 +143,7 @@ class CHypoList {
 	 * Note that glasscore will not accept input data until all hypocenters
 	 * in the list have been refined, including the recursively scheduled calls
 	 */
-	void darwin();
+	void darwin();   // DK REVIEW 20180821  -  Come back to this....
 
 	/**
 	 * \brief CHypoList communication receiving function
@@ -175,7 +175,7 @@ class CHypoList {
 	 * assocations resolved.
 	 * \return Returns true if hypocenter survives
 	 */
-	bool evolve(std::shared_ptr<CHypo> hyp);
+	bool evolve(std::shared_ptr<CHypo> hyp);    // DK REVIEW 20180821  -  Come back to this....
 
 	/**
 	 * \brief Find CHypo in given time range
@@ -188,7 +188,19 @@ class CHypoList {
 	 * \return First CHypo in vHypo withing range,
 	 * or NULL if none fit in the time range.
 	 */
-	std::shared_ptr<CHypo> findHypo(double t1, double t2);
+	std::shared_ptr<CHypo> findHypo(double t1, double t2);  // DK REVIEW 20180821 REVIEW - This function is messed up
+                                                          // and so is the code taht's using it.
+                                                          // There's no good reason to search for the earliest hypo 
+                                                          // in a time window.  You either retrieve all the hypo's
+                                                          // in a time window, cause you are looking for a match (lat/lon/z/t)
+                                                          // or ...?
+                                                          // It would be valid to call something like this function repeatedly,
+                                                          // where you call GetNext() but that would require a lot more effort
+                                                          // It would be easiest to return a vector of weak_ptr<CHypo>'s
+                                                          // that the caller then could iterate through without have to worry
+                                                          // about the underlying data changing in between calls.
+                                                          // Hey, what do you know, that function already exists:  getHypos()
+                                                          // Delete this function, and replace it's use with getHypos().
 
 	/**
 	 * \brief Get the current size of the hypocenter processing queue
@@ -214,7 +226,9 @@ class CHypoList {
 	std::vector<std::weak_ptr<CHypo>> getHypos(double t1, double t2);
 
 	/**
-	 * \brief nHypo getter
+	 * \brief nHypo getter  // DK REVIEW 20180821 - Fixed all this messed up automatic documentation.
+                          // of course, who knows.  Maybe if the member names were actually descriptive
+                          // it would be self-documenting.
 	 * \return the nHypo
 	 */
 	int getNHypo() const;
@@ -240,9 +254,9 @@ class CHypoList {
 	 * \brief Get insertion index for hypo
 	 *
 	 * This function looks up the proper insertion index for the vector given an
-	 * origin time using a binary search to identify the index element
-	 * is less than the time provided, and the next element is greater.
-	 *
+	 * origin time using a binary search to ensure? the index element
+	 * is less than the time provided, and the next element is greater.  // DK REVIEW 20180821 - mo better englishes please.
+	 *                                                                   // what happens when the times are equal?
 	 * \param tOrg - A double value containing the origin time to use, in
 	 * julian seconds of the hypo to add.
 	 * \return Returns the insertion index, if the insertion is before
@@ -250,7 +264,7 @@ class CHypoList {
 	 * the index of the last element is returned, if the vector is empty,
 	 * -2 is returned.
 	 */
-	int indexHypo(double tOrg);
+	int indexHypo(double tOrg);   // DK REVIEW 20180821  -  Come back to this....
 
 	/**
 	 * \brief Print basic values to screen for hypocenter list
@@ -258,16 +272,17 @@ class CHypoList {
 	 * Causes CHypoList to print basic values to the console for
 	 * each hypocenter in the list
 	 */
-	void listHypos();
+	std::string listHypos();  // DK REVIEW 20180821  - this should generate a string, not write to the console.
 
 	/** \brief Try to merge events close in space time
 	 *
 	 * 	Tries to created a new event from picks of two nearby events
 	 * 	If it can merge, and the resultant stack value is high enough
 	 * 	then it creates a new event and cancels the two merged events
-	 *
+	 *   // DK REVIEW 20180821   this function only takes one hypo as input, so I don't think the comment and the function match.  Need better comment.
+
 	 */
-	bool mergeCloseEvents(std::shared_ptr<CHypo> hyp);
+	bool mergeCloseEvents(std::shared_ptr<CHypo> hyp);   // DK REVIEW 20180821  - findAndMergeEventsForHypo()
 
 	/**
 	 * \brief Add hypo to processing queue
@@ -278,7 +293,7 @@ class CHypoList {
 	 * \param hyp - A std::shared_ptr to the hypocenter to add
 	 * \return Returns the current size of the processing queue
 	 */
-	int pushFifo(std::shared_ptr<CHypo> hyp);
+	int pushFifo(std::shared_ptr<CHypo> hyp);    // DK REVIEW 20180821  - addHypoToProcQueue();
 
 	/**
 	 * \brief Get hypo from processing queue
@@ -288,7 +303,7 @@ class CHypoList {
 	 * \return Returns a std::shared_ptr to the hypocenter retrieved
 	 * from the queue.
 	 */
-	std::shared_ptr<CHypo> popFifo();
+	std::shared_ptr<CHypo> popFifo();   // DK REVIEW 20180821  - getNextHypoFromProcQueue()
 
 	/**
 	 * \brief Remove hypo from list
@@ -301,7 +316,8 @@ class CHypoList {
 	 * cancel message when the hypo is removed
 	 * \return void.
 	 */
-	void remHypo(std::shared_ptr<CHypo> hypo, bool reportCancel = true);
+	void remHypo(std::shared_ptr<CHypo> hypo, bool reportCancel = true);   // DK REVIEW 20180821  - ExpireHypoFromList() or DeleteHypoFromList()  depending on whether this is supposed to age out a
+                                                                         // good hypo or terminate it with extreme prejudice.
 
 	/**
 	 * \brief Cause CHypoList to generate a Hypo message for a hypocenter
@@ -313,7 +329,7 @@ class CHypoList {
 	 * \param com - A pointer to a json::object containing the id of the
 	 * hypocenter to use
 	 */
-	bool reqHypo(std::shared_ptr<json::Object> com);
+	bool reqHypo(std::shared_ptr<json::Object> com);  // DK REVIEW 20180823  - SendJSONHypoByID()
 
 	/**
 	 * \brief Ensure all picks in the hypo belong to hypo
@@ -325,7 +341,7 @@ class CHypoList {
 	 * \return Returns true if the hypocenter's pick list was changed,
 	 * false otherwise.
 	 */
-	bool resolve(std::shared_ptr<CHypo> hyp);
+	bool resolve(std::shared_ptr<CHypo> hyp);  // DK CLEANUP 20180823  - come back to this one
 
 	/**
 	 * \brief CGlass setter
@@ -344,7 +360,7 @@ class CHypoList {
 	 *
 	 * Checks each thread to see if it is still responsive.
 	 */
-	bool statusCheck();
+	bool statusCheck();  // DK REVIEW 20180823  - patton healthCheck()?
 
  private:
 	/**
@@ -359,7 +375,7 @@ class CHypoList {
 	 *
 	 * Attempts to run evolve for every pending hypo.
 	 */
-	void processHypos();
+	void processHypos();    // DK CLEANUP 20180823  - come back to this one
 
 	/**
 	 * \brief thread status update function
@@ -367,7 +383,7 @@ class CHypoList {
 	 * Updates the status for the current thread
 	 * \param status - A boolean flag containing the status to set
 	 */
-	void setStatus(bool status);
+	void setStatus(bool status);  // DK REVIEW 20180823  - patton setHealth()?
 
 	/**
 	 * \brief HypoList sort function
@@ -384,30 +400,35 @@ class CHypoList {
 	 * \brief An integer containing the total number of hypocenters
 	 * ever added to CHypoList
 	 */
-	int nHypoTotal;
+	int nHypoTotal;  // nTotalHyposProcessed
 
 	/**
 	 * \brief An integer containing the maximum number of hypocenters stored by
 	 * CHypoList
 	 */
-	int nHypoMax;
+	int nHypoMax;   // nMaxHyposAllowableInList
 
 	/**
 	 * \brief Also an integer containing the total number of hypocenters
 	 * ever added to CHypoList, but one larger
 	 */
-	int nHypo;
+	int nHypo;  // DK REVIEW 20180823  - Why would you need both this an nHypoTotal if the comments are right.
+              // neither nHypo nor nHypoTotal are used anywhere other than in unit-test.  Remove them.
 
 	/**
 	 * \brief A std::vector containing the queue of hypocenters that need
 	 * to be processed
 	 */
-	std::vector<std::string> qFifo;
+	std::vector<std::string> qFifo;  // DK REVIEW 20810821 - seems like this would be faster as a vector of weak_ptr<CHypo>
+                                   // vHyposToProcessList
 
 	/**
 	 * \brief the std::mutex for qFifo
 	 */
-	std::mutex m_QueueMutex;
+	std::mutex m_QueueMutex;         // DK REVIEW 20180823  This is the only variable with an m_ in front of it.
+                                   // I would love it if they were all changed to have m_ in front of them.  Would make
+                                   // the code clearer, but at the very least, things should be consistent.
+                                   
 
 	/**
 	 * \brief A std::vector mapping the origin time of each hypocenter
@@ -416,13 +437,13 @@ class CHypoList {
 	 * Note that the origin time is never updated after the hypocenter is
 	 * first added to CHypoList
 	 */
-	std::vector<std::pair<double, std::string>> vHypo;
+	std::vector<std::pair<double, std::string>> vHypo;  // vHypoList or m_vHypoList
 
 	/**
 	 * \brief A std::map containing a std::shared_ptr to each hypocenter
 	 * in CHypoList indexed by the std::string hypo id.
 	 */
-	std::map<std::string, std::shared_ptr<CHypo>> mHypo;
+	std::map<std::string, std::shared_ptr<CHypo>> mHypo;  // m_mHypoIndexByID
 
 	/**
 	 * \brief A recursive_mutex to control threading access to vHypo.
@@ -431,7 +452,9 @@ class CHypoList {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex m_vHypoMutex;
+	mutable std::recursive_mutex m_vHypoMutex;  // DK REVIEW 20180823  - why is this named "vHypoMutex"  seems like that would indicate a wector.
+                                              //  Seems like this one should be named m_HypoListMutex, which begs the question
+                                              // what does m_HypoListMutex do?
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CHypoList.
@@ -440,57 +463,58 @@ class CHypoList {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex m_HypoListMutex;
+	mutable std::recursive_mutex m_HypoListMutex;  // DK REVIEW 20180823  - change name to  m_ConfigMutex 
 
 	/**
 	 * \brief the std::vector of std::threads
 	 */
-	std::vector<std::thread> vProcessThreads;
+	std::vector<std::thread> vProcessThreads;  // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief An integer containing the number of
 	 * threads in the pool.
 	 */
-	int m_iNumThreads;
+	int m_iNumThreads;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief A std::map containing the status of each thread
 	 */
-	std::map<std::thread::id, bool> m_ThreadStatusMap;
+	std::map<std::thread::id, bool> m_ThreadStatusMap;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief An integer containing the amount of
 	 * time to sleep in milliseconds between picks.
 	 */
-	int m_iSleepTimeMS;
+	int m_iSleepTimeMS;   // DK REVIEW 20180823  - The whole point of multi-core multi-threading is to do the work you need to do.
+                        // stop with the artificial bottleneck sleeping already.  Don't sleep unless you hit a real bottleneck.
 
 	/**
 	 * \brief the std::mutex for m_ThreadStatusMap
 	 */
-	std::mutex m_StatusMutex;
+	std::mutex m_StatusMutex;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief the integer interval in seconds after which the work thread
 	 * will be considered dead. A negative check interval disables thread
 	 * status checks
 	 */
-	int m_iStatusCheckInterval;
+	int m_iStatusCheckInterval;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief the time_t holding the last time the thread status was checked
 	 */
-	time_t tLastStatusCheck;
+	time_t tLastStatusCheck;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief the boolean flags indicating that the process threads
 	 * should keep running.
 	 */
-	bool m_bRunProcessLoop;
+	bool m_bRunProcessLoop;   // DK REVIEW 20180823  - Assuming this is gonna go away as part of John' threading assimilation program
 
 	/**
 	 * \brief A random engine used to generate random numbers
 	 */
-	std::default_random_engine m_RandomGenerator;
+	std::default_random_engine m_RandomGenerator;   // DK REVIEW 20180823  - Why does this class have a random number generator...  remove or move to util
 };
 }  // namespace glasscore
 #endif  // HYPOLIST_H
