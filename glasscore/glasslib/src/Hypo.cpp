@@ -2132,7 +2132,7 @@ void CHypo::list(std::string src) {
 		double tres = tobs - tcal;
 
 		// make sure the residual is reasonable
-		if (tres > 20 || tres < -20) {
+		if (tres > 20 || tres < -20) {    // DK REVIEW 20180828 -   This is F'd up!
 			// skip if it isn't
 			continue;
 		}

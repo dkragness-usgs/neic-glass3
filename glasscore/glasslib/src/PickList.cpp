@@ -339,7 +339,7 @@ bool CPickList::addPick(std::shared_ptr<json::Object> pick) {
 }
 
 // ---------------------------------------------------------indexPixk
-int CPickList::indexPick(double tPick) {
+int CPickList::indexPick(double tPick) {    // DK REVIEW 20180828 - this function should go away.  use lower_bound() or upper_bound() instead.
 	std::lock_guard<std::recursive_mutex> listGuard(m_vPickMutex);
 
 	// handle empty vector case

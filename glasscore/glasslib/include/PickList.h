@@ -142,7 +142,17 @@ class CPickList {
 	 * the id of the last element is returned, if the vector is empty,
 	 * -2 is returned.
 	 */
-	int indexPick(double tPick);   // DK REVIEW 20180822 -  DK CLEANUP - review  functionality of indexPick, make sure it works the way we think.
+	int indexPick(double tPick);   // DK REVIEW 20180828 - this function should go away.  use lower_bound() or upper_bound() instead.
+                                 // DK REVIEW 20180828 -  DK REVIEW
+                                 // This funciton and the whole list model need work.
+                                 // It seems inefficient to me to have a vector vPick
+                                 // that contains a bunch of PickIDs, that you then have
+                                 // a map mPick that you look up a CPick pointer for, based
+                                 // on the pick int.
+                                 // This function should use std::lower_bound() and std::upper_bound(),
+                                 // unless there's some excellent reason not to
+                                 // might be more efficient to user std:: multiset
+                                 // instead of std::vector if the picks can come in significantly out of order.
 
 	/**
 	 * \brief Print basic values to screen for pick list
@@ -150,7 +160,9 @@ class CPickList {
 	 * Causes CPickList to print basic values to the console for
 	 * each pick in the list
 	 */
-	void listPicks();
+	void listPicks();   // DK REVIEW 20180828 - get rid of this function(currently unused).  If we still want this function, replace
+                      // it with one that returns a string.  Only CGlass should write to the console, although I guess calling
+                      // CLogit from here isn't horrible....
 
 	/**
 	 * \brief Checks if picks is duplicate
@@ -158,7 +170,8 @@ class CPickList {
 	 * Takes a new pick and compares with list of picks.
 	 * True if pick is a duplicate
 	 */
-	bool checkDuplicate(CPick *newPick, double window);
+	bool checkDuplicate(CPick *newPick, double window);   // DK REVIEW 20180828 - Don't actually check for duplicates here.  Find the CSite
+                                                        // for the pick and then search that CSite's picklist for duplicates.  Much faster.
 
 	/**
 	 * \brief Search for any associable picks that match hypo
@@ -191,20 +204,22 @@ class CPickList {
 	 * from origin time in seconds, defaults to 2400.0
 	 */
 	std::vector<std::shared_ptr<CPick>> rogues(std::string pidHyp, double tOrg,
-												double tDuration = 2400.0);
+												double tDuration = 2400.0);    // DK REVIEW 20180828 - Seems like this function is no longer used.
+                                                       // It is only used in Hypo.list(), which is an uncalled auditing function in Hypo.
+                                                       // Seems like it could happily just disappear.
 
 	/**
 	 * \brief check to see if each thread is still functional
 	 *
 	 * Checks each thread to see if it is still responsive.
 	 */
-	bool statusCheck();
+	bool statusCheck();  // DK REVIEW 20180828 - Patton healthCheck() ?
 
 	/**
 	 * \brief CGlass getter
 	 * \return the CGlass pointer
 	 */
-	const CGlass* getGlass() const;
+	const CGlass* getGlass() const;  // DK REVIEW 20180828  - These go away if we make CGlass a static class.
 
 	/**
 	 * \brief CGlass setter
@@ -228,30 +243,30 @@ class CPickList {
 	 * \brief nPick getter
 	 * \return the nPick
 	 */
-	int getNPick() const;
+	int getNPick() const;  // DK REVIEW 20180828  - rename to something clear like getCurrentPickCount()
 
 	/**
 	 * \brief nPickMax getter
 	 * \return the nPickMax
 	 */
-	int getNPickMax() const;
+	int getNPickMax() const;  // DK REVIEW 20180828  - getMaxAllowedPickCount
 
 	/**
 	 * \brief nPickMax Setter
 	 * \param picknMax - the nPickMax
 	 */
-	void setNPickMax(int picknMax);
+	void setNPickMax(int picknMax);  // DK REVIEW 20180828  - setMaxAllowedPickCount
 
 	/**
 	 * \brief nPickTotal getter
 	 * \return the nPickTotal
 	 */
-	int getNPickTotal() const;
+	int getNPickTotal() const;  // DK REVIEW 20180828  - getNumOfPicksProcessed
 
 	/**
 	 * \brief Get the current size of the pick list
 	 */
-	int getVPickSize() const;
+	int getVPickSize() const;   // DK REVIEW 20180828  - is this different than getNPick()?
 
  private:
 	/**
@@ -259,14 +274,16 @@ class CPickList {
 	 *
 	 * Attempts to associate and nuclate the next pick on the queue.
 	 */
-	void processPick();
+	void processPick();   // DK REVIEW 20180828  - Rename.  This is the main work function for PickList(), it pulls picks from a 
+                        // a queue and processes them, and runs until something tells it to stop.  It is not a
+                        // simple function that processes one pick.
 
 	/**
 	 * \brief the job sleep
 	 *
 	 * The function that performs the sleep between jobs
 	 */
-	void jobSleep();
+	void jobSleep();   // DK REVIEW 20180828  -  This function should go away, or have it's logic replaced by a simple Sleep(xmillisec);
 
 	/**
 	 * \brief thread status update function
@@ -293,14 +310,14 @@ class CPickList {
 	 * \brief An integer containing the total number of picks ever added to
 	 * CPickList
 	 */
-	int nPickTotal;
+	int nPickTotal;   // DK REVIEW 20180828  - nPicksProcessed
 
 	/**
 	 * \brief An integer containing the maximum number of picks allowed in
 	 * CPickList. This value is overridden by pGlass->nPickMax if provided.
-	 * Defaults to 10000.
+	 * Defaults to 10000.  
 	 */
-	int nPickMax;
+	int nPickMax;   
 
 	/**
 	 * \brief An integer containing the current number of picks in CPickList.
@@ -313,40 +330,43 @@ class CPickList {
 	 * to it's integer pick id. The elements in this vector object are inserted
 	 * in a manner to keep it in sequential time order from oldest to youngest.
 	 */
-	std::vector<std::pair<double, int>> vPick;
+	std::vector<std::pair<double, int>> vPick;  // DK REVIEW 20180828 - meh.. would this have better performance as a list?
+                                              
 
 	/**
 	 * \brief A std::map containing a std::shared_ptr to each pick in CPickList
 	 * indexed by the integer pick id.
 	 */
-	std::map<int, std::shared_ptr<CPick>> mPick;
+	std::map<int, std::shared_ptr<CPick>> mPick;   // DK REVIEW 20180828  -  Outside of PickList::getPick() which is only used
+                                                 // by unit-testing code, mPick is only ever accessed after a lookup in
+                                                 // vPick.  Ditch mPick and store a shared_ptr in vPick.
 
 	/**
 	 * \brief A std::queue containing a std::shared_ptr to each pick in that
 	 * needs to be processed
 	 */
-	std::queue<std::shared_ptr<CPick>> qProcessList;
+	std::queue<std::shared_ptr<CPick>> qProcessList;   // DK REVIEW 20180828  -  This is the work(picks to be processed) queue.  Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief the std::mutex for qProcessList
 	 */
-	std::mutex m_qProcessMutex;
+	std::mutex m_qProcessMutex;   // DK REVIEW 20180828  -  mutex for the  work(picks to be processed) queue.
 
 	/**
 	 * \brief the std::vector of std::threads
 	 */
-	std::vector<std::thread> vProcessThreads;
+	std::vector<std::thread> vProcessThreads;   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief An integer containing the number of
 	 * threads in the pool.
 	 */
-	int m_iNumThreads;
+	int m_iNumThreads;   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief A std::map containing the status of each thread
 	 */
-	std::map<std::thread::id, bool> m_ThreadStatusMap;
+	std::map<std::thread::id, bool> m_ThreadStatusMap;   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief An integer containing the amount of
@@ -357,25 +377,25 @@ class CPickList {
 	/**
 	 * \brief the std::mutex for m_ThreadStatusMap
 	 */
-	std::mutex m_StatusMutex;
+	std::mutex m_StatusMutex;   // DK REVIEW 20180828  - Presumably replaced by atomic-ification of status
 
 	/**
 	 * \brief the integer interval in seconds after which the work thread
 	 * will be considered dead. A negative check interval disables thread
 	 * status checks
 	 */
-	int m_iStatusCheckInterval;
+	int m_iStatusCheckInterval;   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief the time_t holding the last time the thread status was checked
 	 */
-	time_t tLastStatusCheck;
+	time_t tLastStatusCheck   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief the boolean flags indicating that the process threads
 	 * should keep running.
 	 */
-	bool m_bRunProcessLoop;
+	bool m_bRunProcessLoop;   // DK REVIEW 20180828  - Presumably revamped by Patton as part of threading rework.
 
 	/**
 	 * \brief A recursive_mutex to control threading access to vPick.
@@ -384,7 +404,7 @@ class CPickList {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex m_vPickMutex;
+	mutable std::recursive_mutex m_vPickMutex;   // DK REVIEW 20180828  - seems like this is gonna be a likely bottleneck point
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CPickList.
@@ -393,12 +413,12 @@ class CPickList {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex m_PickListMutex;
+	mutable std::recursive_mutex m_PickListMutex;    // DK REVIEW 20180828  - This is the class config mutex
 
 	/**
 	 * \brief A random engine used to generate random numbers
 	 */
-	std::default_random_engine m_RandomGenerator;
+	std::default_random_engine m_RandomGenerator;   // DK REVIEW 20180828  -  Go away.
 };
 }  // namespace glasscore
 #endif  // PICKLIST_H
