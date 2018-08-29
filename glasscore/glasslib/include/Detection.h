@@ -21,7 +21,8 @@ class CHypo;
 /**
  * \brief glasscore pick class
  *
- * The CDetection class is the class that encapsulates everything necessary
+ * The CDetection class is the class that encapsulates everything necessary    // DK REVIEW 20180829 - I think this comment is bogus and needs to be redone.  Sounds more like the comment for Pick.
+
  * to represent a waveform arrival pick, including arrival time, phase id,
  * and an unique identifier.  The CDetection class is also a node in the
  * detection graph database.
@@ -84,7 +85,9 @@ class CDetection {
 	 * \param com -  A pointer to a json::object containing the incoming
 	 * 'Detection' message
 	 */
-	bool process(std::shared_ptr<json::Object> com);
+	bool process(std::shared_ptr<json::Object> com);    // DK REVIEW 20180829 -  rename to ProcessDetectionMessage() or ProcessExternalDetectionMessage()?
+                                                      // Kinda seems like this class could just go away and be merged into CGlass
+
 
 	/**
 	 * \brief CGlass getter

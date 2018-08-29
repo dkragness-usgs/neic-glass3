@@ -20,6 +20,11 @@
 #define RAD2DEG  57.29577951308
 namespace glasscore {
 
+  // DK REVIEW 20180829 - skipping review of this file for now, as I think it is just a 
+  // fairly untested port of PickList.cpp to Correlation type.  Makes more sense to get
+  // Pick squared away, and then thinking about how to deal with Correlation
+
+
 // ---------------------------------------------------------CCorrelationList
 CCorrelationList::CCorrelationList() {
 	clear();

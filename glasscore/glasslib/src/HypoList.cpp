@@ -622,12 +622,24 @@ bool CHypoList::evolve(std::shared_ptr<CHypo> hyp) {
 		// relocate the hypo
 		hyp->localize();
 	}
+  // DK REVIEW 20180829 -  You need to typedef these in the header file
+  // or create some sort of #define.  The long names with all the colons
+  // make this code unreadable.
+  using std::chrono::high_resolution_clock::time_point = HLPerfTime;
+  const auto& now = std::chrono::high_resolution_clock::now;
+  using std::chrono::duration_cast<std::chrono::duration<double>> = duration;
+
+  // lets this code:
 
 	std::chrono::high_resolution_clock::time_point tScavengeEndTime =
 			std::chrono::high_resolution_clock::now();
 	double scavengeTime = std::chrono::duration_cast<
 			std::chrono::duration<double>>(tScavengeEndTime - tLocalizeEndTime)
-			.count();
+			.count();    // DK REVIEW 20180829 -  Why are you using count() here? instead of just duration in seconds?
+
+  // become this code
+  HLPerfTime tScavengeEndTime = now();
+  double scavengeTime = duration(tScavengeEndTime - tLocalizeEndTime).count();
 
 	// Ensure all data belong to hypo
 	if (resolve(hyp)) {
