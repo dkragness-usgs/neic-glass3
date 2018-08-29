@@ -271,7 +271,7 @@ class CGeo {
 	/**
 	 * \brief Optional user information tag.
 	 */
-	int iTag;
+	int iTag;  // DK REVIEW 20180828 - Why?
 };
 }  // namespace glassutil
 #endif  // GEO_H

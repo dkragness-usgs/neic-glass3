@@ -130,7 +130,7 @@ class CSite {
 	 */
 	bool initialize(std::string sta, std::string comp, std::string net,
 					std::string loc, double lat, double lon, double elv,
-					double qual, bool enable, bool useTele, CGlass *glassPtr);
+					double qual, bool enable, bool useTele, CGlass *glassPtr);   // DK REVIEW 20180828  -  Should be protected.  Public interface should be constructor or update
 
 	/**
 	 * \brief Set the site's location
@@ -141,7 +141,7 @@ class CSite {
 	 * \param lon - A double value containing the longitude to use.
 	 * \param z - A double value containing the depth to use.
 	 */
-	void setLocation(double lat, double lon, double z);
+	void setLocation(double lat, double lon, double z);   
 
 	/**
 	 * \brief Get the distance to the site
@@ -152,7 +152,8 @@ class CSite {
 	 * location
 	 * \return Returns a double value containing the distance in radians
 	 */
-	double getDelta(glassutil::CGeo *geo2);
+	double getDelta(glassutil::CGeo *geo2);   // DK REVIEW 20180828  - Why in radians?  We only use/reference degrees.  make the func return degrees.
+                                            // getDistDeg()
 
 	/**
 	 * \brief Get the distance between this site and another in km
@@ -160,7 +161,7 @@ class CSite {
 	 * \param site - A pointer to another site
 	 * \return Returns a double value containing the distance in km
 	 */
-	double getDistance(std::shared_ptr<CSite> site);
+	double getDistance(std::shared_ptr<CSite> site);  // DK REVIEW 20180828  -   // getDistKM()
 
 	/**
 	 * \brief Add pick to this site
@@ -178,7 +179,7 @@ class CSite {
 	 *
 	 * \param pck - A shared_ptr to a CPick object containing the pick to remove
 	 */
-	void remPick(std::shared_ptr<CPick> pck);
+	void remPick(std::shared_ptr<CPick> pck);   // DK REVIEW 20180828  - removePick()
 
 	/**
 	 * \brief Add node to this site
@@ -200,7 +201,7 @@ class CSite {
 	 *
 	 * \param nodeID - A string with the id of the node to remove
 	 */
-	void remNode(std::string nodeID);
+	void remNode(std::string nodeID);   // DK REVIEW 20180828  - removeNode()
 
 	/**
 	 * \brief Try to nucleate a new event at nodes linked to site
@@ -212,22 +213,22 @@ class CSite {
 	 * \param tpick - A double value containing the pick time to nucleate with
 	 * in julian seconds
 	 */
-	std::vector<std::shared_ptr<CTrigger>> nucleate(double tpick);
+	std::vector<std::shared_ptr<CTrigger>> nucleate(double tpick);   // DK REVIEW 20180828  - wah?  why a wector of triggers?
 
 	/**
 	 * \brief Add triggering node to triggered node list if value exceeds
-	 * current value of if named node's web is not yet present.
+	 * current value or if named node's web is not yet present.   // DK REVIEW 20180828  -  more better english please!
 	 */
-	void addTrigger(std::vector<std::shared_ptr<CTrigger>> *vTrigger,
-					std::shared_ptr<CTrigger> trigger);
+	void addTrigger(std::vector<std::shared_ptr<CTrigger>> *vTrigger,   // DK REVIEW 20180828  - rename!  it takes a vector of triggers.
+					std::shared_ptr<CTrigger> trigger);                         // WTF does ths function do?
 
 	/**
 	 * \brief Node link count getter
 	 * \return the node link count
 	 */
-	int getNodeLinksCount() const;
+	int getNodeLinksCount() const;  // DK REVIEW 20180828  - WTF?
 
-	bool getEnable() const;
+	bool getEnable() const;   // DK REVIEW 20180828  - isEnabled() ?
 
 	void setEnable(bool enable);
 
@@ -235,7 +236,7 @@ class CSite {
 	 * \brief Use flag getter
 	 * \return the use flag
 	 */
-	bool getUse() const;
+	bool getUse() const;  // DK REVIEW 20180828  - Why do we have Use and Enable??  What's the difference?
 
 	/**
 	 * \brief Use flag setter
@@ -253,13 +254,13 @@ class CSite {
 	 * \brief Use for teleseismic flag setter
 	 * \param useForTele - the use for teleseismic flag
 	 */
-	void setUseForTele(bool useForTele);
+	void setUseForTele(bool useForTele);   // DK REVIEW 20180828  - Do we use this functionality?
 
 	/**
 	 * \brief Quality getter
 	 * \return the quality
 	 */
-	double getQual() const;
+	double getQual() const;   // DK REVIEW 20180828  - Thought it said getQuail()   huh....
 
 	/**
 	 * \brief Quality setter
@@ -271,19 +272,19 @@ class CSite {
 	 * \brief CGeo getter
 	 * \return the CGeo
 	 */
-	glassutil::CGeo &getGeo();
+	glassutil::CGeo &getGeo();  //  // DK REVIEW 20180828  -  should return a const CGeo.  No hanky panky!
 
 	/**
 	 * \brief Max picks for site getter
 	 * \return the max picks for site
 	 */
-	int getSitePickMax() const;
+	int getSitePickMax() const;   // DK REVIEW 20180828  - why?
 
 	/**
 	 * \brief CGlass getter
 	 * \return the CGlass pointer
 	 */
-	CGlass* getGlass() const;
+	CGlass* getGlass() const;   // DK REVIEW 20180828  - ugg...
 
 	/**
 	 * \brief SCNL getter
@@ -323,10 +324,10 @@ class CSite {
 
 	time_t getTLastPickAdded() const;
 
-	double * getVec(double * vec);
+	double * getVec(double * vec);   // DK REVIEW 20180828  - WTF?
 
 
-	void setPicksSinceCheck(int count);
+	void setPicksSinceCheck(int count);   // DK REVIEW 20180828  - eh?  wouldn't this be more like Addpicktocount() and ResetPicksSinceCheck()
 
 	int getPicksSinceCheck() const;
 
@@ -334,14 +335,23 @@ class CSite {
 	/**
 	 * \brief A mutex to control threading access to vPick.
 	 */
-	mutable std::mutex vPickMutex;
+	mutable std::mutex vPickMutex;  // DK REVIEW 20180828  - m_mtxPickVector ?
 
 	/**
 	 * \brief A std::vector of std::shared_ptr to the picks made at this this
 	 * CSite. A shared_ptr is used here instead of a weak_ptr (to prevent a
 	 * cyclical reference between CPick and CSite) to improve performance
 	 */
-	std::vector<std::shared_ptr<CPick>> vPick;
+	std::vector<std::shared_ptr<CPick>> vPick;  // DK REVIEW 20180828  - where's the in order index*() insertion crap to go with this?
+                                              // Only one class should be holding permanent-ish shared_ptr's to data objects
+                                              // all other classes should hold weak_ptr's unless there's some sort of performance 
+                                              // problem with that implementation.
+                                              // PickList or Site should hold CPick
+                                              // SiteList should hold CSite
+                                              // HypoList should hold CHypo
+                                              // Web should hold CNode
+                                              // etc...?
+
 
 	/**
 	 * \brief A pointer to the main CGlass class used encode/decode time and
@@ -349,6 +359,7 @@ class CSite {
 	 */
 	CGlass *pGlass;
 
+  // DK REVIEW 20180828  -  Any reason these can't be protected instead of private?
 	/**
 	 * \brief A std::string containing the SCNL (Site, Component, Network,
 	 * Location) for this site.
@@ -384,7 +395,9 @@ class CSite {
 	 * \brief A unit vector in Cartesian earth coordinates used to do a quick
 	 * and dirty distance calculation during detection grid formation
 	 */
-	double dVec[3];
+	double dVec[3];  // DK REVIEW 20180828  - mwah? this is a cache of the values in geo cause they're too slow to access?
+                   // Get rid of CGeo (replace with some helper functions and a basic struct)
+                   // This should just go away.
 
 	/**
 	 * \brief A boolean flag indicating whether this site is disabled external
@@ -424,7 +437,9 @@ class CSite {
 	/**
 	 * \brief A mutex to control threading access to vNode.
 	 */
-	mutable std::mutex vNodeMutex;
+	mutable std::mutex vNodeMutex;  // DK REVIEW 20180828  - I get that glass is supposed to be able to reconfig on the fly,
+                                  // but seems like we could partition it a bit better and avoid some of these configuration 
+                                  // mutexes and avoid a bunch of complexity and potential artificial bottlenecks.
 
 	/**
 	 * \brief A std::vector of tuples linking site to node
@@ -439,7 +454,7 @@ class CSite {
 	 * However a recursive_mutex allows us to maintain the original class
 	 * design as delivered by the contractor.
 	 */
-	mutable std::recursive_mutex siteMutex;
+	mutable std::recursive_mutex siteMutex;  // DK REVIEW 20180828  -  meh.. config mutex.  can't we atlest fold vNodeMutex into this.  How often is the Node list going to change?  Only at config time, right?
 
 	time_t tLastPickAdded;
 };

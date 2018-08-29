@@ -359,7 +359,7 @@ void CSite::update(CSite *aSite) {
 	double vec[3];
 	aSite->getVec(vec);
 
-	dVec[0] = vec[0];
+	dVec[0] = vec[0];  // DK REVIEW 20180828 - EXTREME eye roll!
 	dVec[1] = vec[1];
 	dVec[2] = vec[2];
 
@@ -408,7 +408,7 @@ double CSite::getDelta(glassutil::CGeo *geo2) {
 }
 
 // ---------------------------------------------------------getDistance
-double CSite::getDistance(std::shared_ptr<CSite> site) {
+double CSite::getDistance(std::shared_ptr<CSite> site) {  // DK REVIEW 20180828  -  Call CGeo function or get rid of CGeo.
 	// nullcheck
 	if (site == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::warn,

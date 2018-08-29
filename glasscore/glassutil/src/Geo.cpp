@@ -138,7 +138,7 @@ void CGeo::setCart(double x, double y, double z) {
 }
 
 void CGeo::getGeographic(double *lat, double *lon, double *r) {
-	// convert latitude
+	// convert latitude  // DK REVIEW 20180828 - cache the geodetic lat/lon instead of recomputing each time.  (WARNING this comment is snark-free)
 	*lat = RAD2DEG * atan(tan(DEG2RAD * dLat) / 0.993277);
 
 	// longitude wrap check

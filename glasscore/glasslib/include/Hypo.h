@@ -990,7 +990,7 @@ class CHypo {
 	/**
 	 * \brief A double value containing this hypo's latitude in degrees
 	 */
-	double dLat;
+	double dLat;   // DK REVIEW 20180828  -  Can we use a CGeo to store and access this stuff?
 
 	/**
 	 * \brief A double value containing this hypo's longitude in degrees

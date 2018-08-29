@@ -94,7 +94,7 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	 * \return Returns true if the site was complete and added by CSiteList,
 	 * false otherwise
 	 */
-	bool addSite(std::shared_ptr<json::Object> com);
+	bool addSite(std::shared_ptr<json::Object> com);  // addSiteFromJSON()
 
 	/**
 	 * \brief CSiteList add list of sites function
@@ -106,7 +106,7 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	 * \return Returns true if the site was complete and added by CSiteList,
 	 * false otherwise
 	 */
-	bool addSiteList(std::shared_ptr<json::Object> com);
+	bool addSiteList(std::shared_ptr<json::Object> com);  // addSitesFromJSONList()
 
 	/**
 	 * \brief CSiteList  add/update  site function
@@ -135,7 +135,8 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	 * \return Returns a shared_ptr to the CSite object containing the desired
 	 * site.
 	 */
-	std::shared_ptr<CSite> getSite(int ix);
+	std::shared_ptr<CSite> getSite(int ix);  // DK REVIEW 20180828  - can the index go away?  replace with direct access via CSite shared_ptr?
+
 
 	/**
 	 * \brief Get site by scnl
@@ -162,13 +163,13 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	std::shared_ptr<CSite> getSite(std::string site, std::string comp,
 									std::string net, std::string loc);
 
-	std::vector<std::shared_ptr<CSite>> getSiteList();
+	std::vector<std::shared_ptr<CSite>> getSiteList();  // DK REVIEW 20180828  - getListOfSiteObjects() or getListOfSites()  can't call it "SiteList" cause that's the name of this class...
 
 	/**
 	 * \brief CSiteList get site list function
 	 * \return Returns true if successful, false otherwise
 	 */
-	bool reqSiteList();
+	bool reqSiteList();   // DK REVIEW 20180828  - - WTF?
 
 	/**
 	 * \brief CGlass getter
@@ -185,7 +186,7 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	/**
 	 * \brief Get the current size of the site list
 	 */
-	int getVSiteSize() const;
+	int getVSiteSize() const;  // DK REVIEW 20180828  - GetSiteCount() ?
 
 	/**
 	 * \brief check to see if the thread is still functional
@@ -204,12 +205,14 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	int getMaxPicksPerHour() const;
 
  private:
-	void checkSites();
+	void checkSites();  // DK REVIEW 20180828  - this function can change the use-status of Sites in the list,
+                      // turning them on/off based on pick frequency.  Seems dicey...
 
 	/**
 	 * \brief Background thread work loop for this web
 	 */
-	void backgroundLoop();
+	void backgroundLoop();  // DK REVIEW 20180828  -  I see no webs here....
+                          // I'm assuming this fell into the Patton threading overhaul.
 
 	/**
 	 * \brief thread status update function
@@ -239,10 +242,10 @@ class CSiteList {   // DK REVIEW 20180820 - seems like all these "List" classes 
 	 * \brief A std::map containing a std::shared_ptr to each site
 	 * in CSiteList indexed by the std::string scnl id.
 	 */
-	std::map<std::string, std::shared_ptr<CSite>> mSite;
+	std::map<std::string, std::shared_ptr<CSite>> mSite;  // DK REVIEW 20180828  - can we ditch this map, and just work from vSite and CSite pointers?
 
 	/**
-	 * \brief A std::map containing a std::shared_ptr to each site   // DK REVIEW 20180822 - no shared_prt here.  looks like a string instead...
+	 * \brief A std::map containing a std::shared_ptr to each site   // DK REVIEW 20180822 - no shared_ptr here.  looks like a string instead...
 	 * in CSiteList indexed by the std::string scnl id.
 	 */
 	std::map<std::string, int> mLookup;   // DK REVIEW 20180822 -  hmmm..  m is used a lot here for map.  maybe Mutex should be abbreviated mtx, that would be crystal clear!

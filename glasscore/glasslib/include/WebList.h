@@ -95,7 +95,11 @@ class CWebList {
 	 *
 	 * \return Always returns true
 	 */
-	bool removeWeb(std::shared_ptr<json::Object> com);
+	bool removeWeb(std::shared_ptr<json::Object> com);  // DK REVIEW 20180829 -  Why?  What is the point of removing a web?
+                                                      //  I understand the idea of being able to periodically spin up and
+                                                      // down channels, but I can't see you spinning up and down new webs
+                                                      // in production.  Just restart the application if you need a new web...
+                                                      // Seems like needless complexity, of which I'm an expert!  :-p
 
 	/**
 	 * \brief Add a site to the webs
@@ -104,7 +108,10 @@ class CWebList {
 	 *
 	 * \param site - A shared_ptr to a CSite object containing the site to add
 	 */
-	void addSite(std::shared_ptr<CSite> site);
+	void addSite(std::shared_ptr<CSite> site);    // DK REVIEW 20180829 -  Why?
+                                                // Web list should just maintain a list of Webs.
+                                                // Each Web should be solely responsible for configuration of it's nodes.
+                                                // No need for any of that here.
 
 	/**
 	 * \brief Remove Site from the webs
@@ -113,7 +120,10 @@ class CWebList {
 	 *
 	 * \param site - A shared_ptr to a CSite object containing the site to remove
 	 */
-	void remSite(std::shared_ptr<CSite> site);
+	void remSite(std::shared_ptr<CSite> site);  // DK REVIEW 20180829 -  Why?
+                                                // Web list should just maintain a list of Webs.
+                                                // Each Web should be solely responsible for configuration of it's nodes.
+                                                // No need for any of that here.
 
 	/**
 	 * \brief Check if the webs have a site
@@ -122,7 +132,10 @@ class CWebList {
 	 * \param site - A shared pointer to a CSite object containing the site to
 	 * check
 	 */
-	bool hasSite(std::shared_ptr<CSite> site);
+	bool hasSite(std::shared_ptr<CSite> site);  // DK REVIEW 20180829 -  Why?
+                                                // Web list should just maintain a list of Webs.
+                                                // Each Web should be solely responsible for configuration of it's nodes.
+                                                // No need for any of that here.
 
 	/**
 	 * \brief check to see if each web thread is still functional
@@ -147,13 +160,13 @@ class CWebList {
 	 * \brief CSiteList getter
 	 * \return the CSiteList pointer
 	 */
-	const CSiteList* getSiteList() const;
+	const CSiteList* getSiteList() const;  // DK REVIEW 20180829 -  Why?  Get sitelist from your Glass pointer
 
 	/**
 	 * \brief CSiteList setter
 	 * \param siteList - the CSiteList pointer
 	 */
-	void setSiteList(CSiteList* siteList);
+	void setSiteList(CSiteList* siteList);   // DK REVIEW 20180829 -  Why?  Get sitelist from your Glass pointer
 
 	/**
 	 * \brief Get the current size of the web list
@@ -181,7 +194,7 @@ class CWebList {
 	/**
 	 * \brief An integer indicating how many threads each web should have
 	 */
-	int m_iNumThreads;
+	int m_iNumThreads;   // DK REVIEW 20180829 -  Why does a web list need threads? 
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CCorrelationList.

@@ -51,7 +51,9 @@ class CWeb {
 	 * seconds between status checks. -1 to disable status checks.  Default 300.
 	 */
 	explicit CWeb(int numThreads = 0, int sleepTime = 100, int checkInterval =
-							60);
+							60);   // DK REVIEW 20180828  - Why does a web need threads?
+                     // Glass is multiple threads, so how can the whole thing stop
+                     // while the update processes?  Is there a master config mutex?
 
 	/**
 	 * \brief CWeb advanced constructor
@@ -173,12 +175,17 @@ class CWeb {
 	 *
 	 * This function generates a local detection grid of nodes, at a single
 	 * depth.
+   // DK REVIEW 20180828  -  What does it do with the detection grid?  It 
+   // only returns a bool, so clearly it doesn't return it.
+   // What does it do if there's already data where this data is gonna go?
+   // append, or delete and replace?
 	 *
 	 * \param com - A pointer to a json::object containing desired node
 	 * configuration
 	 * \return Returns true if successful, false if a grid was not created.
 	 */
-	bool grid(std::shared_ptr<json::Object> com);
+	bool grid(std::shared_ptr<json::Object> com);   // DK REVIEW 20180828  - maybe "com" becomes "jsonConfigCommand"
+                                                  // createLocalGrid()? or createGridViaLocalLogic()
 
 	/**
 	 * \brief Generate a detection grid with explicit nodes
@@ -201,7 +208,7 @@ class CWeb {
 	 * configuration
 	 * \return Always returns true
 	 */
-	bool global(std::shared_ptr<json::Object> com);
+	bool global(std::shared_ptr<json::Object> com);   // DK REVIEW 20180828  -   // createGlobalGrid()? or createGridViaGlobalLogic()
 
 	/**
 	 * \brief Load the travel times for this web
@@ -222,7 +229,7 @@ class CWeb {
 	 * \param com - A pointer to a json::object containing the web configuration
 	 * \return Returns true if successful, false otherwise.
 	 */
-	bool genSiteFilters(std::shared_ptr<json::Object> com);
+	bool genSiteFilters(std::shared_ptr<json::Object> com);    // DK REVIEW 20180828  -   I don't understand
 
 	/**
 	 * \brief Generate node site list
@@ -232,7 +239,7 @@ class CWeb {
 	 *
 	 * \return Always returns true
 	 */
-	bool genSiteList();
+	bool genSiteList();   // DK REVIEW 20180828  -  WTF?  populateListOfSitesForEachNode()
 
 	/**
 	 * \brief Sort site list
@@ -245,14 +252,18 @@ class CWeb {
 	 * \param lat - A double varible containing the latitude to use
 	 * \param lon - A double varible containing the longitude to use
 	 */
-	void sortSiteList(double lat, double lon);
+	void sortSiteList(double lat, double lon);   // DK REVIEW 20180829  - The vSite only needs to exist or be 
+                                               // populated during config? no?  Or there's some sort of 
+                                               // uber-complex update ability when a reqSCNL response is received
+                                               // that possibly reprocesses the lists and updates all the nodes?
 
 	/**
 	 * \brief Create new node
 	 *
 	 * This function creates a new node centered on the provided latitude,
 	 * longitude, depth, and spatial resolution.  The new node is linked to
-	 * the N closest sites (stations) where N is defined by nDetect.
+	 * the N closest sites (stations) where N is defined by nDetect.   // DK REVIEW 20180829 - would make more sense to at least track then nDetect+10
+                                                                     // BEST sites for a Node, in case in get deleted, disabled, debunked, or go offline.
 	 *
 	 * \param lat - A double varible containing the latitude to use
 	 * \param lon - A double varible containing the longitude to use
@@ -261,7 +272,7 @@ class CWeb {
 	 * \return Returns a std::shared_ptr to the newly created node.
 	 */
 	std::shared_ptr<CNode> genNode(double lat, double lon, double z,
-									double resol);
+									double resol);  // DK REVIEW 20180829 -  remove resol, use pWeb->resolution
 
 	/**
 	 * \brief Add node to list
@@ -291,17 +302,17 @@ class CWeb {
 	 *
 	 * \param site - A shared_ptr to a CSite object containing the site to add
 	 */
-	void addSite(std::shared_ptr<CSite> site);
+	void addSite(std::shared_ptr<CSite> site);  // DK REVIEW 20180829  -- meh, this must the source of mutex hell.
 
 	/**
 	 * \brief Remove site from this web
-	 * This function removes the given site to the list of nodes linked to this
+	 * This function removes the given site from the list of nodes linked to this
 	 * web and restructure node site lists
 	 *
 	 * \param site - A shared pointer to a CSite object containing the site to
 	 * remove
 	 */
-	void remSite(std::shared_ptr<CSite> site);
+	void remSite(std::shared_ptr<CSite> site);  // DK REVIEW 20180829 - removeSiteFromWebAndNodes()
 
 	/**
 	 * \brief Check if this web has a site
@@ -310,7 +321,7 @@ class CWeb {
 	 * \param site - A shared pointer to a CSite object containing the site to
 	 * check
 	 */
-	bool hasSite(std::shared_ptr<CSite> site);
+	bool hasSite(std::shared_ptr<CSite> site);  // DK REVIEW 20180829 -  Why?  Only used in Unit Testing code, so move to unit testing code.
 
 	/**
 	 * \brief Check to see if site allowed
@@ -320,7 +331,7 @@ class CWeb {
 	 * check
 	 * \return returns true if it is allowed, false otehrwise
 	 */
-	bool isSiteAllowed(std::shared_ptr<CSite> site);
+	bool isSiteAllowed(std::shared_ptr<CSite> site);  // DK REVIEW 20180829 - allowed in the web, how, why?  Like scan the SCNL filters and see if it passes, or check it's passport, or see if it has enough EXP?
 
 	/**
 	 * \brief Background thread work loop for this web
@@ -372,13 +383,13 @@ class CWeb {
 	 * \brief CSiteList getter
 	 * \return the CSiteList pointer
 	 */
-	const CSiteList* getSiteList() const;
+	const CSiteList* getSiteList() const;  // DK REVIEW 20180829 - getSiteListLink() ?
 
 	/**
 	 * \brief CSiteList setter
 	 * \param siteList - the CSiteList pointer
 	 */
-	void setSiteList(CSiteList* siteList);
+	void setSiteList(CSiteList* siteList); // DK REVIEW 20180829 - setSiteListLink() ?
 
 	/**
 	 * \brief Update getter
@@ -408,7 +419,7 @@ class CWeb {
 	 * \brief Default number of detection stations getter
 	 * \return the default number of detections used in a node
 	 */
-	int getDetect() const;
+	int getDetect() const;  // DK REVIEW 20180829 - try needsabettername.com ?
 
 	/**
 	 * \brief Default number of picks for nucleation getter
@@ -470,7 +481,7 @@ class CWeb {
 	 */
 	int getVNodeSize() const;
 
- private:
+ private:   // DK REVIEW 20180829 - should all these things really be private instead of protected?
 	/**
 	 * \brief the job sleep
 	 *
@@ -519,35 +530,38 @@ class CWeb {
 	bool bUseOnlyTeleseismicStations;
 
 	/**
-	 * \brief A std::vector containing a std::pair for each the sites to use
+	 * \brief A std::vector containing a std::pair for each of the sites to use
 	 * in node generation and the distance to the current node location.
 	 * vSite is populated by genSiteList(), and sorted by sortSiteList() (which
 	 * also fills in the distance), and used by genNode() during a Single(),
 	 * Shell(), Grid(), or Global() call
 	 */
-	std::vector<std::pair<double, std::shared_ptr<CSite>>> vSite;
+	std::vector<std::pair<double, std::shared_ptr<CSite>>> vSite;   // DK REVIEW 20180828  -  Distance, CSite *
+                                                                  // create and use this vector during config, and then
+                                                                  // clear it out.
 
 	/**
 	 * \brief A std::vector containing a std::shared_ptr to each
 	 * node in the detection graph database
 	 */
-	std::vector<std::shared_ptr<CNode>> vNode;
+	std::vector<std::shared_ptr<CNode>> vNode;   // DK REVIEW 20180828  -  std Caryl graph DB many to many to many relationship.
 
 	/**
 	 * \brief the std::mutex for m_QueueMutex
 	 */
-	mutable std::mutex m_vNodeMutex;
+	mutable std::mutex m_vNodeMutex;   // DK REVIEW 20180828  -    We should be able to get rid of this mutex.  Should be able to use the Class config-mutex
+                                     // since the nodelist should only be updated during web configuration/initialization.
 
 	/**
 	 * \brief String name of web used in tuning
 	 */
-	std::string sName;
+	std::string sName;   // DK REVIEW 20180828  -  Is there any requirement?  Does it have to be named after a disney char or manga series?
 
 	/**
-	 * \brief A integer containing the number of rows in a detection grid
+	 * \brief An integer containing the number of rows in a detection grid
 	 * generated by the Grid() command
 	 */
-	int nRow;
+	int nRow;   // DK REVIEW 20180828  -  Throw these into a struct called LocalGridConfigStruct
 
 	/**
 	 * \brief A integer containing the number of columns in a detection grid
@@ -566,38 +580,38 @@ class CWeb {
 	 * when generating a node for this detection array. This number overrides
 	 * the default Glass parameter if it is provided
 	 */
-	int nDetect;
+	int nDetect;  // DK REVIEW 20180828 - rename nMaxStationsToUseForNucleation
 
 	/**
 	 * \brief A double value containing the number picks of that need to be
 	 * gathered to trigger the nucleation of an event. This number overrides the
 	 * default Glass parameter if it is provided
 	 */
-	int nNucleate;
+	int nNucleate;  // DK REVIEW 20180828 - nNumStationsRequiredForNucleation
 
 	/**
 	 * \brief A double value containing the viability threshold needed to
 	 * exceed for a nucleation to be successful. This value overrides the
 	 * default Glass parameter if it is provided
 	 */
-	double dThresh;
+	double dThresh;  // DK REVIEW 20180828 - dCarylNebulousAffinity ?
 
 	/**
 	 * \brief A double value containing the inter-node resolution for this
 	 * detection array
 	 */
-	double dResolution;
+	double dResolution;  // DK REVIEW 20180828 dGridResolutionKM
 
 	/**
 	 * \brief A double which describes where the locator should start
 	 * down weighting for azimuthal gap
 	 **/
-	double aziTaper = 360.;
+	double aziTaper = 360.;  // DK REVIEW 20180828  - Why in web?  Seems like a Validation/Location param
 
 	/**
 	 * \brief A double which describes the maximum allowable event depth
 	 **/
-	double maxDepth = 800.;
+	double maxDepth = 800.;   // DK REVIEW 20180828  - Why in web?  Web is detection, no?  It has an integral number of specified depth shells.
 
 	/**
 	 * \brief A boolean flag that stores whether to update this web when a
@@ -620,7 +634,7 @@ class CWeb {
 	/**
 	 * \brief the std::mutex for traveltimes
 	 */
-	mutable std::mutex m_TrvMutex;
+	mutable std::mutex m_TrvMutex;   // DK REVIEW 20180828  - Seems like this could be handled by the class config mutex.
 
 	/**
 	 * \brief A mutex to control threading access to vSite.

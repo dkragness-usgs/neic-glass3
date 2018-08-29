@@ -471,7 +471,8 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 				iNodeCount++;
 
 				// write node to grid file
-				if (saveGrid) {
+				if (saveGrid) {  // DK REVIEW 20180829 - no writing to file.   have another function that walks the tree and generates a string.  or generate/update a string in this function
+                         // and have another function that returns it.
 					outfile << sName << "," << node->getPid() << ","
 							<< std::to_string(aLat) << ","
 							<< std::to_string(aLon) << "," << std::to_string(z)

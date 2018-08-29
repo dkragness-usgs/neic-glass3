@@ -89,7 +89,7 @@ CHypo::CHypo(std::shared_ptr<CTrigger> trigger,
 	}
 
 	if (!initialize(trigger->getLat(), trigger->getLon(), trigger->getZ(),
-					trigger->getTOrg(), glassutil::CPid::pid(),
+					trigger->getTOrg(), glassutil::CPid::pid(),   // DK REVIEW 20180828  - get rid of all these values from getWeb(), or rename them "*Cache"
 					trigger->getWeb()->getName(), trigger->getSum(),
 					trigger->getWeb()->getThresh(),
 					trigger->getWeb()->getNucleate(),
