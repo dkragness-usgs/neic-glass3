@@ -179,10 +179,10 @@ void CHypo::addPick(std::shared_ptr<CPick> pck) {
 	// lock mutex for this scope
 	std::lock_guard < std::recursive_mutex > guard(hypoMutex);
 
-	// for each pick in the vector
+	// for each pick in the vector  
 	for (auto q : vPick) {
 		// see if we have this same pick
-		if (q->getPid() == pck->getPid()) {
+		if (q->getPid() == pck->getPid()) {  // DK REVIEW 20180829 - no need for Pid's, just evaluate the pointer?  And better name than "q" 
 			// Don't add this duplicate pick
 			return;
 		}
@@ -212,12 +212,16 @@ double CHypo::affinity(std::shared_ptr<CPick> pck) {
 	// get the standard deviation allowed for association
 	double sdassoc = pGlass->getSdAssociate();
 
-	// get the affinity factor
+	// get the affinity factor  // DK REVIEW 20180830 - mumbo jumbo
 	double expaff = pGlass->getExpAffinity();
 
 	// check to see if this pick can  associate with this hypo using
 	// the given association standard deviation
-	if (!associate(pck, 1.0, sdassoc)) {
+	if (!associate(pck, 1.0, sdassoc)) {   // DK REVIEW 20180830 - This is CRAP!  Magic number hardcoding Pick Residual std-dev!  
+                                         // Minimally, atleast define a constant.
+                                         // Better, define constants for each phase
+                                         // Even better, pull it from the TT lib
+                                         // Even better, redo all the mag modules while you're at it  ;-)
 		// the pick did not associate
 		return (0.0);
 	}
@@ -229,6 +233,9 @@ double CHypo::affinity(std::shared_ptr<CPick> pck) {
 	if (tRes < 0.0) {
 		tRes = -tRes;
 	}
+
+  // DK REVIEW 20180830 - Residual based weighting removed by Will.
+  // Affinity is completely powered by the Gap of the Hypo.   Huh...
 
 	// WLY - I removed this because it was leading to small
 	// events trading picks and canceling....
@@ -306,7 +313,8 @@ double CHypo::affinity(std::shared_ptr<CCorrelation> corr) {
 
 // ---------------------------------------------------------anneal
 double CHypo::anneal(int nIter, double dStart, double dStop, double tStart,
-						double tStop) {
+						double tStop) {  // DK REVIEW 20180830 - dStart = dInitialStepSizeKM, dStop = dFinalStepSizeKM
+                             // tStart = tInitialStepSizeSec, tStop = tFinalStepSizeSec
 	// lock mutex for this scope
 	std::lock_guard < std::recursive_mutex > guard(hypoMutex);
 
@@ -427,14 +435,15 @@ void CHypo::annealingLocate(int nIter, double dStart, double dStop,
 	// these hold the values of the initial, current, and best stack location
 	double valStart = 0;
 	double valBest = 0;
-	// calculate the value of the stack at the current location
+
+	// calculate the value of the stack at the current location  // DK REVIEW 20180830 - Can we come up with a better name for this BASS(Bayes Arrival Stack Sum)
 	valStart = getBayes(dLat, dLon, dZ, tOrg, nucleate)
 			* taperGap.Val(gap(dLat, dLon, dZ));
 
 	char sLog[1024];
 
 	// if testing locator, setup output file
-	std::ofstream outfile;
+	std::ofstream outfile;  // DK REVIEW 20180830 - Don't do it.  Send some string to Glass with a JSON Debug-output command or something...
 	if (pGlass->getTestLocator()) {
 		std::string filename = "./locatorTest/" + sPid + ".txt";
 		outfile.open(filename, std::ios::out | std::ios::app);
@@ -457,19 +466,24 @@ void CHypo::annealingLocate(int nIter, double dStart, double dStop,
 	// end point. As we iterate through trial locations this makes
 	// the search space decrease.
 	glassutil::CTaper taper;
-	taper = glassutil::CTaper(-0.0001, -0.0001, -0.0001, nIter + 0.0001);
+	taper = glassutil::CTaper(-0.0001, -0.0001, -0.0001, nIter + 0.0001);  // DK REVIEW 20180830 - Yeah, cause 10k iterations is a reasonable number....  Uggg....
 
 	// for the number of requested iterations
 	for (int iter = 0; iter < nIter; iter++) {
 		// compute the current step distance from the current iteration and
 		// starting and stopping values, use the taper to make the step distance
 		// slowly decrease
-		double dkm = dStart * taper.Val(static_cast<double>(iter)) + dStop;
-		double dOt = tStart * taper.Val(static_cast<double>(iter)) + tStop;
+
+
+    // DK REVIEW 20180830  - This is not legit.  Should be (dStart - dStop) * taper.Val() + dStop  -- current code is double counting dStop
+		double dkm = dStart * taper.Val(static_cast<double>(iter)) + dStop;  // DK REVIEW 20180830 - dStepSizeKM
+		double dOt = tStart * taper.Val(static_cast<double>(iter)) + tStop;  // DK REVIEW 20180830 - dtStepSizeSec
+
+    
 
 		// init x, y, and z gaussian step distances
-		double dx = gauss(0.0, dkm * 2);
-		double dy = gauss(0.0, dkm * 2);
+		double dx = gauss(0.0, dkm * 2);   // DK REVIEW 20180830 - why is the lat/lon step-size doubled?  Not much truth in advertising here....
+		double dy = gauss(0.0, dkm * 2); 
 		double dz = gauss(0.0, dkm);
 		double dt = gauss(0.0, dOt);
 
@@ -531,7 +545,7 @@ void CHypo::annealingLocate(int nIter, double dStart, double dStop,
 			ddz += dz;
 			ddt += dt;
 		}
-	}
+	}  // DK REVIEW 20180830  - need a comment at this closing brace to describe what it's closing
 
 	// set dBayes to current value
 	dBayes = valBest;
@@ -927,7 +941,7 @@ bool CHypo::cancelCheck() {
 		return (false);
 	}
 
-	// can't cancel fixed hypos
+	// can't cancel fixed hypos  // DK REVIEW 20180830 - why not?  This spec'd anywhere?
 	// NOTE: What implication does this have for "seed hypos" like twitter
 	// detections
 	if (bFixed) {
@@ -1247,7 +1261,7 @@ double CHypo::gap(double lat, double lon, double z) {
 double CHypo::gauss(double avg, double std) {
 	// generate Gaussian pseudo-random number using the
 	// polar form of the Box-Muller method
-	// NOTE: Move to some glass math utility library?
+	// NOTE: Move to some glass math utility library?  // DK REVIEW 20180830 https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform#Polar_form
 	double rsq = 0;
 	double v1 = 0;
 
@@ -1268,6 +1282,9 @@ double CHypo::gauss(double avg, double std) {
 double CHypo::getResidual(std::shared_ptr<CPick> pick) {
 	// lock mutex for this scope
 	std::lock_guard < std::recursive_mutex > guard(hypoMutex);
+
+  // DK REVIEW 20180830  - We need some phaseID code here.  Where's the study that 
+  // identifies phases based on picker band or amplitude or period, etc???
 
 	// setup traveltime interface for this hypo
 	pTTT->setOrigin(dLat, dLon, dZ);
@@ -1308,7 +1325,7 @@ double CHypo::getBayes() const {
 
 // ---------------------------------------------------getBayesStack
 double CHypo::getBayes(double xlat, double xlon, double xZ, double oT,
-						int nucleate) {
+						int nucleate) {  // DK REVIEW 20180830 - returns the sum of the residual fits based on some arbitrary standard for fit.
 	// lock mutex for this scope
 	std::lock_guard < std::recursive_mutex > guard(hypoMutex);
 
@@ -1329,8 +1346,10 @@ double CHypo::getBayes(double xlat, double xlon, double xZ, double oT,
 	double tcal;
 	char sLog[1024];
 
-	// define a taper for sigma, makes close in readings have higher weight
-	// ranges from 0.75-3.0 from 0-2 degrees, than 3.0 after that (see loop)
+	// define a taper for sigma, makes close in readings have higher weight,  // DK REVIEW 20180830 - WTF?  Only upweights (by making expected residual spread higher) picks from 0 - 2 deg.
+  // but dis anything inside of 2 degrees.  Why go all the way out to 999 deg?  // seems pretty short sighted by global standards.
+  // is this km?
+	// ranges from 0.75-3.0 from 0-2 degrees, than 3.0 after that (see loop)  
 	glassutil::CTaper tap;
 	tap = glassutil::CTaper(-0.0001, 2.0, 999.0, 999.0);
 
@@ -1363,7 +1382,9 @@ double CHypo::getBayes(double xlat, double xlon, double xZ, double oT,
 		glassutil::CGeo siteGeo = site->getGeo();
 
 		// only use nucleation phases if on nucleation branch
-		if (nucleate == 1) {
+		if (nucleate == 1) {     // DK REVIEW 20180830 -  rename variable to bNucleate or bUseOnlyNucleationTTs.
+                             // WTF?  Why would you not have pTrv1?  Just use pTrv1, and then check for the
+                             // optional pTrv2, using it, if it exists and is a better fit
 			if ((pTrv1) && (pTrv2)) {
 				// we have both nucleation phases
 				// first nucleation phase
@@ -1377,7 +1398,7 @@ double CHypo::getBayes(double xlat, double xlon, double xZ, double oT,
 				double resi2 = getWeightedResidual(pTrv2->sPhase, tobs, tcal2);
 
 				// use the smallest residual
-				if (abs(resi1) < abs(resi2)) {
+				if (abs(resi1) < abs(resi2)) {   // DK REVIEW 20180830 -  this is where Buland's observability stuff would help.
 					tcal = tcal1;
 					resi = resi1;
 				} else {
@@ -1649,7 +1670,8 @@ double CHypo::getWeightedResidual(std::string sPhase, double tObs,
 	} else if (sPhase == "S") {
 		// Effectively halving the weight of S
 		// this value was selected by testing specific
-		// events with issues
+		// events with issues  // DK REVIEW 20180830 - But S already has larger residuals... so you're effectively further downweighting it.
+                           // since the values were empirically derived, the end result may be reasonable, but seems rather bumbly...
 		// NOTE: Hard Coded
 		return ((tObs - tCal) * 2.0);
 	} else {
@@ -2509,7 +2531,7 @@ bool CHypo::reportCheck() {
 	return (true);
 }
 
-bool CHypo::resolve(std::shared_ptr<CHypo> hyp) {
+bool CHypo::resolve(std::shared_ptr<CHypo> hyp) {  // DK REVIEW 20180904 - this function shouldn't take any params...
 	// nullchecks
 	if (pGlass == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::error,

@@ -591,18 +591,20 @@ void CSiteList::checkSites() {
 		return;
 	}
 
-	// what time is it
+	// what time is it?
 	time_t tNow;
 	std::time(&tNow);
 
 	// check every hour
 	// NOTE: hardcoded to one hour, any more often seemed excessive
 	// didn't seem like a parameter that would be changed
-	if ((tNow - m_tLastChecked) < (60 * 60)) {
+	if ((tNow - m_tLastChecked) < (60 * 60)) {  // DK REVIEW 20180905 - magic numbers.
 		// no
 		return;
 	}
 
+  // DK REVIEW 20180905 - this function needs more comments.
+  // Lock the config mutex for this object/
 	std::lock_guard<std::recursive_mutex> siteListGuard(m_SiteListMutex);
 
 	// remember when we last checked
@@ -612,7 +614,7 @@ void CSiteList::checkSites() {
 			glassutil::log_level::debug,
 			"CSiteList::checkSites: checking for sites not picking");
 
-	// for each used site in the site list
+	// for each site in the site list
 	for (auto aSite : vSite) {
 		// skip disabled sites
 		if (aSite->getEnable() == false) {
@@ -648,7 +650,7 @@ void CSiteList::checkSites() {
 			int picksSinceCheck = aSite->getPicksSinceCheck();
 
 			// we check every hour, so picks since check is picks per hour
-			if (picksSinceCheck > m_iMaxPicksPerHour) {
+			if (picksSinceCheck > m_iMaxPicksPerHour) {  // DK REVIEW 20180905 - meh. the time of last check should be tracked in case it changes from an hour....
 				glassutil::CLogit::log(
 						glassutil::log_level::debug,
 						"CSiteList::checkSites: Removing " + aSite->getScnl()
@@ -667,7 +669,7 @@ void CSiteList::checkSites() {
 			// disable the site
 			aSite->setUse(false);
 
-			// remove site from webs
+			// remove site from webs  // DK REVIEW 20180905 - I would've done this via nodes, instead of via webs, but I may also not fully understand the use of webs for realtime configuration.
 			if (pGlass) {
 				if (pGlass->getWebList()) {
 					pGlass->getWebList()->remSite(aSite);

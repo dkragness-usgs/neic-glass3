@@ -23,7 +23,7 @@
 namespace glasscore {
 
 // pick sort function
-bool sortFunc(const std::pair<double, int> &lhs,
+bool sortFunc(const std::pair<double, int> &lhs,    // DK REVIEW 20180904 - bizarre.. rename to PairLessThanByFirstPart() ?  Or use a struct to make it actually readable.
 				const std::pair<double, int> &rhs) {
 	if (lhs.first < rhs.first) {
 		return (true);
@@ -189,7 +189,7 @@ bool CPickList::addPick(std::shared_ptr<json::Object> pick) {
 			&& ((*pick)["Type"].GetType() == json::ValueType::StringVal)) {
 		std::string type = (*pick)["Type"].ToString();
 
-		if (type != "Pick") {
+		if (type != "Pick") {    // DK REVIEW 20180904 -  Again, it would be wonderful to have constants for all these formatted message field names.
 			glassutil::CLogit::log(
 					glassutil::log_level::warn,
 					"CPickList::addPick: Non-Pick message passed in.");
@@ -256,7 +256,7 @@ bool CPickList::addPick(std::shared_ptr<json::Object> pick) {
 	}
 
 	// create pair for insertion
-	std::pair<double, int> p(pck->getTPick(), nPick);
+	std::pair<double, int> p(pck->getTPick(), nPick);  // DK REVIEW 20180904 - Is it Monday?  It feels like Monday...  pair... grumble grumble, unreadable, grumble.
 
 	// check to see if we're at the pick limit
 	if (vPick.size() == nPickMax) {
@@ -318,8 +318,10 @@ bool CPickList::addPick(std::shared_ptr<json::Object> pick) {
 	// wait until there's space in the queue
 	// we don't want to build up a huge queue of unprocessed
 	// picks
+  // DK REVIEW 20180904 - This clearly makes the presumption that we can control the flow of inputs
+  // at that we won't lose any data by going slow....
 	if ((pGlass) && (pGlass->getHypoList())) {
-		while (queueSize >= (m_iNumThreads)) {
+		while (queueSize >= (m_iNumThreads)) {  // DK REVIEW 20180904 -  Whoa!!!  You can only handle one pick per thread before you go getting all work-slowdown-y?  Seems a little Crazy!
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 			// check to see if the queue has changed size
@@ -712,13 +714,16 @@ void CPickList::processPick() {
 			continue;
 		}
 
+    // DK REVIEW 20180904 - First check to see if the pick is already associated.  If so, we're done here.  Our job is just
+    // to find it a home, if possible, not to find the BEST home for it.  The Loc/Merge/Nucleation(other picks) will work that out.
+
 		// Attempt both association and nucleation of the new pick.
 		// If both succeed, the mess is sorted out in darwin/evolve
 		// associate
 		pGlass->getHypoList()->associate(pck);
 
     // DK REVIEW 20180821 - why nucleate?  If you were successful associating, then it's a waste to go nucleate.
-    // using up a bunch of CPU cycles....
+    // using up a bunch of CPU cycles....  We're just trying to find a home for this pick.
 		// nucleate
 		pck->nucleate();
 
@@ -734,7 +739,7 @@ void CPickList::processPick() {
 }
 
 // ---------------------------------------------------------setStatus
-void CPickList::jobSleep() {
+void CPickList::jobSleep() {  // DK REVIEW 20180904 - this is WAAAAY too complicated now that GLASS is multi-threaded.  Just Sleep(m_iSleepTimeMS)
 	// if we're processing jobs
 	if (m_bRunProcessLoop == true) {
 		// sleep for a random amount of time, to better distribute

@@ -1151,7 +1151,7 @@ class CHypo {
 	/**
 	 * \brief A vector of shared_ptr's to the pick data that supports this hypo.
 	 */
-	std::vector<std::shared_ptr<CPick>> vPick;
+	std::vector<std::shared_ptr<CPick>> vPick;   // DK REVIEW 20180829 - this vector is not sorted in any way.  No indexed searches.
 
 	/**
 	 * \brief A vector of shared pointers to correlation data that support

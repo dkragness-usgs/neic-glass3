@@ -202,7 +202,7 @@ bool CHypoList::associate(std::shared_ptr<CPick> pk) {
 	// (a potential hypo must be before the pick we're associating)
 	// use the pick time minus 2400 seconds to compute the starting index
 	// NOTE: Hard coded time delta
-	std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(pk->getTPick() - 2400,
+	std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(pk->getTPick() - 2400,  // DK REVIEW 20180904 - this should not be hardcoded, and failing that, should be a descriptive constant
 															pk->getTPick());
 
 	// make sure we got any hypos
@@ -226,7 +226,7 @@ bool CHypoList::associate(std::shared_ptr<CPick> pk) {
 			// check to see if the pick will associate with
 			// this hypo
 			// NOTE: The sigma value passed into associate is hard coded
-			if (hyp->associate(pk, 1.0, sdassoc)) {
+			if (hyp->associate(pk, 1.0, sdassoc)) {  // DK REVIEW 20180904 - the sd size should be based on the TT entry, or at the very least, phase.
 				// add to the list of hypos this pick can associate with
 				viper.push_back(hyp);
 
@@ -272,7 +272,7 @@ bool CHypoList::associate(std::shared_ptr<CPick> pk) {
 						+ " resetting cycle count due to new association");
 
 		// reset the cycle count
-		bestHyp->setCycle(0);
+		bestHyp->setCycle(0);  // DK REVIEW 20180904 -  eh?
 
 		// add to the processing queue
 		pushFifo(bestHyp);
@@ -297,7 +297,7 @@ bool CHypoList::associate(std::shared_ptr<CPick> pk) {
 		q->setCycle(0);
 
 		// add the hypo to the processing queue
-		// note that we didn't link the pick to any hypos
+		// note that we didn't link the pick to any hypos  // DK REVIEW 20180830 - kick the can down the road a few more times first?
 		pushFifo(q);
 	}
 
@@ -452,7 +452,7 @@ void CHypoList::clearHypos() {
 }
 
 // ---------------------------------------------------------darwin
-void CHypoList::darwin() {
+void CHypoList::darwin() {  // DK REVIEW 20180904 -  This function should return either an int (WORK_DONE, IDLE, ERROR), or a bool(TRUE=WORK_DONE, FALSE = IDLE)
 	if (pGlass == NULL) {
 		return;
 	}
@@ -463,7 +463,7 @@ void CHypoList::darwin() {
 	}
 
 	// log the cycle count and queue size
-	char sLog[1024];
+	char sLog[1024];  // DK REVIEW 20180904 -  how does declaration possibly escape you minimum-scope codeify nazi?
 
 	// update thread status
 	setStatus(true);
@@ -500,8 +500,8 @@ void CHypoList::darwin() {
 			// remove hypo from the hypo list
 			// hyp->unlockAfterProcessing();
 			remHypo(hyp);
-			sort();
-
+			sort();  // DK REVIEW 20180904 -  meh...  no wonder the new code is faster
+      
 			// done with processing
 			return;
 		}
@@ -527,7 +527,7 @@ void CHypoList::darwin() {
 
 		// resort the hypocenter list to maintain
 		// time order
-		sort();
+		sort();  // DK REVIEW 20180904 -  Pete and repeat were walking down the street.   Pete fell in a hole, who was left?
 	} catch (...) {
 		throw;
 	}
@@ -550,7 +550,7 @@ bool CHypoList::dispatch(std::shared_ptr<json::Object> com) {
 		json::Value v = (*com)["Cmd"].ToString();
 
 		// clear all hypos
-		if (v == "ClearGlass") {
+		if (v == "ClearGlass") {   // DK REVIEW 20180904 -  Why would you clear glass?  Wouldn't you just kill it and restart it?  If you're gonna clear out all the existing data, what's the point?
 			clearHypos();
 
 			// ClearGlass is also relevant to other glass
@@ -572,6 +572,24 @@ bool CHypoList::dispatch(std::shared_ptr<json::Object> com) {
 // ---------------------------------------------------------evolve
 bool CHypoList::evolve(std::shared_ptr<CHypo> hyp) {
 	// nullcheck
+
+  /* general algorithm:
+  Locate
+  Scavenge
+    Locate
+  Scavenge - Correlation
+    Locate
+  Resolve(Don't own the pick, unless the pick is linked to me.  Maybe have the option to steal)
+    Locate
+  Prune
+    Locate
+  Prune
+    Locate
+  Cancel(Validate)
+    RemoveHypo
+    Re - SortHypoList
+  * end algorithm *****/
+
 	if (hyp == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::warn,
 								"CHypoList::evolve: NULL hypo provided.");
@@ -589,7 +607,7 @@ bool CHypoList::evolve(std::shared_ptr<CHypo> hyp) {
 			std::chrono::high_resolution_clock::now();
 
 	hyp->incrementProcessCount();
-	hyp->setCycle(hyp->getCycle() + 1);
+	hyp->setCycle(hyp->getCycle() + 1);  // DK REVIEW 20180904 -  Why are these separate calls.  make this setCycle call part of incrementProcessCount()
 
 	// initialize breport, gets set to true later if event isn't cancelled.
 	// otherwise, in some cases events will not be reported.
@@ -665,7 +683,7 @@ bool CHypoList::evolve(std::shared_ptr<CHypo> hyp) {
 	}
 
 	// Iterate on pruning data
-	if (hyp->prune()) {
+	if (hyp->prune()) {  // DK REVIEW 20180904 - Why re-prune if the first prune didn't do anything.  Put this below localize above?
 		// we should report this hypo since it has changed
 		breport = true;
 		// relocate the hypo
@@ -1023,7 +1041,7 @@ int CHypoList::indexHypo(double tOrg) {
 	return (i1);
 }
 
-// ---------------------------------------------------------jobSleep
+// ---------------------------------------------------------jobSleep  // DK REVIEW 20180904 - mwah?
 bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 	if (pGlass == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::error,
@@ -1037,7 +1055,7 @@ bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 	double timeCut = 30.;  // origin time difference to merge events
 	double delta;  // this holds delta distance
 
-	// this events pick list
+	// this event's pick list
 	auto hVPick = hypo->getVPick();
 
 	// set up a geo object for this hypo
@@ -1046,8 +1064,8 @@ bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 
 	// compute the list of hypos to try merging with with
 	// (a potential hypo must be within time cut to consider)
-	sort();
-	std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(
+  sort();  // DK REVIEW 20180904 -  Pete and repeat were walking down the street.   Pete fell in a hole, who was left?
+  std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(
 			hypo->getTOrg() - timeCut, hypo->getTOrg() + timeCut);
 
 	// make sure we got hypos returned
@@ -1063,7 +1081,8 @@ bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 
 	// only this hypo was returned
 	if (hypoList.size() == 1) {
-		// print not events to merge message
+		// print not events to merge message   // DK REVIEW 20180904 -  This seems like a super-debug only kind of output...
+
 		std::shared_ptr<CHypo> thypo = hypoList[0].lock();
 		snprintf(
 				sLog, sizeof(sLog),
@@ -1077,22 +1096,26 @@ bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 	// for each hypo in the list within the time range
 	for (int i = 0; i < hypoList.size(); i++) {
 		// make sure hypo is still valid before associating
-		if (std::shared_ptr<CHypo> hypo2 = hypoList[i].lock()) {
+		if (std::shared_ptr<CHypo> hypo2 = hypoList[i].lock()) {  // DK REVIEW 20180830 - When does this get unlocked?
 			// make sure we're not looking at ourself
 			if (hypo->getPid() == hypo2->getPid()) {
 				continue;
 			}
 
 			// check to see if hypo2 is locked
-			if (hypo2->isLockedForProcessing()) {
+			if (hypo2->isLockedForProcessing()) {  		 // DK REVIEW 20180830 -  Does this do a try_lock or something?  
+
 				continue;
 			}
 
+      // DK REVIEW 20180830 -    hopefully we have hypo2 locked at this point...
 			std::lock_guard<std::mutex> hypoGuard(hypo2->getProcessingMutex());
 
 			// check to make sure hypo2 is still good
 			if (hypo2->cancelCheck() == true) {
-				remHypo(hypo2);
+				remHypo(hypo2);   // DK REVIEW 20180830 -  This must be the thing that John was complaining about.  Seems like hypo2 should not be validated for validity here.
+                          // hyp is saying "focus on me...".  If you want to do anything with hypo2, throw it on the process list and let it have its
+                          // own me time.  Or just steal it's crap and move on.....
 				// hypo2->unlockAfterProcessing();
 				continue;
 			}
@@ -1133,6 +1156,9 @@ bool CHypoList::mergeCloseEvents(std::shared_ptr<CHypo> hypo) {
 							hypo2->getLon(), hypo2->getZ(), hypo2->getTOrg());
 					glassutil::CLogit::log(sLog);
 
+          // DK REVIEW 20180830 -    WTF?  Why?  Let it try and steal the other events picks,
+          // or if it thinks the other event is SIGNIFICANTLY better than it, then schedule the other event for processing
+          // and run-away with it's tail between it's legs...
 					// create a new merged event hypo3
 					std::shared_ptr<CHypo> hypo3 = std::make_shared<CHypo>(
 							(hypo2->getLat() + hypo->getLat()) / 2.,
@@ -1352,7 +1378,7 @@ void CHypoList::processHypos() {
 
 		// run the job
 		try {
-			darwin();
+			darwin();  // DK REVIEW 20180904 - Process the first Hypo on the processing queue.
 		} catch (const std::exception &e) {
 			glassutil::CLogit::log(
 					glassutil::log_level::error,
@@ -1361,6 +1387,8 @@ void CHypoList::processHypos() {
 			break;
 		}
 
+    // DK REVIEW 20180904 -    do we really need to check m_bRunProcessLoop each time through the loop?
+    // Don't sleep unless we had nothing to do last time.
 		// give up some time at the end of the loop
 		if (m_bRunProcessLoop == true) {
 			jobSleep();
@@ -1388,6 +1416,8 @@ void CHypoList::remHypo(std::shared_ptr<CHypo> hypo, bool reportCancel) {
 // get the id
 	std::string pid = hypo->getPid();
 
+  // DK REVIEW 20180904 - meh... uggg.  wah?  Seems like this should all live in Hypo under CancelHypo() or ExpireHypo()
+  // functionality here should be limited to removing from List of Hypos and Processing Queue.
 // unlink all the hypo's data
 	hypo->clearPicks();
 	hypo->clearCorrelations();
@@ -1404,6 +1434,7 @@ void CHypoList::remHypo(std::shared_ptr<CHypo> hypo, bool reportCancel) {
 			// erase this hypo
 			vHypo.erase(vHypo.begin() + iq);
 
+      // DK REVIEW 20180904 - meh... uggg.  wah?  Seems like this should all live in Hypo
 			// Send cancellation message for this hypo
 			if (reportCancel == true) {
 				// only if we've sent an event message
@@ -1486,14 +1517,16 @@ bool CHypoList::reqHypo(std::shared_ptr<json::Object> com) {
 	}
 
 // generate the hypo message
-	hyp->hypo();
+	hyp->hypo();        // DK REVIEW 20180904 This should return a string.  Hypo should not know communications with outside world.
+
 
 // done
 	return (true);
 }
 
 // ---------------------------------------------------------resolve
-bool CHypoList::resolve(std::shared_ptr<CHypo> hyp) {
+bool CHypoList::resolve(std::shared_ptr<CHypo> hyp) {        // DK REVIEW 20180904 - not sure why this exists.  Just call hyp->resolve() instead...
+
 // null checks
 	if (hyp == NULL) {
 		glassutil::CLogit::log(glassutil::log_level::warn,

@@ -280,6 +280,7 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 		thresh = pGlass->getThresh();
 	}
 
+  // DK REVIEW 20180905 - ugg.....
 	double resol = 100;
 	std::vector<double> zzz;
 	int zs = 0;
@@ -359,7 +360,7 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 	}
 
 	// list of depth layers to generate for this Global grid
-	if (((*com).HasKey("Z"))
+	if (((*com).HasKey("Z"))  // DK REVIEW 20180905 - Could we use zone-stats here to disable non-desired shells for a node?
 			&& ((*com)["Z"].GetType() == json::ValueType::ArrayVal)) {
 		json::Array zarray = (*com)["Z"].ToArray();
 		for (auto v : zarray) {
@@ -409,7 +410,11 @@ bool CWeb::global(std::shared_ptr<json::Object> com) {
 	// This function was empirically determined via using different
 	// numNode values and computing the average resolution from a node to
 	// the nearest other 6 nodes
-	int numNodes = 5.0E8 * std::pow(dResolution, -1.965);
+	int numNodes = 5.0E8 * std::pow(dResolution, -1.965);  // DK REVIEW 20180905 - Where did this equation come from.  
+                                                         // I see a trendline in excel with this equation, but excel is notorious
+                                                         // for printing the wrong equation for a trendline.
+                                                         // Using -1.95 as the exponent would provide a better fit,
+                                                         // but I'm not sure what the purpose/constraints of this numNodes value is.
 
 	// should have an odd number of nodes (see paper named below)
 	if ((numNodes % 2) == 0) {
@@ -1764,7 +1769,7 @@ void CWeb::remSite(std::shared_ptr<CSite> site) {
 			continue;
 		}
 
-		node->setEnabled(false);
+		node->setEnabled(false);  // DK REVIEW 20180905  - comment?
 
 		if (nodeCount % 1000 == 0) {
 			glassutil::CLogit::log(
@@ -1787,7 +1792,7 @@ void CWeb::remSite(std::shared_ptr<CSite> site) {
 			bSiteList = true;
 
 			// make sure we've got enough sites for a node
-			if (vSite.size() < nDetect) {
+			if (vSite.size() < nDetect) {  // DK REVIEW 20180905  - is this right?
 				node->setEnabled(true);
 				return;
 			}

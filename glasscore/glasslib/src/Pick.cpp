@@ -251,9 +251,9 @@ CPick::~CPick() {
 void CPick::clear() {
 	std::lock_guard < std::recursive_mutex > guard(pickMutex);
 
-	wpSite.reset();
-	wpHypo.reset();
-	jPick.reset();
+	wpSite.reset();  // DK REVIEW 20180904 -  Do you have to do any zero-ing out of the object or does reset() handle that for you?
+	wpHypo.reset(); 
+	jPick.reset();   
 
 	sAss = "";
 	sPhs = "";
@@ -308,7 +308,7 @@ void CPick::addHypo(std::shared_ptr<CHypo> hyp, std::string ass, bool force) {
 	if (force == true) {
 		wpHypo = hyp;
 		sAss = ass;
-	} else if (wpHypo.expired() == true) {
+	} else if (wpHypo.expired() == true) {  // DK REVIEW 20180904 - weeeeiiirrdddd?
 		wpHypo = hyp;
 		sAss = ass;
 	}
@@ -323,7 +323,7 @@ void CPick::remHypo(std::shared_ptr<CHypo> hyp) {
 		return;
 	}
 
-	remHypo(hyp->getPid());
+	remHypo(hyp->getPid());  // DK REVIEW 20180904 - Is this our job?  seems like this could develop into a loop of permanence, or at least long running wastefulness.
 }
 
 void CPick::remHypo(std::string pid) {
@@ -335,7 +335,7 @@ void CPick::remHypo(std::string pid) {
 		if (pHypo->getPid() == pid) {
 			clearHypo();
 		}
-	} else {
+	} else {  // DK REVIEW 20180904 -  A strange function that makes multiple cases the both do the same thing:  clearHypo()
 		// remove invalid pointer
 		clearHypo();
 	}
@@ -370,6 +370,11 @@ bool CPick::nucleate() {
 	std::string pt = glassutil::CDate::encodeDateTime(tPick);
 	char sLog[1024];
 
+
+  // DK REVIEW 20180904 - This paragraph does not belong here.
+  // it should go away.  If we got shoulder-tapped to nucleate, we should
+  // go nucleate, not get all iffy and judgemental about it.
+  // ...
 	// check to see if the pick is currently associated to a hypo
 	if (wpHypo.expired() == false) {
 		// get the hypo and compute ratio
@@ -415,6 +420,10 @@ bool CPick::nucleate() {
 		if (trigger->getWeb() == NULL) {
 			continue;
 		}
+
+    // DK REVIEW 20180904 - This paragraph does not belong here.
+    // it should go away.  If we got shoulder-tapped to nucleate, we should
+    // go nucleate, not get all iffy and judgemental about it.
 
 		// check to see if the pick is currently associated to a hypo
 		if (wpHypo.expired() == false) {
@@ -548,7 +557,7 @@ bool CPick::nucleate() {
 		// if we got this far, the hypo has enough supporting data to
 		// merit adding it to the hypo list
 		pGlass->getHypoList()->addHypo(hypo);
-	}
+	}    // DK REVIEW 20180904 -  need a comment guard here to indicated what this is ending.
 
 	// done
 	return (true);

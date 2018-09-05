@@ -348,7 +348,8 @@ bool CGlass::initialize(std::shared_ptr<json::Object> com) {
 					continue;
 				}
 
-				// copy out the range values
+				// copy out the range values    // DK REVIEW 20180829 - Good thing we didn't put this into a readable struct or anything....
+                                        // you know dDistDegBeginRampUp, dDistDegBeginFull, dDistDegEndFull, dDistDegEndRampDown
 				for (int i = 0; i < 4; i++) {
 					range[i] = arr[i].ToDouble();
 				}
@@ -387,7 +388,7 @@ bool CGlass::initialize(std::shared_ptr<json::Object> com) {
 				}
 
 				// copy out the assoc values
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 2; i++) {  // DK REVIEW 20180829 - Good thing we didn't put this into a readable struct or anything....
 					assoc[i] = arr[i].ToDouble();
 				}
 

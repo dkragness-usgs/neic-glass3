@@ -421,7 +421,7 @@ double CSite::getDistance(std::shared_ptr<CSite> site) {  // DK REVIEW 20180828 
 	double dot = 0;
 	double dkm;
 	for (int i = 0; i < 3; i++) {
-		dot += dVec[i] * site->dVec[i];
+		dot += dVec[i] * site->dVec[i];  
 	}
 	dkm = 6366.2 * acos(dot);
 
@@ -565,14 +565,14 @@ std::vector<std::shared_ptr<CTrigger>> CSite::nucleate(double tPick) {
 
 	// are we enabled?
 	siteMutex.lock();
-	if (bUse == false) {
+	if (bUse == false) {  // DK REVIEW 20180905 - Isn't there both a Use and Enabled?  shouldn't this be getUse()
 		siteMutex.unlock();
 		return (vTrigger);
 	}
 	siteMutex.unlock();
 
 	// for each node linked to this site
-	for (const auto &link : vNode) {
+	for (const auto &link : vNode) {    // DK REVIEW 20180905 - Why not put this code into Node and make this a pass through function?
 		// compute potential origin time from tpick and traveltime to node
 		// first get traveltime1 to node
 		double travelTime1 = std::get< LINK_TT1>(link);
@@ -587,7 +587,7 @@ std::vector<std::shared_ptr<CTrigger>> CSite::nucleate(double tPick) {
 			continue;
 		}
 
-		if (node->getEnabled() == false) {
+		if (node->getEnabled() == false) {   // DK REVIEW 20180905 - Why wouldn't the node be enabled?
 			continue;
 		}
 
@@ -607,7 +607,7 @@ std::vector<std::shared_ptr<CTrigger>> CSite::nucleate(double tPick) {
 		// at the current node with the potential origin times
 		bool primarySuccessful = false;
 		if (tOrigin1 > 0) {
-			std::shared_ptr<CTrigger> trigger1 = node->nucleate(tOrigin1);
+			std::shared_ptr<CTrigger> trigger1 = node->nucleate(tOrigin1);   // DK REVIEW 20180905 - pass link and pick to node->nucleate and let it sort it out?
 
 			if (trigger1 != NULL) {
 				// if node triggered, add to triggered vector
@@ -617,7 +617,7 @@ std::vector<std::shared_ptr<CTrigger>> CSite::nucleate(double tPick) {
 		}
 
 		// only attempt secondary phase nucleation if primary nucleation
-		// was unsuccessful
+		// was unsuccessful   // DK REVIEW 20180905 - seems a little odd and arbitrary...
 		if ((primarySuccessful == false) && (tOrigin2 > 0)) {
 			std::shared_ptr<CTrigger> trigger2 = node->nucleate(tOrigin2);
 
@@ -650,7 +650,10 @@ void CSite::addTrigger(std::vector<std::shared_ptr<CTrigger>> *vTrigger,
 		return;
 	}
 
-	// clean up expired pointers
+	// clean up expired pointers   // DK REVIEW 20180905 - This is  "save the best trigger from this web",
+                                 // That seems kinda counter to the general glass attitude of
+                                 // "try anything that might work, and it will eventually sort itself out and evolve
+                                 // into the proper solution.
 	for (auto it = vTrigger->begin(); it != vTrigger->end();) {
 		std::shared_ptr<CTrigger> aTrigger = (*it);
 
@@ -661,14 +664,14 @@ void CSite::addTrigger(std::vector<std::shared_ptr<CTrigger>> *vTrigger,
 				it = vTrigger->erase(it);
 				it = vTrigger->insert(it, trigger);
 			}
-
+      // else - ignore this trigger.
 			// we're done
 			return;
 		} else {
 			++it;
 		}
 	}
-
+  // we didn't find an existing trigger from this web.
 	// add triggering node to vector of triggered nodes
 	vTrigger->push_back(trigger);
 }

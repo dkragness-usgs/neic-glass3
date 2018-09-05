@@ -19,7 +19,7 @@ namespace glasscore {
 
 // site Link sorting function
 // Compares site links using travel times
-bool sortSiteLink(const SiteLink &lhs, const SiteLink &rhs) {
+bool sortSiteLink(const SiteLink &lhs, const SiteLink &rhs) {  // DK REVIEW 20180904 - should be compareSiteLinkByDist() or SiteLinkLessThanByDist()
 	double travelTime1 = std::get< LINK_TT1>(lhs);
 	if (travelTime1 < 0) {
 		travelTime1 = std::get< LINK_TT2>(lhs);
@@ -161,8 +161,7 @@ bool CNode::unlinkSite(std::shared_ptr<CSite> site) {
 		// get the site
 		std::shared_ptr<CSite> currentSite = std::get< LINK_PTR>(link);
 
-		// if the new station would be before
-		// the current station
+		// list is not sorted in any particular order, so search through every element (shouldn't be many), and break when/if found.
 		if (currentSite->getScnl() == site->getScnl()) {
 			found = true;
 			foundLink = link;
@@ -174,7 +173,8 @@ bool CNode::unlinkSite(std::shared_ptr<CSite> site) {
 	}
 
 	if (found == true) {
-		// find site iterator to remove
+		// find site iterator to remove  // DK REVIEW - Bwah?  why are we running find() here?  Didn't we already search vSite above?
+                                     // Why not just delete it in the loop above?
 		auto it = std::find(vSite.begin(), vSite.end(), foundLink);
 		if (it != vSite.end()) {
 			// remove site
@@ -217,7 +217,7 @@ bool CNode::unlinkLastSite() {
 	vSite.pop_back();
 
 	// enable node
-	bEnabled = true;
+	bEnabled = true;  // DK REVIEW 20180904 - Why?
 
 	return (true);
 }
@@ -260,11 +260,11 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 
 	std::vector<std::shared_ptr<CPick>> vPick;
 
-	// lock mutex for this scope
+	// lock mutex for this Site Vector, for duration of this scope
 	std::lock_guard<std::mutex> guard(vSiteMutex);
 
 	// the best nucleating pick
-	std::shared_ptr<CPick> pickBest;
+	std::shared_ptr<CPick> pickBest;  // DK REVIEW 20180904 - huh?
 
 	// search through each site linked to this node
 	for (const auto &link : vSite) {
@@ -293,9 +293,6 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 			// get the pick's arrival time
 			double tPick = pick->getTPick();
 
-			// get the picks back azimuth
-			double backAzimuth = pick->getBackAzimuth();
-
 			// compute observed travel time from the pick time and
 			// the provided origin time
 			double tObs = tPick - tOrigin;
@@ -303,9 +300,14 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 			// Ignore arrivals past earlier than this potential origin and
 			// past 1000 seconds (about 100 degrees)  // DK REVIEW 20180821  - not sure about the math here.....  looks suspect and nasty hardcoded.
 			// NOTE: Time cutoff is hard coded
-			if (tObs < 0 || tObs > 1000.0) {
+
+			if (tObs < 0 || tObs > 1000.0) {  // DK REVIEW 20180904 - Why is this here?  At this point we have the two TTs, why not use 
+                                        // if <  min(TT1, TT2) - LocSlop  OR  >  max(TT1, TT2) + LocSlop
 				continue;
 			}
+
+      // get the pick's back azimuth
+      double backAzimuth = pick->getBackAzimuth();
 
 			// check backazimuth if present
 			if (backAzimuth > 0) {
@@ -360,12 +362,12 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 				// remember the best pick
 				pickBest = pick;
 			}
-		}  // DK REVIEW 20180821  - this needs an end comment, to give you a clue where you are in the code.
+		}  // DK REVIEW 20180821  - this needs an end comment, to give you a clue where you are in the code.  - for each pick at a usable/enabled/john-blessed site
 
 		// check to see if the pick with the highest significance at this site
 		// should be added to the overall sum from this site
 		// NOTE: This significance threshold is hard coded.
-		if (dSigBest >= 0.1) {
+		if (dSigBest >= 0.1) {  // DK REVIEW 20180904 - another nasty hardcode...
 			// count this site
 			nCount++;
 
@@ -376,7 +378,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 			// add the pick to the pick vector
 			vPick.push_back(pickBest);
 		}
-	}
+	}  // for each site
 
 	// Depth Down-weighting
 	// if (dZ > 75.) {

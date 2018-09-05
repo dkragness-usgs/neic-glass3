@@ -402,7 +402,7 @@ class CSite {
 	/**
 	 * \brief A boolean flag indicating whether this site is disabled external
 	 * to glass. This is different than bUse, which is managed by glass
-	 * processes.
+	 * processes.  // DK REVIEW 20180905 - So what manages bEnable?  How does bEnable get set to TRUE or FALSE?
 	 */
 	bool bEnable;
 

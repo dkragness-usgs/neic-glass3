@@ -252,7 +252,7 @@ double CTTT::T(glassutil::CGeo *geo, double tObserved) {
 		CTravelTime * aTrv = pTrv[i];
 
 		// set origin
-		aTrv->setOrigin(dLat, dLon, dZ);
+		aTrv->setOrigin(dLat, dLon, dZ);   // DK REVIEW 20180830 - Uh oh... This seems bad - how can this be multi-threaded if we're having the library store LatLonDep?
 
 		// get traveltime
 		double traveltime = aTrv->T(geo);

@@ -8,6 +8,9 @@
 #include "Pick.h"
 #include "Logit.h"
 
+// DK REVIEW 20180905 - Couldn't we do away with Trigger and just add a flag to Hypo called bPreliminary, to indicate 
+// whether a Hypo was a real(located) hypo or a preliminary(nucleated-only) hypo?
+
 namespace glasscore {
 
 // ---------------------------------------------------------CTrigger

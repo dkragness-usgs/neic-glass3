@@ -145,12 +145,12 @@ class CTravelTime {
 	/**
 	 * \brief A pointer to the distance warp object used
 	 */
-	CTimeWarp *pDistanceWarp;
+	CTimeWarp *pDistanceWarp;   // DK REVIEW 20180830 - WTF?
 
 	/**
 	 * \brief A pointer to the depth warp object used
 	 */
-	CTimeWarp *pDepthWarp;
+	CTimeWarp *pDepthWarp; // DK REVIEW 20180830 - WTF?
 
 	/**
 	 * \brief An integer variable containing the grid index for the distance
@@ -179,7 +179,7 @@ class CTravelTime {
 	/**
 	 * \brief An array of characters containing the phases
 	 */
-	char *pPhaseArray;
+	char *pPhaseArray;  // DK REVIEW 20180830 - WTF?
 
 	/**
 	 * \brief A std::std::string containing the name of the phase used for this
@@ -191,19 +191,19 @@ class CTravelTime {
 	 * \brief Delta in degrees used by caller to calculate distance
 	 * dependent weights
 	 */
-	double dDelta;
+	double dDelta;  // DK REVIEW 20180830 - WTF?  It's used by the caller.  So don't store it.  just use a function parameter.
 
 	/**
 	 * \brief Depth in km used by caller to calculate distance
 	 * dependent weights
 	 */
-	double dDepth;
+	double dDepth;  // DK REVIEW 20180830 - WTF?  It's used by the caller.  So don't store it.  just use a function parameter.
 
 	/**
 	 * \brief Ephemeral (temporary) glassutil::CGeo object containing current
 	 * geographic location. Set by setOrigin()
 	 */
-	glassutil::CGeo geoOrg;
+	glassutil::CGeo geoOrg;   // DK REVIEW 20180830 - WTF?  It's used by the caller.  So don't store it.  just use a function parameter.
 };
 }  // namespace traveltime
 #endif  // TRAVELTIME_H
