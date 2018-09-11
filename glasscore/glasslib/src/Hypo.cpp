@@ -2238,8 +2238,14 @@ double CHypo::localize() {
 
 	glassutil::CTaper taper;
 	taper = glassutil::CTaper(-0.0001, -0.0001, -0.0001, 30 + 0.0001);
-	double searchR = (dRes / 4. + taper.Val(vPick.size()) * .75 * dRes) / 2.;
-
+	double searchR = (dRes / 4. + taper.Val(vPick.size()) * .75 * dRes) / 2.;  // DK REVIEW 20180905 - searchR should really be dInitialStepSizeKM
+                                                                             // It looks like it is a minimum of 1/8 of the dRes resolution ((dRes / 4) + 0) / 2)
+                                                                             // when there are 30(Magic number) or more picks
+                                                                             // When there are 0 picks, searchR = dRes/2, for 4 picks it's around dRes/8 + dRes * 3/16 or dRes*5/16
+                                                                             //  Picks   dInitialStepSizeKM
+                                                                             //      0    dRes *  1/2
+                                                                             //      4    dRes *  5/16
+                                                                             //     30    dRes *  1/8
 	// This should be the default
 	if (pGlass->getMinimizeTtLocator() == false) {
 		if (npick < 50) {
