@@ -289,81 +289,144 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 		double travelTime1 = std::get< LINK_TT1>(link);
 		double travelTime2 = std::get< LINK_TT2>(link);
 
+    double min, max;
+    double dtExcludeBegin = 0.0;
+    double dtExcludeEnd;
+
+    if((travelTime1 >= 0) && (travelTime2 >= 0)) {
+      // both travel times are valid
+      if(travelTime1 <= travelTime2) {
+        // TT1 smaller/shorter/faster
+        min = tOrigin + travelTime1 - NUCLEATION_SLOP_FACTOR_SECONDS;
+        max = tOrigin + travelTime2 + NUCLEATION_SLOP_FACTOR_SECONDS;
+      }
+      else {
+        // TT2 smaller/shorter/faster
+        min = tOrigin + travelTime2 - NUCLEATION_SLOP_FACTOR_SECONDS;
+        max = tOrigin + travelTime1 + NUCLEATION_SLOP_FACTOR_SECONDS;
+      }
+    else if(travelTime1 >= 0) {
+      // Only TT1 valid
+      min = tOrigin + travelTime1 - NUCLEATION_SLOP_FACTOR_SECONDS;
+      max = tOrigin + travelTime1 + NUCLEATION_SLOP_FACTOR_SECONDS;
+    }
+    else if(travelTime2 >= 0) {
+      // Only TT2 valid
+      min = tOrigin + travelTime2 - NUCLEATION_SLOP_FACTOR_SECONDS;
+      max = tOrigin + travelTime2 + NUCLEATION_SLOP_FACTOR_SECONDS;
+    }
+    else {
+      // no valid TTs
+      glassutil::CLogit::log(glassutil::log_level::error,
+                             "CNode::nucleate: Bad Pick SearchRange.");
+      continue;
+    }
+
+    if(max - min > NUCLEATION_SLOP_FACTOR_SECONDS * 2.0)
+    {
+      // we have two different TTs and there's a window of picks 
+      // in between the two TTs we don't want
+      dtExcludeBegin = min + NUCLEATION_SLOP_FACTOR_SECONDS * 2.0;
+      dtExcludeEnd = max - NUCLEATION_SLOP_FACTOR_SECONDS * 2.0;
+      if(dtExcludeEnd < dtExcludeBegin)
+        dtExcludeBegin = 0.0;   // we effectively don't have a window because our two windows overlap.
+    }
+
 		site->getPickMutex().lock();
 
-		// get the most significant pick given the first travel time (if
-		// available)
-		if (travelTime1 > 0) {
-			double min = tOrigin + travelTime1 - NUCLEATION_SLOP_FACTOR_SECONDS;
-			double max = tOrigin + travelTime1 + NUCLEATION_SLOP_FACTOR_SECONDS;
+    // compute bounds
+    auto lower = site->getLower(min);
+    // don't need this - we'll calc upper on our own.
+    //auto upper = site->getUpper(max);
 
-			// compute bounds
-			auto lower = site->getLower(min);
-			auto upper = site->getUpper(max);
+    // get the picks
+    // std::vector<std::shared_ptr<CPick>> vSitePicks = site->getPicks(min,
+    // max);
 
-			// iterate through each pick in the bounds
-			for (auto it = lower; ((it != upper) && (it != site->getEnd()));
-					++it) {
-				auto pick = *it;
+    // search through each pick in the window
+    // for (const auto &pick : vSitePicks) {
 
-				// null check
-				if (pick == NULL) {
-					continue;
-				}
+    for(auto it = lower; ((it != upper) && (it != site->getEnd())); ++it) {
+      auto pick = *it;
 
-				// get the best significance
-				double dSig = getBestSignificance(pick, travelTime1,
-													dAzimuthRange, tOrigin);
+      if(pick == NULL) {
+        continue;
+      }
 
-				// only count if this pick produced something significant
-				if (dSig == std::numeric_limits<double>::quiet_NaN()) {
-					continue;
-				}
+      // get the pick's arrival time
+      double tPick = pick->getTPick();
 
-				// keep the new best significance
-				if (dSig > dSigBest) {
-					dSigBest = dSig;
-					pickBest = pick;
-				}
-			}  // ---- end search through each pick at this site ----
-		}  // ---- end travelTime1 ----
+      if(tPick > max)
+        break;  // picks are in time order and we're past our window
 
-		// get the most significant pick given the second travel time (if
-		// available)
-		if (travelTime2 > 0) {
-			double min = tOrigin + travelTime2 - NUCLEATION_SLOP_FACTOR_SECONDS;
-			double max = tOrigin + travelTime2 + NUCLEATION_SLOP_FACTOR_SECONDS;
+      // skip this pick if it's in our exclude window(if we have one) between our two TTs
+      if(dtExcludeBegin && tPick > dtExcludeBegin && tPick <= dtExcludeEnd)
+        continue;
 
-			// compute bounds
-			auto lower = site->getLower(min);
-			auto upper = site->getUpper(max);
+      // get the picks back azimuth
+      double backAzimuth = pick->getBackAzimuth();
 
-			// iterate through each pick in the bounds
-			for (auto it = lower; ((it != upper) && (it != site->getEnd()));
-					++it) {
-				auto pick = *it;
+      // compute observed travel time from the pick time and
+      // the provided origin time
+      double tObs = tPick - tOrigin;
 
-				// null check
-				if (pick == NULL) {
-					continue;
-				}
+      // check backazimuth if present
+      if(backAzimuth > 0) {
+        // set up a geo for distance calculations
+        glassutil::CGeo nodeGeo;
+        nodeGeo.setGeographic(m_dLatitude, m_dLongitude,
+                              EARTHRADIUSKM - m_dDepth);
 
-				// get the best significance
-				double dSig = getBestSignificance(pick, travelTime2,
-													dAzimuthRange, tOrigin);
+        // compute azimith from the site to the node
+        double siteAzimuth = pick->getSite()->getGeo().azimuth(
+          &nodeGeo);
 
-				// only count if this pick produced something significant
-				if (dSig == std::numeric_limits<double>::quiet_NaN()) {
-					continue;
-				}
+        // check to see if pick's backazimuth is within the
+        // valid range
+        if((backAzimuth < (siteAzimuth - dAzimuthRange))
+           || (backAzimuth >(siteAzimuth + dAzimuthRange))) {
+          // it is not, do not nucleate
+          continue;
+        }
+      }
 
-				// keep the new best significance
-				if (dSig > dSigBest) {
-					dSigBest = dSig;
-					pickBest = pick;
-				}
-			}  // ---- end search through each pick at this site ----
-		}  // ---- end travelTime2 ----
+      // check slowness if present
+      // Need modify travel time libraries to support getting distance
+      // from slowness, and it's of limited value compared to the back
+      // azimuth check
+        /*if (pick->dSlowness > 0) {
+        // compute distance from the site to the node
+        double siteDistance = pick->pSite->getGeo().delta(&nodeGeo);
+
+        // compute observed distance from slowness (1/velocity)
+        // and tObs (distance = velocity * time)
+        double obsDistance = (1 / pick->dSlowness) * tObs;
+
+        // check to see if the observed distance is within the
+        // valid range
+        if ((obsDistance < (siteDistance - dDistanceRange))
+        || (obsDistance > (siteDistance + dDistanceRange))) {
+        // it is not, do not nucleate
+        continue;
+        }
+        }
+      */
+
+      // get the best significance from the observed time and the
+      // link
+      // hmmm... at this point we don't know which TT got us here, or wich one 
+      double dSig = getBestSignificance(tObs, travelTime1, travelTime2);
+
+      // only count if this pick is significant (better than
+      // previous)
+      if(dSig > dSigBest) {
+        // keep the new best significance
+        dSigBest = dSig;
+
+        // remember the best pick
+        pickBest = pick;
+      }
+    }  // ---- end search through each pick at this site ----
 
 		site->getPickMutex().unlock();
 
@@ -407,86 +470,38 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 }
 
 // ---------------------------------------------------------getBestSignificance
-double CNode::getBestSignificance(std::shared_ptr<CPick> pPick,
-									double travelTime, double dAzimuthRange,
-									double tOrigin) {
-	if (pPick == NULL) {
-		return (std::numeric_limits<double>::quiet_NaN());
-	}
+double CNode::getBestSignificance(double tObservedTT, double travelTime1,
+                                  double travelTime2) {
+  // use observed travel time, travel times to site
+  double tRes1 = -1;
+  if(travelTime1 > 0) {
+    // calculate time residual
+    tRes1 = std::abs(tObservedTT - travelTime1);
+  }
+  double tRes2 = -1;
+  if(travelTime2 > 0) {
+    // calculate time residual
+    tRes2 = std::abs(tObservedTT - travelTime2);
+  }
 
-	// get the pick's arrival time
-	double tPick = pPick->getTPick();
+  // compute significances using residuals and web resolution
+  // should trigger be a looser cutoff than location cutoff
+  double dSig1 = 0;
+  if(tRes1 > 0) {
+    dSig1 = glassutil::GlassMath::sig(tRes1, m_dResolution);
+  }
+  double dSig2 = 0;
+  if(tRes2 > 0) {
+    dSig2 = glassutil::GlassMath::sig(tRes2, m_dResolution);
+  }
 
-	// get the picks back azimuth
-	double backAzimuth = pPick->getBackAzimuth();
-
-	// compute observed travel time from the pick time and
-	// the provided origin time
-	double tObservedTT = tPick - tOrigin;
-
-	// Ignore arrivals earlier than this potential origin and
-	// past 1000 seconds (about 100 degrees)
-	// NOTE: Time cutoff is hard coded
-	if (tObservedTT < 0 || tObservedTT > 1000.0) {
-		return (std::numeric_limits<double>::quiet_NaN());
-	}
-
-	// check backazimuth if present
-	if (backAzimuth > 0) {
-		// set up a geo for distance calculations
-		glassutil::CGeo nodeGeo;
-		nodeGeo.setGeographic(m_dLatitude, m_dLongitude,
-		EARTHRADIUSKM - m_dDepth);
-
-		// compute azimith from the site to the node
-		double siteAzimuth = pPick->getSite()->getGeo().azimuth(&nodeGeo);
-
-		// check to see if pick's backazimuth is within the
-		// valid range
-		if ((backAzimuth < (siteAzimuth - dAzimuthRange))
-				|| (backAzimuth > (siteAzimuth + dAzimuthRange))) {
-			// it is not, do not nucleate
-			return (std::numeric_limits<double>::quiet_NaN());
-		}
-	}
-
-	// check slowness if present
-	// Need modify travel time libraries to support getting distance
-	// from slowness, and it's of limited value compared to the back
-	// azimuth check
-	/*if (pick->dSlowness > 0) {
-	 // compute distance from the site to the node
-	 double siteDistance = pick->pSite->getGeo().delta(&nodeGeo);
-
-	 // compute observed distance from slowness (1/velocity)
-	 // and tObs (distance = velocity * time)
-	 double obsDistance = (1 / pick->dSlowness) * tObs;
-
-	 // check to see if the observed distance is within the
-	 // valid range
-	 if ((obsDistance < (siteDistance - dDistanceRange))
-	 || (obsDistance > (siteDistance + dDistanceRange))) {
-	 // it is not, do not nucleate
-	 return (std::numeric_limits<double>::quiet_NaN());
-	 }
-	 }*/
-
-	// use observed travel time, travel times to site
-	double tResidual = -1;
-	if (travelTime > 0) {
-		// calculate time residual
-		tResidual = std::abs(tObservedTT - travelTime);
-	} else {
-		return (std::numeric_limits<double>::quiet_NaN());
-	}
-
-	// compute significances using residuals and web resolution
-	// should trigger be a looser cutoff than location cutoff
-	if (tResidual > 0) {
-		return(glassutil::GlassMath::sig(tResidual, m_dResolution));
-	} else {
-		return (std::numeric_limits<double>::quiet_NaN());
-	}
+  // return the higher of the two significances
+  if(dSig1 > dSig2) {
+    return (dSig1);
+  }
+  else {
+    return (dSig2);
+  }
 }
 
 // ---------------------------------------------------------getSite
