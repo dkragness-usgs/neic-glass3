@@ -115,7 +115,7 @@ bool CNode::initialize(std::string name, double lat, double lon, double z,
 
 // ---------------------------------------------------------linkSite
 bool CNode::linkSite(std::shared_ptr<CSite> site, std::shared_ptr<CNode> node,
-						double travelTime1, double travelTime2) {
+						double travelTime1, double travelTime2, double distDeg) {
 	// nullchecks
 	// check site
 	if (site == NULL) {
@@ -135,7 +135,7 @@ bool CNode::linkSite(std::shared_ptr<CSite> site, std::shared_ptr<CNode> node,
 
 	// Link node to site using traveltime
 	// NOTE: No validation on travel times
-	SiteLink link = std::make_tuple(site, travelTime1, travelTime2);
+	SiteLink link = std::make_tuple(site, travelTime1, travelTime2, distDeg);
 	m_vSiteLinkList.push_back(link);
 
 	// link site to node, again using the traveltime
@@ -288,6 +288,8 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 		// get traveltime(s) to site
 		double travelTime1 = std::get< LINK_TT1>(link);
 		double travelTime2 = std::get< LINK_TT2>(link);
+    double distDeg     = std::get< LINK_DIST>(link);
+
 
     double min, max;
     double dtExcludeBegin = 0.0;
@@ -415,7 +417,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
       // get the best significance from the observed time and the
       // link
       // hmmm... at this point we don't know which TT got us here, or wich one 
-      double dSig = getBestSignificance(tObs, travelTime1, travelTime2);
+      double dSig = getBestSignificance(tObs, travelTime1, travelTime2, distDeg);
 
       // only count if this pick is significant (better than
       // previous)
@@ -471,7 +473,7 @@ std::shared_ptr<CTrigger> CNode::nucleate(double tOrigin) {
 
 // ---------------------------------------------------------getBestSignificance
 double CNode::getBestSignificance(double tObservedTT, double travelTime1,
-                                  double travelTime2) {
+                                  double travelTime2, double distDeg) {
   // use observed travel time, travel times to site
   double tRes1 = -1;
   if(travelTime1 > 0) {
@@ -486,13 +488,29 @@ double CNode::getBestSignificance(double tObservedTT, double travelTime1,
 
   // compute significances using residuals and web resolution
   // should trigger be a looser cutoff than location cutoff
+
+  // CNode::nucleate() will ignore anything with a residual > 2.15 sigma.
+  // since we are using the web resolution as our starting point, that says we should be
+  // able to pull in anything that is 2.15 times the web resolution away, which should let us go
+  // plenty far (anything over sqrt(2)/2 * resolution should theoretically be closer to another
+  // node than it is to us, but we're already reducing the slop by up to 8x over what it was)
+  // even though we have not accounted for pick error.
+  // I think this really should be some combination of :
+  // location error(converted to seconds) -  sqrt(2)/2 * m_dSurfaceResolution* KM2DEG * tt1.rayparam(dtdx) + 0.5 * m_dDepthResolution*tt1.dtdz
+  // tt error -  tt1.residual_PDF_SD for sigma - observed difference between theoretical and actual for tt1
+  // pick error - estimated picking error from pick data.
+  // but that's more complicated than what we are prepared to deal with at this time, so let's go with what's below, and refine it empirically:
+  // where we subtract location error from tRes1, and then 
   double dSig1 = 0;
   if(tRes1 > 0) {
-    dSig1 = glassutil::GlassMath::sig(tRes1, m_dResolution);
+    // calculate the PDF based on the number of SDs we are from mean, by allowing for WEb Resolution slop converted to seconds
+    dSig1 = glassutil::GlassMath::sig(max(0, tRes1- travelTime1 / distDeg * (m_dResolution + NUC_DEPTH_SHELL_RESOLUTION_KM) * KM2DEG), 
+                                      NUC_SECONDS_PER_SIGMA);
   }
   double dSig2 = 0;
   if(tRes2 > 0) {
-    dSig2 = glassutil::GlassMath::sig(tRes2, m_dResolution);
+    dSig2 = glassutil::GlassMath::sig(max(0, tRes2 - travelTime2 / distDeg * (m_dResolution + NUC_DEPTH_SHELL_RESOLUTION_KM) * KM2DEG),
+                                      NUC_SECONDS_PER_SIGMA);
   }
 
   // return the higher of the two significances
