@@ -493,9 +493,33 @@ glass3::util::WorkState CPickList::work() {
 	// If both succeed, the mess is sorted out in hypo processing/refinement
 	CGlass::getHypoList()->associateData(pck);
 
-	// nucleate
-	pck->nucleate();
+  bool bNucleateThisPick = true;
+  // check to see if the pick is currently associated to a hypo
+  if(pck->m_wpHypo.expired() == false) {
+    // get the hypo and compute ratio
+    std::shared_ptr<CHypo> pHypo = m_wpHypo.lock();
+    if(pHypo != NULL) {
+      double adBayesRatio = (pHypo->getBayesValue())
+        / (pHypo->getNucleationStackThreshold());
 
+      // check to see if the ratio is high enough to not
+      // bother
+      // NOTE: Hardcoded
+      if(adBayesRatio > 2.0) {
+        glassutil::CLogit::log(
+          glassutil::log_level::debug,
+          "CPickList::work() - skipping Nucleate due to large event association "
+          + pck->Site->getSCNL() + "; tPick:" + pt
+          + "; idPick:" + m_sID + " associated with an event "
+          "with stack twice threshold ("
+          + std::to_string(pHypo->getBayesValue()) + ")");
+        bNucleateThisPick = false;
+      }
+    }
+  }
+  if(bNucleateThisPick)
+    pck->nucleate();  // Attempt nucleation unless we were told not to.
+  
 	// give up some time at the end of the loop
 	return (glass3::util::WorkState::OK);
 }
