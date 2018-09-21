@@ -24,7 +24,10 @@ namespace glassutil {
 
 // geographic defines
 #define EARTHRADIUSKM 6371.0  // average
-#define DEG2KM 111.319  // at equator
+#define DEG2KM 111.319  // at equator  - DK This doesn't make sense to me.  If we're gonna use 6371 as 
+                        // the average radius, then should we not treat DEG2KM as a spherical conversion
+                        // based on that 6371, and thus make it 111.19, 0.00899 as the reciprocal ?
+#define KM2DEG 0.0089832
 
 /**
  * \brief glassutil geographic coordinate conversion class
