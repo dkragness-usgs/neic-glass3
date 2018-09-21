@@ -1336,7 +1336,7 @@ std::shared_ptr<CNode> CWeb::generateNodeSites(std::shared_ptr<CNode> node) {
 		}
 
 		// Link node to site using traveltimes
-		node->linkSite(site, node, travelTime1, travelTime2);
+		node->linkSite(site, node, travelTime1, travelTime2, delta);
 	}
 
 	// sort the site links
@@ -1459,7 +1459,7 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 		// check to see if we're at the limit
 		if (node->getSiteLinksCount() < m_iNumStationsPerNode) {
 			// Link node to site using traveltimes
-			node->linkSite(site, node, travelTime1, travelTime2);
+			node->linkSite(site, node, travelTime1, travelTime2, newDistance);
 
 		} else {
 			// remove last site
@@ -1468,7 +1468,7 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 			node->unlinkLastSite();
 
 			// Link node to site using traveltimes
-			node->linkSite(site, node, travelTime1, travelTime2);
+			node->linkSite(site, node, travelTime1, travelTime2, newDistance);
 		}
 
 		// resort site links
@@ -1595,7 +1595,7 @@ void CWeb::removeSite(std::shared_ptr<CSite> site) {
 			}
 
 			// Link node to new site using traveltimes
-			if (node->linkSite(newSite, node, travelTime1, travelTime2)
+			if (node->linkSite(newSite, node, travelTime1, travelTime2, newDistance)
 					== false) {
 				glassutil::CLogit::log(
 						glassutil::log_level::error,
