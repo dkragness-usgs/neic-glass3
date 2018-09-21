@@ -112,7 +112,7 @@ bool CHypoList::associateData(std::shared_ptr<CPick> pk) {
 	// (a potential hypo must be before the pick we're associating)
 	// use the pick time minus 2400 seconds to compute the starting index
 	// NOTE: Hard coded time delta
-	std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(pk->getTPick() - 2400,
+	std::vector<std::weak_ptr<CHypo>> hypoList = getHypos(pk->getTPick() - 2400,  // DK Magic number
 															pk->getTPick());
 
 	// make sure we got any hypos
@@ -914,7 +914,7 @@ bool CHypoList::findAndMergeMatchingHypos(std::shared_ptr<CHypo> hypo) {
 			}
 
 			// initial localization attempt of toHypo after adding picks
-			toHypo->anneal(10000, (distanceCut / 2.) * DEG2KM,
+			toHypo->anneal(2000, (distanceCut / 2.) * DEG2KM,
 							(distanceCut / 100.) * DEG2KM, (timeCut / 2.), .01);
 
 			// Remove picks from toHypo that do not fit initial location
