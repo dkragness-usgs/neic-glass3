@@ -31,6 +31,7 @@
 	     "PhaseName": "S",
 	     "TravFile": "./global_example/S.trv"
     }
-  }
+  },
+  "ZoneStats": "./global_example/qa_zonestats_2.txt"
 }
 # End of glass_global_grid.d

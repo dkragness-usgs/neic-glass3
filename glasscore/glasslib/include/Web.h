@@ -599,6 +599,16 @@ class CWeb : public glass3::util::ThreadBaseClass {
 	 */
 	std::mutex m_QueueMutex;
 
+  /**
+  * \brief string containing the filename of ZoneStats file.  Empty = no zonestats
+  */
+  std::string m_sZoneStatsFileName;
+
+    /**
+  * \brief shared pointer to ZoneStats info
+  */
+  std::shared_ptr<glass3::util::CZoneStats> m_pZoneStats;
+
 	/**
 	 * \brief A recursive_mutex to control threading access to CWeb.
 	 * NOTE: recursive mutexes are frowned upon, so maybe redesign around it

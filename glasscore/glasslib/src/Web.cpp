@@ -122,6 +122,10 @@ void CWeb::clear() {
 
 	m_pNucleationTravelTime1 = NULL;
 	m_pNucleationTravelTime2 = NULL;
+
+  //reset zonestats info
+  m_pZoneStats = nullptr;
+  m_sZoneStatsFileName.clear();
 }
 
 // ---------------------------------------------------------initialize
@@ -283,8 +287,36 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 		// sort site list for this vertex
 		sortSiteListForNode(aLat, aLon);
 
+    double dMaxNodeDepth;
+    // get zonestats for node epicenter
+    if((!m_pZoneStats) || 
+       (dMaxNodeDepth = m_pZoneStats->GetMaxDepthForLatLon(aLat, aLon)) == m_pZoneStats->depthInvalid)
+    {
+      dMaxNodeDepth = m_dMaxDepth
+    }
+
+    bool bReachedMaxDepth = false;
 		// for each depth
 		for (auto z : depthLayerArray) {
+
+      // check to see if Z is below zonestats
+      if(z >= dMaxNodeDepth)
+      {
+        bReachedMaxDepth = true;
+        glassutil::CLogit::log(glassutil::log_level::debug,
+                               "CWeb::generateGlobalGrid:  Truncated shell depth to " + std::to_string(dMaxNodeDepth) +
+                               " for Lat/Lon " + std::to_string(aLat) + "/" + std::to_string(aLon));
+        z = dMaxNodeDepth;
+      }
+
+      // would make a certain amount of sense here, to track
+      // the depth delta between this node and the vertically 
+      // adjacent ones (ones above and below it), and save
+      // the max of those as the Vertical Resolution, which 
+      // could be used to set boundaries during nucleation,
+      // and POSSIBLY also constrain the solution post-nucleation,
+      // during initial location.
+
 			// create node
 			std::shared_ptr<CNode> node = generateNode(aLat, aLon, z,
 														getNodeResolution());
@@ -302,8 +334,11 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 
 					// write to station file
 					outstafile << node->getSitesString();
-				}
-			}
+				}  // end if addNode()
+
+        if(bReachedMaxDepth)
+          break;
+			}  // end for each depth in depthLayerArray
 		}
 	}
 
@@ -496,9 +531,29 @@ bool CWeb::generateLocalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 			// sort site list for this generateLocalGrid point
 			sortSiteListForNode(latrow, loncol);
 
-			// for each depth at this generateLocalGrid point
-			for (auto z : depthLayerArray) {
-				// generate this node
+      double dMaxNodeDepth;
+      // get zonestats for node epicenter
+      if((!m_pZoneStats) ||
+        (dMaxNodeDepth = m_pZoneStats->GetMaxDepthForLatLon(latrow, loncol)) == m_pZoneStats->depthInvalid)
+      {
+        dMaxNodeDepth = m_dMaxDepth
+      }
+
+      bool bReachedMaxDepth = false;
+      // for each depth
+      for(auto z : depthLayerArray) {
+
+        // check to see if Z is below zonestats
+        if(z >= dMaxNodeDepth)
+        {
+          bReachedMaxDepth = true;
+          glassutil::CLogit::log(glassutil::log_level::debug,
+                                 "CWeb::generateLocalGrid:  Truncated shell depth to " + std::to_string(dMaxNodeDepth) +
+                                 " for Lat/Lon " + std::to_string(aLat) + "/" + std::to_string(aLon));
+          z = dMaxNodeDepth;
+        }
+        
+        // generate this node
 				std::shared_ptr<CNode> node = generateNode(
 						latrow, loncol, z, getNodeResolution());
 
@@ -517,9 +572,12 @@ bool CWeb::generateLocalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 					// write to station file
 					outstafile << node->getSitesString();
 				}
-			}
-		}
-	}
+        if(bReachedMaxDepth)
+          break;
+
+			}  // end for each depth layer
+		}  // end for each lon-column in grid
+	}    // end for each lat-row in grid
 
 	// close generateLocalGrid file
 	if (getSaveGrid()) {
@@ -658,6 +716,8 @@ bool CWeb::generateExplicitGrid(
 
 		// sort site list
 		sortSiteListForNode(lat, lon);
+
+    // don't do any zonestats checks here, since this grid is explicit
 
 		// create node, note resolution set to 0
 		std::shared_ptr<CNode> node = generateNode(lat, lon, Z,
@@ -818,6 +878,13 @@ bool CWeb::loadGridConfiguration(
 		update = (*gridConfiguration)["UpdateGrid"].ToBool();
 	}
 
+  // set whether to update weblists
+  if((gridConfiguration->HasKey("ZoneStats"))
+     && ((*gridConfiguration)["ZoneStats"].GetType()
+         == json::ValueType::StringVal)) {
+    m_sZoneStatsFileName = (*gridConfiguration)["ZoneStats"].ToString();
+  }
+
 	// initialize
 	initialize(name, thresh, detect, nucleate, resol, update, saveGrid,
 				m_pNucleationTravelTime1, m_pNucleationTravelTime2, aziTaper,
@@ -829,8 +896,21 @@ bool CWeb::loadGridConfiguration(
 	// Generate eligible station list
 	loadWebSiteList();
 
+  // Load zone statistics
+  if(!m_sZoneStatsFileName.empty())
+  {
+    m_pZoneStats = std::make_shared<glass3::util::CZoneStats>();
+
+    if(!m_pZoneStats->setup(&m_sZoneStatsFileName))
+    {
+      glassutil::CLogit::log(
+        glassutil::log_level::error,
+        "CWeb::loadGridConfiguration: ZoneStats filename specified, but unable to load valid data from" + m_sZoneStatsFileName);
+      return(false);
+    }
+  }  // end if m_sZoneStatsFileName
 	return (true);
-}
+}  // end loadGridConfiguration()
 
 // ---------------------------------------------------------loadTravelTimes
 bool CWeb::loadTravelTimes(json::Object *gridConfiguration) {
