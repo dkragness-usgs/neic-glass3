@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+
+#include <logger.h>
+
 #include "Node.h"
 #include "Site.h"
-#include "Logit.h"
 
 // test data
 #define NAME "testNode"
@@ -15,6 +17,7 @@
 
 #define SITEJSON "{\"Cmd\":\"Site\",\"Elv\":2326.000000,\"Lat\":45.822170,\"Lon\":-112.451000,\"Site\":\"LRM.EHZ.MB.--\",\"Use\":true}"  // NOLINT
 #define TRAVELTIME 122
+#define DISTANCE_FOR_TT 8.5
 
 // NOTE: Need to consider testing nucleate, but that would need a much more
 // involved set of real data, and possibly a glass refactor to better support
@@ -22,7 +25,7 @@
 
 // tests to see if the node can be constructed
 TEST(NodeTest, Construction) {
-	glassutil::CLogit::disable();
+	glass3::util::Logger::disable();
 
 	// construct a node
 	glasscore::CNode * testNode = new glasscore::CNode(std::string(NAME),
@@ -61,12 +64,12 @@ TEST(NodeTest, Construction) {
 	ASSERT_EQ(expectedSize, testNode->getSiteLinksCount())<< "sitelist empty";
 
 	// geo
-	ASSERT_EQ(LONGITUDE, testNode->getGeo().dLon)<< "geo";
+	ASSERT_EQ(LONGITUDE, testNode->getGeo().m_dGeocentricLongitude)<< "geo";
 }
 
 // tests to see if sites can be added to the node
 TEST(NodeTest, SiteOperations) {
-	glassutil::CLogit::disable();
+	glass3::util::Logger::disable();
 
 	// construct a node
 	glasscore::CNode * testNode = new glasscore::CNode(std::string(NAME),
@@ -88,7 +91,8 @@ TEST(NodeTest, SiteOperations) {
 	std::shared_ptr<glasscore::CSite> sharedTestSite(testSite);
 
 	// add the site to the node
-	ASSERT_TRUE(testNode->linkSite(sharedTestSite, sharedTestNode, TRAVELTIME));
+	ASSERT_TRUE(
+			testNode->linkSite(sharedTestSite, sharedTestNode, DISTANCE_FOR_TT, TRAVELTIME)); // NOLINT
 
 	// check to see if the site was added
 	int expectedSize = 1;
@@ -104,7 +108,7 @@ TEST(NodeTest, SiteOperations) {
 
 // test various failure cases
 TEST(NodeTest, FailTests) {
-	glassutil::CLogit::disable();
+	glass3::util::Logger::disable();
 
 	// null pointers
 	std::shared_ptr<glasscore::CNode> nullNode;
@@ -128,8 +132,10 @@ TEST(NodeTest, FailTests) {
 	std::shared_ptr<glasscore::CSite> sharedTestSite(testSite);
 
 	// link fails
-	ASSERT_FALSE(testNode->linkSite(nullSite, sharedTestNode, TRAVELTIME));
-	ASSERT_FALSE(testNode->linkSite(sharedTestSite, nullNode, TRAVELTIME));
+	ASSERT_FALSE(
+			testNode->linkSite(nullSite, sharedTestNode, DISTANCE_FOR_TT, TRAVELTIME));  // NOLINT
+	ASSERT_FALSE(
+			testNode->linkSite(sharedTestSite, nullNode, DISTANCE_FOR_TT, TRAVELTIME));  // NOLINT
 
 	// unlink fails
 	ASSERT_FALSE(testNode->unlinkSite(nullSite));

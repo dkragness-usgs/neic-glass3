@@ -1,22 +1,21 @@
+#include "Pick.h"
 #include <json.h>
+#include <date.h>
+#include <logger.h>
 #include <memory>
 #include <string>
 #include <vector>
 #include <limits>
 #include <algorithm>
-#include "Pid.h"
 #include "Web.h"
 #include "Trigger.h"
 #include "Node.h"
 #include "PickList.h"
 #include "HypoList.h"
 #include "Hypo.h"
-#include "Pick.h"
 #include "Site.h"
 #include "SiteList.h"
-#include "Date.h"
 #include "Glass.h"
-#include "Logit.h"
 
 namespace glasscore {
 
@@ -37,8 +36,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 
 	// null check json
 	if (pick == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::error,
-								"CPick::CPick: NULL json communication.");
+		glass3::util::Logger::log("error",
+									"CPick::CPick: NULL json communication.");
 		return;
 	}
 
@@ -48,15 +47,13 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 		std::string type = (*pick)["Type"].ToString();
 
 		if (type != "Pick") {
-			glassutil::CLogit::log(
-					glassutil::log_level::warn,
-					"CPick::CPick: Non-Pick message passed in.");
+			glass3::util::Logger::log(
+					"warning", "CPick::CPick: Non-Pick message passed in.");
 			return;
 		}
 	} else {
-		glassutil::CLogit::log(
-				glassutil::log_level::error,
-				"CPick::CPick: Missing required Type Key.");
+		glass3::util::Logger::log("error",
+									"CPick::CPick: Missing required Type Key.");
 		return;
 	}
 
@@ -86,9 +83,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 				&& (siteobj["Station"].GetType() == json::ValueType::StringVal)) {
 			sta = siteobj["Station"].ToString();
 		} else {
-			glassutil::CLogit::log(
-					glassutil::log_level::error,
-					"CPick::CPick: Missing required Station Key.");
+			glass3::util::Logger::log(
+					"error", "CPick::CPick: Missing required Station Key.");
 
 			return;
 		}
@@ -106,9 +102,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 				&& (siteobj["Network"].GetType() == json::ValueType::StringVal)) {
 			net = siteobj["Network"].ToString();
 		} else {
-			glassutil::CLogit::log(
-					glassutil::log_level::error,
-					"CPick::CPick: Missing required Network Key.");
+			glass3::util::Logger::log(
+					"error", "CPick::CPick: Missing required Network Key.");
 
 			return;
 		}
@@ -122,8 +117,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 		}
 	} else {
 		// no site key
-		glassutil::CLogit::log(glassutil::log_level::error,
-								"CPick::CPick: Missing required Site Key.");
+		glass3::util::Logger::log("error",
+									"CPick::CPick: Missing required Site Key.");
 
 		return;
 	}
@@ -135,8 +130,7 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 
 	// check to see if we got a site
 	if (site == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
-								"CPick::CPick: site is null.");
+		glass3::util::Logger::log("warning", "CPick::CPick: site is null.");
 
 		return;
 	}
@@ -152,18 +146,17 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 			&& ((*pick)["Time"].GetType() == json::ValueType::StringVal)) {
 		// Time is formatted in iso8601, convert to julian seconds
 		ttt = (*pick)["Time"].ToString();
-		glassutil::CDate dt = glassutil::CDate();
+		glass3::util::Date dt = glass3::util::Date();
 		tpick = dt.decodeISO8601Time(ttt);
 	} else if (pick->HasKey("T")
 			&& ((*pick)["T"].GetType() == json::ValueType::StringVal)) {
 		// T is formatted in datetime, convert to julian seconds
 		ttt = (*pick)["T"].ToString();
-		glassutil::CDate dt = glassutil::CDate();
+		glass3::util::Date dt = glass3::util::Date();
 		tpick = dt.decodeDateTime(ttt);
 	} else {
-		glassutil::CLogit::log(
-				glassutil::log_level::error,
-				"CPick::CPick: Missing required Time or T Key.");
+		glass3::util::Logger::log(
+				"error", "CPick::CPick: Missing required Time or T Key.");
 
 		return;
 	}
@@ -177,9 +170,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 			&& ((*pick)["Pid"].GetType() == json::ValueType::StringVal)) {
 		pid = (*pick)["Pid"].ToString();
 	} else {
-		glassutil::CLogit::log(
-				glassutil::log_level::warn,
-				"CPick::CPick: Missing required ID or Pid Key.");
+		glass3::util::Logger::log(
+				"warning", "CPick::CPick: Missing required ID or Pid Key.");
 
 		return;
 	}
@@ -196,9 +188,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 						== json::ValueType::DoubleVal)) {
 			backAzimuth = beamobj["BackAzimuth"].ToDouble();
 		} else {
-			glassutil::CLogit::log(
-					glassutil::log_level::warn,
-					"CPick::CPick: Missing Beam BackAzimuth Key.");
+			glass3::util::Logger::log(
+					"warning", "CPick::CPick: Missing Beam BackAzimuth Key.");
 			backAzimuth = std::numeric_limits<double>::quiet_NaN();
 		}
 
@@ -207,8 +198,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 				&& (beamobj["Slowness"].GetType() == json::ValueType::DoubleVal)) {
 			slowness = beamobj["Slowness"].ToDouble();
 		} else {
-			glassutil::CLogit::log(glassutil::log_level::warn,
-									"CPick::CPick: Missing Beam Slowness Key.");
+			glass3::util::Logger::log(
+					"warning", "CPick::CPick: Missing Beam Slowness Key.");
 			slowness = std::numeric_limits<double>::quiet_NaN();
 		}
 	} else {
@@ -218,8 +209,8 @@ CPick::CPick(std::shared_ptr<json::Object> pick, CSiteList *pSiteList) {
 
 	// pass to initialization function
 	if (!initialize(site, tpick, pid, backAzimuth, slowness)) {
-		glassutil::CLogit::log(glassutil::log_level::error,
-								"CPick::CPick: Failed to initialize pick.");
+		glass3::util::Logger::log("error",
+									"CPick::CPick: Failed to initialize pick.");
 		return;
 	}
 
@@ -258,7 +249,8 @@ bool CPick::initialize(std::shared_ptr<CSite> pickSite, double pickTime,
 
 	clear();
 
-	m_tPick = pickTime;
+	setTPick(pickTime);
+	setTSort(pickTime);
 	m_sID = pickIdString;
 	m_dBackAzimuth = backAzimuth;
 	m_dSlowness = slowness;
@@ -279,8 +271,8 @@ void CPick::addHypoReference(std::shared_ptr<CHypo> hyp, bool force) {
 
 	// nullcheck
 	if (hyp == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::error,
-								"CPick::addHypo: NULL hypo provided.");
+		glass3::util::Logger::log("error",
+									"CPick::addHypo: NULL hypo provided.");
 		return;
 	}
 
@@ -296,8 +288,8 @@ void CPick::addHypoReference(std::shared_ptr<CHypo> hyp, bool force) {
 void CPick::removeHypoReference(std::shared_ptr<CHypo> hyp) {
 	// nullcheck
 	if (hyp == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::error,
-								"CPick::remHypo: NULL hypo provided.");
+		glass3::util::Logger::log("error",
+									"CPick::remHypo: NULL hypo provided.");
 		return;
 	}
 
@@ -329,32 +321,8 @@ void CPick::clearHypoReference() {
 bool CPick::nucleate() {
 	// get the site shared_ptr
 	std::shared_ptr<CSite> pickSite = m_wpSite.lock();
-	std::string pt = glassutil::CDate::encodeDateTime(m_tPick);
+	std::string pt = glass3::util::Date::encodeDateTime(m_tPick);
 	char sLog[1024];
-
-	// check to see if the pick is currently associated to a hypo
-	if (m_wpHypo.expired() == false) {
-		// get the hypo and compute ratio
-		std::shared_ptr<CHypo> pHypo = m_wpHypo.lock();
-		if (pHypo != NULL) {
-			double adBayesRatio = (pHypo->getBayesValue())
-					/ (pHypo->getNucleationStackThreshold());
-
-			// check to see if the ratio is high enough to not
-			// bother
-			// NOTE: Hardcoded
-			if (adBayesRatio > 2.0) {
-				glassutil::CLogit::log(
-						glassutil::log_level::debug,
-						"CPick::nucleate: SKIPTRG due to large event association "
-								+ pickSite->getSCNL() + "; tPick:" + pt
-								+ "; idPick:" + m_sID+ " associated with an event "
-										"with stack twice threshold ("
-								+ std::to_string(pHypo->getBayesValue()) + ")");
-				return (false);
-			}
-		}
-	}
 
 	// Use site nucleate to scan all nodes
 	// linked to this pick's site and calculate
@@ -365,11 +333,12 @@ bool CPick::nucleate() {
 
 	// if there were no triggers, we're done
 	if (vTrigger.size() == 0) {
-		glassutil::CLogit::log(
-				glassutil::log_level::debug,
-				"CPick::nucleate: NOTRG site:" + pickSite->getSCNL()
-						+ "; tPick:" + pt + "; sID:" + m_sID);
-
+		/*
+		 glass3::util::Logger::log(
+		 "debug",
+		 "CPick::nucleate: NOTRG site:" + pickSite->getSCNL()
+		 + "; tPick:" + pt + "; sID:" + m_sID);
+		 */
 		return (false);
 	}
 
@@ -384,21 +353,21 @@ bool CPick::nucleate() {
 			// current trigger
 			std::shared_ptr<CHypo> pHypo = m_wpHypo.lock();
 			if (pHypo != NULL) {
-				glassutil::CGeo geoHypo = pHypo->getGeo();
+				glass3::util::Geo geoHypo = pHypo->getGeo();
 
-				glassutil::CGeo trigHypo = trigger->getGeo();
+				glass3::util::Geo trigHypo = trigger->getGeo();
 
 				double dist = (geoHypo.delta(&trigHypo) / DEG2RAD) * 111.12;
 
 				// is the associated hypo close enough to this trigger to skip
 				// close enough means within the resolution of the trigger
 				if (dist < trigger->getWebResolution()) {
-					glassutil::CLogit::log(
-							glassutil::log_level::debug,
+					glass3::util::Logger::log(
+							"debug",
 							"CPick::nucleate: SKIPTRG because pick proximal hypo ("
 									+ std::to_string(dist) + " < "
-									+ std::to_string(trigger->getWebResolution())
-									+ ")");
+									+ std::to_string(
+											trigger->getWebResolution()) + ")");
 					continue;
 				}
 			}
@@ -432,34 +401,20 @@ bool CPick::nucleate() {
 			// this all assumes that the closest grid triggers
 			// values derived from testing global event association
 			double bayes = hypo->anneal(
-					10000, trigger->getWebResolution() / 2.,
+					2000, trigger->getWebResolution() / 2.,
 					trigger->getWebResolution() / 100.,
 					std::max(trigger->getWebResolution() / 10.0, 5.0), .1);
 
 			// get the number of picks we have now
 			int npick = hypo->getPickDataSize();
 
-			snprintf(sLog, sizeof(sLog), "CPick::nucleate: -- Pass:%d; nPick:%d"
-						"/nCut:%d; bayes:%f/thresh:%f; %s",
-						ipass, npick, ncut, bayes, thresh,
-						hypo->getID().c_str());
-			glassutil::CLogit::log(sLog);
-
-			// check to see if we still have a high enough bayes value for this
-			// hypo to survive.
-			if (bayes < thresh) {
-				// it isn't
-				snprintf(sLog, sizeof(sLog),
-							"CPick::nucleate: -- Abandoning solution %s "
-							"due to low bayes value "
-							"(bayes:%f/thresh:%f)",
-							hypo->getID().c_str(), bayes, thresh);
-				glassutil::CLogit::log(sLog);
-
-				// don't bother making additional passes
-				bad = true;
-				break;
-			}
+			/*
+			 snprintf(sLog, sizeof(sLog), "CPick::nucleate: -- Pass:%d; nPick:%d"
+			 "/nCut:%d; bayes:%f/thresh:%f; %s",
+			 ipass, npick, ncut, bayes, thresh,
+			 hypo->getID().c_str());
+			 glass3::util::Logger::log(sLog);
+			 */
 
 			// check to see if we still have enough picks for this hypo to
 			// survive.
@@ -473,7 +428,23 @@ bool CPick::nucleate() {
 							"due to lack of picks "
 							"(npick:%d/ncut:%d)",
 							hypo->getID().c_str(), npick, ncut);
-				glassutil::CLogit::log(sLog);
+				glass3::util::Logger::log(sLog);
+
+				// don't bother making additional passes
+				bad = true;
+				break;
+			}
+
+			// check to see if we still have a high enough bayes value for this
+			// hypo to survive.
+			if (bayes < thresh) {
+				// it isn't
+				snprintf(sLog, sizeof(sLog),
+							"CPick::nucleate: -- Abandoning solution %s "
+							"due to low bayes value "
+							"(bayes:%f/thresh:%f)",
+							hypo->getID().c_str(), bayes, thresh);
+				glass3::util::Logger::log(sLog);
 
 				// don't bother making additional passes
 				bad = true;
@@ -488,9 +459,9 @@ bool CPick::nucleate() {
 		}
 
 		// log the hypo
-		std::string st = glassutil::CDate::encodeDateTime(hypo->getTOrigin());
-		glassutil::CLogit::log(
-				glassutil::log_level::debug,
+		std::string st = glass3::util::Date::encodeDateTime(hypo->getTOrigin());
+		glass3::util::Logger::log(
+				"debug",
 				"CPick::nucleate: TRG site:" + pickSite->getSCNL() + "; tPick:"
 						+ pt + "; sID:" + m_sID + " => web:"
 						+ hypo->getWebName() + "; hyp: " + hypo->getID()
@@ -556,6 +527,16 @@ double CPick::getTPick() const {
 // ---------------------------------------------------------setTPick
 void CPick::setTPick(double tPick) {
 	m_tPick = tPick;
+}
+
+// --------------------------------------------------getTSort
+double CPick::getTSort() const {
+	return (m_tSort);
+}
+
+// --------------------------------------------------setTSort
+void CPick::setTSort(double newTSort) {
+	m_tSort = newTSort;
 }
 
 }  // namespace glasscore

@@ -20,6 +20,7 @@
 #include <queue>
 #include <random>
 #include <atomic>
+
 #include "Glass.h"
 #include "Pick.h"
 
@@ -37,13 +38,13 @@ class CHypo;
  * inserting, sorting, and retrieving picks.
  */
 struct PickCompare {
-    bool operator()(const std::shared_ptr<CPick> &lhs,
-                    const std::shared_ptr<CPick> &rhs) const {
-    	if (lhs->getTPick() < rhs->getTPick()) {
-    		return(true);
-    	}
-        return (false);
-    }
+	bool operator()(const std::shared_ptr<CPick> &lhs,
+					const std::shared_ptr<CPick> &rhs) const {
+		if (lhs->getTSort() < rhs->getTSort()) {
+			return (true);
+		}
+		return (false);
+	}
 };
 
 /**
@@ -114,7 +115,7 @@ class CPickList : public glass3::util::ThreadBaseClass {
 	 * CSiteList getSite() function.
 	 *
 	 * This function will first attempt to associate the pick with
-	 * an existing hypocenter via calling the CHypoList::associate()
+	 * an existing hypocenter via calling the CPickList::associate()
 	 * function.  If association is unsuccessful, the pick is nucleated
 	 * using the CPick::Nucleate() function.
 	 *
@@ -135,9 +136,11 @@ class CPickList : public glass3::util::ThreadBaseClass {
 	 * \param newSCNL - A std::string containing the scnl of the new pick
 	 * \param tDuration - A double containing the allowable matching time window
 	 * duration in seconds
-	 * \return Returns true if pick is a duplicate, false otherwise
+	 * \return Returns a std::shared_ptr<CPick> to the first existing pick if
+	 * there is a duplicate, NULL otherwise
 	 */
-	bool checkDuplicate(double newTPick, std::string newSCNL, double tDuration);
+	std::shared_ptr<CPick> getDuplicate(double newTPick, std::string newSCNL,
+										double tDuration);
 
 	/**
 	 * \brief Search for any associable picks that match hypo
@@ -221,6 +224,19 @@ class CPickList : public glass3::util::ThreadBaseClass {
 
  private:
 	/**
+	 * \brief A PickList function that updates the position of the given pick
+	 * in the multiset
+	 * \param pick - A shared_ptr to the pick that needs a position update
+	 */
+	void updatePosition(std::shared_ptr<CPick> pick);
+
+	/**
+	 * \brief A PickList function that removes the given pick from the multiset
+	 * \param pick - A shared_ptr to the pick to be removed
+	 */
+	void eraseFromMultiset(std::shared_ptr<CPick> pick);
+
+	/**
 	 * \brief A pointer to a CSiteList object containing all the sites for
 	 * lookups
 	 */
@@ -264,6 +280,18 @@ class CPickList : public glass3::util::ThreadBaseClass {
 	 * design as delivered by the contractor.
 	 */
 	mutable std::recursive_mutex m_PickListMutex;
+
+	/**
+	 * \brief A shared_ptr to a pick used to represent the lower value in
+	 * getPicks() calls
+	 */
+	std::shared_ptr<CPick> m_LowerValue;
+
+	/**
+	 * \brief A shared_ptr to a pick used to represent the upper value in
+	 * getPicks() calls
+	 */
+	std::shared_ptr<CPick> m_UpperValue;
 };
 }  // namespace glasscore
 #endif  // PICKLIST_H

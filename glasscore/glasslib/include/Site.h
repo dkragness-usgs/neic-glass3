@@ -8,6 +8,7 @@
 #define SITE_H
 
 #include <json.h>
+#include <geo.h>
 #include <set>
 #include <string>
 #include <vector>
@@ -16,8 +17,6 @@
 #include <tuple>
 #include <mutex>
 #include <atomic>
-
-#include "Geo.h"
 #include "Link.h"
 #include "Pick.h"
 
@@ -37,7 +36,7 @@ class CHypo;
 struct SitePickCompare {
 	bool operator()(const std::shared_ptr<CPick> &lhs,
 					const std::shared_ptr<CPick> &rhs) const {
-		if (lhs->getTPick() < rhs->getTPick()) {
+		if (lhs->getTSort() < rhs->getTSort()) {
 			return (true);
 		}
 		return (false);
@@ -180,7 +179,7 @@ class CSite {
 	 * location
 	 * \return Returns a double value containing the distance in radians
 	 */
-	double getDelta(glassutil::CGeo *geo2);
+	double getDelta(glass3::util::Geo *geo2);
 
 	/**
 	 * \brief Get the distance between this site and another in km
@@ -234,7 +233,7 @@ class CSite {
 	 * \param travelTime2 - A double value containing the optional second travel
 	 * time to use for the link, defaults to -1 (no travel time)
 	 */
-	void addNode(std::shared_ptr<CNode> node, double travelTime1,
+	void addNode(std::shared_ptr<CNode> node, double distDeg, double travelTime1,
 					double travelTime2 = -1);
 
 	/**
@@ -342,9 +341,9 @@ class CSite {
 	/**
 	 * \brief Get the combined site location (latitude, longitude, elevation) as
 	 * a CGeo object
-	 * \return Returns a glassutil::CGeo object containing the combined location.
+	 * \return Returns a glass3::util::Geo object containing the combined location.
 	 */
-	glassutil::CGeo &getGeo();
+	glass3::util::Geo &getGeo();
 
 	/**
 	 * \brief Get the SCNL identifier for this site
@@ -412,14 +411,52 @@ class CSite {
 	 */
 	int getPickCount() const;
 
+	/**
+	 * \brief Gets the lower bound of the pick multiset at the provided time
+	 * \param min - a double value containing the desired time to generate
+	 * the lower value at in julian seconds
+	 * \return Returns an interator pointing to the first pick in the multiset
+	 * greater than the provided time
+	 */
 	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator getLower(
 			double min);
+
+	/**
+	 * \brief Gets the upper bound of the pick multiset at the provided time
+	 * \param max - a double value containing the desired time to generate
+	 * the upper value at in julian seconds
+	 * \return Returns an interator pointing to the first pick in the multiset
+	 * less than the provided time
+	 */
 	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator getUpper(
 			double max);
+
+	/**
+	 * \brief Gets the end iterator of the pick multiset
+	 * \return Returns an interator pointing to end of the multiset i.e. end()
+	 */
 	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator getEnd();
+
+	/**
+	 * \brief Gets pick multiset mutex
+	 * \return Returns the std::mutex protecting the pick multiset
+	 */
 	std::mutex & getPickMutex();
 
+	/**
+	 * \brief A PickList function that updates the position of the given pick
+	 * in the multiset
+	 * \param pick - A shared_ptr to the pick that needs a position update
+	 */
+	void updatePosition(std::shared_ptr<CPick> pick);
+
  private:
+	/**
+	 * \brief A PickList function that removes the given pick from the multiset
+	 * \param pick - A shared_ptr to the pick to be removed
+	 */
+	void eraseFromMultiset(std::shared_ptr<CPick> pick);
+
 	/**
 	 * \brief A mutex to control threading access to vPick.
 	 */
@@ -460,7 +497,7 @@ class CSite {
 	/**
 	 * \brief A CGeo object containing the geographic location of this site
 	 */
-	glassutil::CGeo m_Geo;
+	glass3::util::Geo m_Geo;
 
 	/**
 	 * \brief A unit vector in Cartesian earth coordinates used to do a quick

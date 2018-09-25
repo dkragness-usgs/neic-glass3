@@ -1,4 +1,7 @@
+#include "Site.h"
 #include <json.h>
+#include <logger.h>
+#include <geo.h>
 #include <sstream>
 #include <cmath>
 #include <utility>
@@ -12,8 +15,6 @@
 #include <ctime>
 #include "Glass.h"
 #include "Pick.h"
-#include "Site.h"
-#include "Logit.h"
 #include "Node.h"
 #include "Trigger.h"
 #include "Hypo.h"
@@ -38,7 +39,7 @@ CSite::CSite(std::string sta, std::string comp, std::string net,
 CSite::CSite(std::shared_ptr<json::Object> site) {
 	// null check json
 	if (site == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::CSite: NULL json site.");
 		return;
 	}
@@ -49,13 +50,13 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 		std::string type = (*site)["Type"].ToString();
 
 		if (type != "StationInfo") {
-			glassutil::CLogit::log(
-					glassutil::log_level::warn,
+			glass3::util::Logger::log(
+					"warning",
 					"CSite::CSite: Non-StationInfo message passed in.");
 			return;
 		}
 	} else {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::CSite: Missing required Type Key.");
 		return;
 	}
@@ -85,8 +86,8 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 				&& (siteobj["Station"].GetType() == json::ValueType::StringVal)) {
 			station = siteobj["Station"].ToString();
 		} else {
-			glassutil::CLogit::log(
-					glassutil::log_level::error,
+			glass3::util::Logger::log(
+					"error",
 					"CSite::CSite: Missing required Station Key.");
 
 			return;
@@ -105,8 +106,8 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 				&& (siteobj["Network"].GetType() == json::ValueType::StringVal)) {
 			network = siteobj["Network"].ToString();
 		} else {
-			glassutil::CLogit::log(
-					glassutil::log_level::error,
+			glass3::util::Logger::log(
+					"error",
 					"CSite::CSite: Missing required Network Key.");
 
 			return;
@@ -126,7 +127,7 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 			location = "";
 		}
 	} else {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::CSite: Missing required Site Object.");
 
 		return;
@@ -137,7 +138,7 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 			&& ((*site)["Latitude"].GetType() == json::ValueType::DoubleVal)) {
 		latitude = (*site)["Latitude"].ToDouble();
 	} else {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::CSite: Missing required Latitude Key.");
 
 		return;
@@ -148,8 +149,8 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 			&& ((*site)["Longitude"].GetType() == json::ValueType::DoubleVal)) {
 		longitude = (*site)["Longitude"].ToDouble();
 	} else {
-		glassutil::CLogit::log(
-				glassutil::log_level::error,
+		glass3::util::Logger::log(
+				"error",
 				"CSite::CSite: Missing required Longitude Key.");
 
 		return;
@@ -160,8 +161,8 @@ CSite::CSite(std::shared_ptr<json::Object> site) {
 			&& ((*site)["Elevation"].GetType() == json::ValueType::DoubleVal)) {
 		elevation = (*site)["Elevation"].ToDouble();
 	} else {
-		glassutil::CLogit::log(
-				glassutil::log_level::error,
+		glass3::util::Logger::log(
+				"error",
 				"CSite::CSite: Missing required Elevation Key.");
 
 		return;
@@ -212,7 +213,7 @@ bool CSite::initialize(std::string sta, std::string comp, std::string net,
 	if (sta != "") {
 		m_sSCNL += sta;
 	} else {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::initialize: missing sSite.");
 		return (false);
 	}
@@ -226,7 +227,7 @@ bool CSite::initialize(std::string sta, std::string comp, std::string net,
 	if (net != "") {
 		m_sSCNL += "." + net;
 	} else {
-		glassutil::CLogit::log(glassutil::log_level::error,
+		glass3::util::Logger::log("error",
 								"CSite::initialize: missing sNet.");
 		return (false);
 	}
@@ -243,8 +244,9 @@ bool CSite::initialize(std::string sta, std::string comp, std::string net,
 	m_sLocation = loc;
 
 	// set geographic location
-	// convert site elevation in meters to surface depth in km (invert the sign
-	// and then divide by 1000)
+	// convert site elevation in meters to surface depth in km
+	// (invert the sign to get positive (above earth radius)
+	// and then divide by 1000 (meters to km))
 	setLocation(lat, lon, -0.001 * elv);
 
 	// quality
@@ -279,7 +281,7 @@ void CSite::clear() {
 	m_dQuality = 1.0;
 
 	// clear geographic
-	m_Geo = glassutil::CGeo();
+	m_Geo = glass3::util::Geo();
 	m_daUnitVectors[0] = 0;
 	m_daUnitVectors[1] = 0;
 	m_daUnitVectors[2] = 0;
@@ -293,8 +295,12 @@ void CSite::clear() {
 
 	// init the upper and lower values
 	std::shared_ptr<CSite> nullSite;
-	m_LowerValue = std::make_shared<CPick>(nullSite, 0, "lower", 0, 0);
-	m_UpperValue = std::make_shared<CPick>(nullSite, 0, "upper", 0, 0);
+	if (m_LowerValue == NULL) {
+		m_LowerValue = std::make_shared<CPick>(nullSite, 0, "lower", 0, 0);
+	}
+	if (m_UpperValue == NULL) {
+		m_UpperValue = std::make_shared<CPick>(nullSite, 0, "upper", 0, 0);
+	}
 
 	m_msPickList.clear();
 
@@ -321,7 +327,7 @@ void CSite::update(CSite *aSite) {
 	m_dQuality = aSite->getQuality();
 
 	// update location
-	m_Geo = glassutil::CGeo(aSite->getGeo());
+	m_Geo = glass3::util::Geo(aSite->getGeo());
 	double vec[3];
 	aSite->getUnitVectors(vec);
 
@@ -358,14 +364,14 @@ void CSite::setLocation(double lat, double lon, double z) {
 	m_daUnitVectors[2] = sin(DEG2RAD * lat);
 
 	// set geographic object
-	m_Geo.setGeographic(lat, lon, 6371.0 - z);
+	m_Geo.setGeographic(lat, lon, EARTHRADIUSKM - z);
 }
 
 // ---------------------------------------------------------getDelta
-double CSite::getDelta(glassutil::CGeo *geo2) {
+double CSite::getDelta(glass3::util::Geo *geo2) {
 	// nullcheck
 	if (geo2 == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::getDelta: NULL CGeo provided.");
 		return (0);
 	}
@@ -378,7 +384,7 @@ double CSite::getDelta(glassutil::CGeo *geo2) {
 double CSite::getDistance(std::shared_ptr<CSite> site) {
 	// nullcheck
 	if (site == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::getDistance: NULL CSite provided.");
 		return (0);
 	}
@@ -403,15 +409,15 @@ void CSite::addPick(std::shared_ptr<CPick> pck) {
 
 	// nullcheck
 	if (pck == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::addPick: NULL CPick provided.");
 		return;
 	}
 
 	// ensure this pick is for this site
 	if (pck->getSite()->m_sSCNL != m_sSCNL) {
-		glassutil::CLogit::log(
-				glassutil::log_level::warn,
+		glass3::util::Logger::log(
+				"warning",
 				"CSite::addPick: CPick for different site: (" + m_sSCNL + "!="
 						+ pck->getSite()->m_sSCNL + ")");
 		return;
@@ -431,7 +437,7 @@ void CSite::addPick(std::shared_ptr<CPick> pck) {
 void CSite::removePick(std::shared_ptr<CPick> pck) {
 	// nullcheck
 	if (pck == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::removePick: NULL CPick provided.");
 		return;
 	}
@@ -441,54 +447,8 @@ void CSite::removePick(std::shared_ptr<CPick> pck) {
 
 	std::lock_guard<std::mutex> guard(vPickMutex);
 
-	if (m_msPickList.size() == 0) {
-		return;
-	}
-
-	// first, try to delete the pick the efficient way
-	// we need to be careful, because multiple picks in the mulitset
-	// can have the same tSort, and a simple erase would delete
-	// them all, which would be BAD, so we need to confirm the id
-	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator lower =
-			m_msPickList.lower_bound(pck);
-	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator upper =
-			m_msPickList.upper_bound(pck);
-	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator it;
-
-	// for all matching (tSort range) picks
-	for (it = lower; ((it != upper) && (it != m_msPickList.end())); ++it) {
-		std::shared_ptr<CPick> aPick = *it;
-
-		// only erase the correct one
-		if (aPick->getID() == pck->getID()) {
-			m_msPickList.erase(it);
-			return;
-		}
-	}
-
-	glassutil::CLogit::log(
-			glassutil::log_level::warn,
-			"CSite::removePick: efficient delete for pick " + pck->getID()
-					+ " didn't work.");
-
-	// if we didn't delete it efficiently, loop through all picks, I know this is
-	// brute force, but the efficient delete didn't work, and the pick list is
-	// relatively small and we want to be sure
-	// note: this may just be me being paranoid
-	for (it = m_msPickList.begin(); (it != m_msPickList.end()); ++it) {
-		std::shared_ptr<CPick> aPick = *it;
-
-		// only erase the correct one
-		if (aPick->getID() == pck->getID()) {
-			m_msPickList.erase(it);
-			return;
-		}
-	}
-
-	glassutil::CLogit::log(
-			glassutil::log_level::error,
-			"CSite::removePick: did not delete pick " + pck->getID()
-					+ " in multiset, id not found.");
+	// erase it
+	eraseFromMultiset(pck);
 }
 
 // ---------------------------------------------------------getVPick
@@ -508,14 +468,6 @@ std::vector<std::shared_ptr<CPick>> CSite::getPicks(double t1, double t2) {
 
 	std::lock_guard<std::mutex> listGuard(vPickMutex);
 
-	// set the lower bound value. std::multiset requires
-	// that this be in the form of a std::shared_ptr<CPick>
-	m_LowerValue->setTPick(t1);
-
-	// set the upper bound value. std::multiset requires
-	// that this be in the form of a std::shared_ptr<CPick>
-	m_UpperValue->setTPick(t2);
-
 	// don't bother if the list is empty
 	if (m_msPickList.size() == 0) {
 		return (picks);
@@ -523,17 +475,17 @@ std::vector<std::shared_ptr<CPick>> CSite::getPicks(double t1, double t2) {
 
 	// get the bounds for this window
 	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator lower =
-			m_msPickList.lower_bound(m_LowerValue);
+			getLower(t1);
 	std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator upper =
-			m_msPickList.upper_bound(m_UpperValue);
+			getUpper(t2);
 
 	// found nothing
-	if (lower == m_msPickList.end()) {
+	if (lower == getEnd()) {
 		return (picks);
 	}
 
 	// found one
-	if ((lower == upper) && (lower != m_msPickList.end())) {
+	if ((lower == upper) && (lower != getEnd())) {
 		std::shared_ptr<CPick> aPick = *lower;
 
 		if (aPick != NULL) {
@@ -546,7 +498,7 @@ std::vector<std::shared_ptr<CPick>> CSite::getPicks(double t1, double t2) {
 
 	// loop through found picks
 	for (std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator it =
-			lower; ((it != upper) && (it != m_msPickList.end())); ++it) {
+			lower; ((it != upper) && (it != getEnd())); ++it) {
 		std::shared_ptr<CPick> aPick = *it;
 
 		if (aPick != NULL) {
@@ -559,42 +511,46 @@ std::vector<std::shared_ptr<CPick>> CSite::getPicks(double t1, double t2) {
 	return (picks);
 }
 
+// ---------------------------------------------------------getLower
 std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator CSite::getLower(  // NOLINT
 		double min) {
-	m_LowerValue->setTPick(min);
+	m_LowerValue->setTSort(min);
 	return (m_msPickList.lower_bound(m_LowerValue));
 }
 
+// ---------------------------------------------------------getUpper
 std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator CSite::getUpper(  // NOLINT
 		double max) {
-	m_UpperValue->setTPick(max);
+	m_UpperValue->setTSort(max);
 	return (m_msPickList.upper_bound(m_UpperValue));
 }
 
+// ---------------------------------------------------------getEnd
 std::multiset<std::shared_ptr<CPick>, SitePickCompare>::iterator CSite::getEnd() {  // NOLINT
 	return (m_msPickList.end());
 }
 
+// ---------------------------------------------------------getPickMutex
 std::mutex & CSite::getPickMutex() {
 	return (vPickMutex);
 }
 
 // ---------------------------------------------------------addNode
-void CSite::addNode(std::shared_ptr<CNode> node, double travelTime1,
-					double travelTime2) {
+void CSite::addNode(std::shared_ptr<CNode> node, double distDeg,
+					double travelTime1, double travelTime2) {
 	// lock for editing
 	std::lock_guard<std::mutex> guard(m_vNodeMutex);
 
 	// nullcheck
 	if (node == NULL) {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::addNode: NULL CNode provided.");
 		return;
 	}
 	// check travel times
 	/*
 	 if ((travelTime1 < 0) && (travelTime2 < 0)) {
-	 glassutil::CLogit::log(glassutil::log_level::error,
+	 glass3::util::Logger::log("error",
 	 "CSite::addNode: No valid travel times.");
 	 return;
 	 }
@@ -603,7 +559,7 @@ void CSite::addNode(std::shared_ptr<CNode> node, double travelTime1,
 	// add node link to vector of nodes linked to this site
 	// NOTE: no duplication check, but multiple nodes from the
 	// same web can exist at the same site (travel times would be different)
-	NodeLink link = std::make_tuple(node, travelTime1, travelTime2);
+	NodeLink link = std::make_tuple(node, travelTime1, travelTime2, distDeg);
 	m_vNode.push_back(link);
 }
 
@@ -614,7 +570,7 @@ void CSite::removeNode(std::string nodeID) {
 
 	// nullcheck
 	if (nodeID == "") {
-		glassutil::CLogit::log(glassutil::log_level::warn,
+		glass3::util::Logger::log("warning",
 								"CSite::removeNode: empty web name provided.");
 		return;
 	}
@@ -715,8 +671,8 @@ std::vector<std::shared_ptr<CTrigger>> CSite::nucleate(double tPick) {
 		}
 
 		if ((tOrigin1 < 0) && (tOrigin2 < 0)) {
-			glassutil::CLogit::log(
-					glassutil::log_level::warn,
+			glass3::util::Logger::log(
+					"warning",
 					"CSite::nucleate: " + m_sSCNL + " No valid travel times. ("
 							+ std::to_string(travelTime1) + ", "
 							+ std::to_string(travelTime2) + ") web: "
@@ -807,7 +763,7 @@ void CSite::setQuality(double qual) {
 }
 
 // ---------------------------------------------------------getGeo
-glassutil::CGeo &CSite::getGeo() {
+glass3::util::Geo &CSite::getGeo() {
 	return (m_Geo);
 }
 
@@ -855,6 +811,91 @@ int CSite::getPickCountSinceCheck() const {
 int CSite::getPickCount() const {
 	std::lock_guard<std::recursive_mutex> guard(m_SiteMutex);
 	return (m_msPickList.size());
+}
+
+// --------------------------------------------------------updatePosition
+void CSite::updatePosition(std::shared_ptr<CPick> pick) {
+	// nullchecks
+	if (pick == NULL) {
+		return;
+	}
+	if (pick->getSite()->getSCNL() != getSCNL()) {
+		return;
+	}
+
+	std::lock_guard<std::recursive_mutex> listGuard(m_SiteMutex);
+
+	// from my research, the best way to "update" the position of an item
+	// in a multiset when the key value has changed (in this case, the pick
+	// time) is to remove and re-add the item. This will give us O(log n)
+	// complexity for updating one item, which is better than a full sort
+	// (which I'm not really sure how to do on a multiset)
+	// erase
+	eraseFromMultiset(pick);
+
+	// update tSort
+	pick->setTSort(pick->getTPick());
+
+	// insert
+	m_msPickList.insert(pick);
+}
+
+// ---------------------------------------------------------eraseFromMultiset
+void CSite::eraseFromMultiset(std::shared_ptr<CPick> pick) {
+	// nullchecks
+	if (pick == NULL) {
+		return;
+	}
+	if (pick->getSite()->getSCNL() != getSCNL()) {
+		return;
+	}
+
+	std::lock_guard<std::recursive_mutex> listGuard(m_SiteMutex);
+
+	if (m_msPickList.size() == 0) {
+		return;
+	}
+
+	// first, try to delete the hypo the efficient way
+	// we need to be careful, because multiple hypos in the mulitset
+	// can have the same tSort, and a simple erase would delete
+	// them all, which would be BAD, so we need to confirm the id
+	auto lower = m_msPickList.lower_bound(pick);
+	auto upper = m_msPickList.upper_bound(pick);
+
+	// for all matching (tSort range) hypos
+	for (auto it = lower; ((it != upper) && (it != m_msPickList.end())); ++it) {
+		std::shared_ptr<CPick> aPick = *it;
+
+		// only erase the correct one
+		if (aPick->getID() == pick->getID()) {
+			m_msPickList.erase(it);
+			return;
+		}
+	}
+
+	glass3::util::Logger::log(
+			"warning",
+			"CSite::eraseFromMultiset: efficient delete for pick "
+					+ pick->getID() + " didn't work.");
+
+	// if we didn't delete it efficiently, loop through all picks, I know this is
+	// brute force, but the efficient delete didn't work and we want to be sure
+	// note: this may just be me being paranoid
+	for (auto it = m_msPickList.begin(); (it != m_msPickList.end()); ++it) {
+		std::shared_ptr<CPick> aPick = *it;
+
+		// only erase the correct one
+		if (aPick->getID() == pick->getID()) {
+			m_msPickList.erase(it);
+			return;
+		}
+	}
+
+	glass3::util::Logger::log(
+			"error",
+			"CSite::eraseFromMultiset: did not delete pick " + pick->getID()
+					+ " in multiset, id not found.");
 }
 
 }  // namespace glasscore
