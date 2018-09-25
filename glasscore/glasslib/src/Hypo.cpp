@@ -833,6 +833,28 @@ void CHypo::annealingLocateResidual(int nIter, double dStart, double dStop,
 			valBest = calculateValue;
 			// set the hypo location/depth/time from the new best
 			// locaton/depth/time
+      // set the hypo location/depth/time from the new best
+      // locaton/depth/time
+      // check to see if this is a "BIG" move.  If so, update audit information.
+      if((sqrt((xlat - m_dLatitude)*(xlat - m_dLatitude) +
+               (xlon - m_dLongitude) * cos(DEG2RAD * xlat)
+               * (xlon - m_dLongitude) * cos(DEG2RAD * xlat)) * DEG2KM
+         > m_dWebResolution / 2.0)
+         ||
+         (fabs(m_dDepth - xz) > 7.5 && fabs(m_dDepth - xz) > m_dDepth * 0.25)
+      {
+        // this represents a LARGE movement (currently m_dWebResolution / 2).  Update auditing information
+        this->m_hapsAudit.dtLastBigMove = glass3::util::CDate::now();
+        this->m_hapsAudit.dtOrigin = oT;
+        this->m_hapsAudit.dMaxStackBeforeMove = this->m_hapsAudit.dMaxStackSinceMove;
+        this->m_hapsAudit.nMaxPhasesBeforeMove = this->m_hapsAudit.nMaxPhasesSinceMove;
+        this->m_hapsAudit.dMaxStackSinceMove = valBest;
+        this->m_hapsAudit.nMaxPhasesSinceMove = vPickData.size();
+        this->m_hapsAudit.dLatPrev = m_dLatitude;
+        this->m_hapsAudit.dLonPrev = m_dLongitude;
+        this->m_hapsAudit.dDepthPrev = m_dDepth;
+      }
+
 			setLatitude(xlat);
 			setLongitude(xlon);
 			setDepth(xz);
@@ -1303,6 +1325,9 @@ void CHypo::clearPickReferences() {
 std::shared_ptr<json::Object> CHypo::generateEventMessage() {
 	// lock mutex for this scope
 	std::lock_guard<std::recursive_mutex> guard(m_HypoMutex);
+
+  if(!m_bEventGenerated)
+    m_hapsAudit.dtFirstEventMessage = glass3::util::CDate::now();
 
 	m_bEventGenerated = true;
 	m_iReportCount++;
@@ -2108,6 +2133,38 @@ std::shared_ptr<json::Object> CHypo::generateHypoMessage() {
 	// add data array to object
 	(*hypo)["Data"] = data;
 
+  if(!m_bHypoGenerated)
+  {
+    m_hapsAudit.dtFirstHypoMessage = glass3::util::CDate::now();
+    glass3::util::Logger::log("info",
+                              "CHypo:Pub " + m_sID + " "
+                              + std::to_string(m_dLatitude) + " "
+                              + std::to_string(m_dLongitude) + " "
+                              + std::to_string(m_dDepth) + " "
+                              + std::to_string(m_tOrigin) + " "
+                              + std::to_string(m_hapsAudit.dtOrigin) + " "
+                              + std::to_string(m_hapsAudit.dtNucleated) + " "
+                              + std::to_string(m_hapsAudit.dtNucleationPickInsertion) + " "
+                              + std::to_string(m_hapsAudit.dtLastBigMove) + " "
+                              + std::to_string(m_hapsAudit.nMaxPhasesBeforeMove) + " "
+                              + std::to_string(m_hapsAudit.dMaxStackBeforeMove) + " "
+                              + std::to_string(m_hapsAudit.nMaxPhasesSinceMove) + " "
+                              + std::to_string(m_hapsAudit.dMaxStackSinceMove) + " "
+                              + std::to_string(m_hapsAudit.dtFirstEventMessage) + " "
+                              + std::to_string(m_hapsAudit.dtFirstHypoMessage) + " "
+                              + std::to_string(m_hapsAudit.dLatPrev) + " "
+                              + std::to_string(m_hapsAudit.dLonPrev) + " "
+                              + std::to_string(m_hapsAudit.dDepthPrev) + " "
+                              + std::to_string(m_iProcessCount) + " "
+                              + std::to_string(m_dBayesValue) + " "
+                              + std::to_string(m_dInitialBayesValue) + " "
+                              + std::to_string(m_dMinDistance) + " "
+                              + std::to_string(m_dMedianDistance) + " "
+                              + std::to_string(m_dGap) + " "
+                              + std::to_string(m_dDistanceSD) + " "
+                              + std::to_string(m_dAssociationDistanceCutoff) + " "
+                              + std::to_string(m_dWebResolution) + "  ABC";
+  }
 	m_bHypoGenerated = true;
 
 	// done
