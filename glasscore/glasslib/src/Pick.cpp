@@ -239,6 +239,7 @@ void CPick::clear() {
 	m_tPick = 0;
 	m_dBackAzimuth = std::numeric_limits<double>::quiet_NaN();
 	m_dSlowness = std::numeric_limits<double>::quiet_NaN();
+  m_tInsertion = m_tFirstAssoc = m_tNuc = 0.;
 }
 
 // ---------------------------------------------------------initialize
@@ -262,7 +263,9 @@ bool CPick::initialize(std::shared_ptr<CSite> pickSite, double pickTime,
 		m_wpSite = pickSite;
 	}
 
-	return (true);
+  m_tInsertion = glass3::util::Date::now();
+
+  return (true);
 }
 
 // ---------------------------------------------------------addHypo
@@ -282,6 +285,10 @@ void CPick::addHypoReference(std::shared_ptr<CHypo> hyp, bool force) {
 	} else if (m_wpHypo.expired() == true) {
 		m_wpHypo = hyp;
 	}
+
+
+  if(getTFirstAssoc == 0.)
+    setTFirstAssoc();
 }
 
 // ---------------------------------------------------------remHypo
@@ -323,6 +330,8 @@ bool CPick::nucleate() {
 	std::shared_ptr<CSite> pickSite = m_wpSite.lock();
 	std::string pt = glass3::util::Date::encodeDateTime(m_tPick);
 	char sLog[1024];
+
+  setTNuc();
 
 	// Use site nucleate to scan all nodes
 	// linked to this pick's site and calculate
@@ -376,6 +385,8 @@ bool CPick::nucleate() {
 		// create the hypo using the node
 		std::shared_ptr<CHypo> hypo = std::make_shared<CHypo>(
 				trigger, CGlass::getAssociationTravelTimes());
+
+    hypo->setNucleationAuditingInfo(glass3::util::CDate::now(), this->getTInsertion());
 
 		// add links to all the picks that support the hypo
 		std::vector<std::shared_ptr<CPick>> vTriggerPicks = trigger->getVPick();

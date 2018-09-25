@@ -232,7 +232,7 @@ class CPick {
 
 	/**
 	 * \brief Get the sorting time for this pick
-	 * \return Returns an int64_t containing the pick sort time in julian seconds
+	 * \return Returns  a double containing the pick sort time in julian seconds
 	 */
 	double getTSort() const;
 
@@ -241,6 +241,24 @@ class CPick {
 	 * \param newTSort - a double containing the pick sort time in julian seconds
 	 */
 	void setTSort(double newTSort);
+
+  /**
+  * \brief Get the insertion time for this pick
+  * \return Returns a double containing the pick inserrtion time into Glass in julian seconds
+  */
+  double getTInsertion() const;
+
+  /**
+  * \brief Get the first assoc time for this pick
+  * \return Returns a double containing the time in julian seconds when the pick was first associated with an event.
+  */
+  double getTFirstAssoc() const;
+
+  /**
+  * \brief Get the nucleation time for this pick
+  * \return Returns a double containing the time in julian seconds when this pick was used as keystone for nucleation
+  */
+  double getTNuc() const;
 
  protected:
 	/**
@@ -253,6 +271,16 @@ class CPick {
 	 * pick data lists.
 	 */
 	void clearHypoReference();
+
+  /**
+  * \brief Set the first-assoc time for this pick to NOW
+  */
+  void setTFirstAssoc();
+
+  /**
+  * \brief Set the nucleation time for this pick to Now
+  */
+  void setTNuc();
 
  private:
 	/**
@@ -305,7 +333,7 @@ class CPick {
 	std::shared_ptr<json::Object> m_JSONPick;
 
 	/**
-	 * \brief An int64_t value containing this pick's sort time in julian
+	 * \brief A double value containing this pick's sort time in julian
 	 * seconds, this is a cached copy of tPick as an integer that is
 	 * guaranteed to not change during the lifetime of the pick in a PickList's
 	 * internal multiset, ensuring that sort order won't change, even when
@@ -315,6 +343,22 @@ class CPick {
 	 * the internal multiset. /see PickList.
 	 */
 	std::atomic<double> m_tSort;
+
+  /**
+  * \brief A double value containing the time this pick was created in Glass3.
+  */
+  std::atomic<double> m_tInsertion;
+
+  /**
+  * \brief A double value containing the time this pick was first associated with a Hypo.
+  */
+  std::atomic<double> m_tFirstAssoc;
+
+  /**
+  * \brief A double value containing the time this pick was nucleated.  Could be 0 if nucleation wasn't done with this pick.
+  */
+  std::atomic<double> m_tNuc;
+
 
 	/**
 	 * \brief A recursive_mutex to control threading access to CPick.

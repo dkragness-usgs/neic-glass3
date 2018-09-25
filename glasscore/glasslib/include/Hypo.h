@@ -24,6 +24,24 @@ class CCorrelation;
 class CTrigger;
 class CSiteList;
 
+
+typedef struct _HypoAuditingPerformanceStruct
+{
+  double dtOrigin;
+  double dtCreated;
+  double dtNucleated;
+  double dtNucleationPickInsertion;
+  double dtLastBigMove;
+  int    nMaxPhasesBeforeMove;
+  int    nMaxPhasesSinceMove;
+  double dMaxStackBeforeMove;
+  double dMaxStackSinceMove;
+  double dtFirstEventMessage;
+  double dtFirstHypoMessage;
+  double dLatPrev;
+  double dLonPrev;
+  double dDepthPrev;
+} HypoAuditingPerformanceStruct;
 /**
  * \brief glasscore hypocenter class
  *
@@ -669,6 +687,7 @@ class CHypo {
 	 * \param lat - a double containing the hypo latitude in degrees
 	 */
 	void setLatitude(double lat);
+  // DK CLEANUP - should these lat/lon/depth set functions not be protected?
 
 	/**
 	 * \brief Get the longitude for this hypo
@@ -1002,6 +1021,28 @@ class CHypo {
 	 */
 	void setTSort(double newTSort);
 
+  /**
+  * \brief Set nucleation auditing info for this hypo
+  * \param tNucleation - time this hypo was nucleated(julian seconds).
+  * \param tNucleationKeyPickInsertion - time the key pick for nucleating this hypo was inserted into Glass3(julian seconds).
+  */
+  void setNucleationAuditingInfo(double tNucleation, double tNucleationKeyPickInsertion)
+  {
+    if(!hapsAudit.dtNucleated)
+    {
+      m_hapsAudit.dtNucleated = tNucleation;
+      m_hapsAudit.dtNucleationPickInsertion = tNucleationKeyPickInsertion;
+    }
+  }
+
+  /**
+  * \brief Returns performance-auditing information for the hypo via a const HypoAuditingPerformanceStruct pointer
+  **/
+  const HypoAuditingPerformanceStruct * getHypoAuditingPerformanceInfo()
+  {
+    return(&m_hapsAudit);
+  }
+
  private:
 	/**
 	 * \brief  A std::string with the name of the web used during the nucleation
@@ -1064,7 +1105,7 @@ class CHypo {
 	std::atomic<bool> m_bEventGenerated;
 
 	/**
-	 * \brief A boolean indicating if an Event message was generated for this
+	 * \brief A boolean indicating if a Hypo message was generated for this
 	 * hypo.
 	 */
 	std::atomic<bool> m_bHypoGenerated;
@@ -1216,6 +1257,9 @@ class CHypo {
 	 * \brief A mutex to control processing access to CHypo.
 	 */
 	std::mutex m_ProcessingMutex;
+
+  std::atomic<HypoAuditingPerformanceStruct> m_hapsAudit;
+   ;
 };
 }  // namespace glasscore
 #endif  // HYPO_H
