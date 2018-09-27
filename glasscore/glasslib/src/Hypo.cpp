@@ -672,24 +672,27 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 			// set the hypo location/depth/time from the new best
 			// locaton/depth/time
       // check to see if this is a "BIG" move.  If so, update audit information.
-      if((sqrt((xlat - m_dLatitude)*(xlat - m_dLatitude) +
-              (xlon - m_dLongitude) * cos(DEG2RAD * xlat)
-              * (xlon - m_dLongitude) * cos(DEG2RAD * xlat)) * DEG2KM
+      if((sqrt((xlat - this->m_hapsAudit.dLatPrev)*(xlat - this->m_hapsAudit.dLatPrev) +
+              (xlon - this->m_hapsAudit.dLonPrev) * cos(DEG2RAD * xlat)
+              * (xlon - this->m_hapsAudit.dLonPrev) * cos(DEG2RAD * xlat)) * DEG2KM
                 > m_dWebResolution / 2.0)
          ||
-         (fabs(m_dDepth - xz) > 7.5 && fabs(m_dDepth - xz) > m_dDepth * 0.25)
+         (fabs(this->m_hapsAudit.dDepthPrev - xz) > 7.5 && fabs(m_dDepth - xz) > this->m_hapsAudit.dDepthPrev * 0.25)
       {
         // this represents a LARGE movement (currently m_dWebResolution / 2).  Update auditing information
         this->m_hapsAudit.dtLastBigMove = glass3::util::CDate::now();
         this->m_hapsAudit.dtOrigin = oT;
         this->m_hapsAudit.dMaxStackBeforeMove = this->m_hapsAudit.dMaxStackSinceMove;
         this->m_hapsAudit.nMaxPhasesBeforeMove = this->m_hapsAudit.nMaxPhasesSinceMove;
-        this->m_hapsAudit.dMaxStackSinceMove = valBest;
-        this->m_hapsAudit.nMaxPhasesSinceMove = vPickData.size();
         this->m_hapsAudit.dLatPrev = m_dLatitude;
         this->m_hapsAudit.dLonPrev = m_dLongitude;
         this->m_hapsAudit.dDepthPrev = m_dDepth;
       }
+      this->m_hapsAudit.dMaxStackSinceMove = valBest;
+      double dCurrDataCount = vPickData.size();
+      if(dCurrDataCount > this->m_hapsAudit.nMaxPhasesSinceMove)
+        this->m_hapsAudit.nMaxPhasesSinceMov = dCurrDataCount;
+
 			setLatitude(xlat);
 			setLongitude(xlon);
 			setDepth(xz);
