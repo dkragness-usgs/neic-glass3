@@ -737,6 +737,30 @@ class CGlass {
 	 * \brief the std::mutex for traveltimes
 	 */
 	static std::mutex m_TTTMutex;
+
+  // This nonsense comes from CTTT and Taper.  These should be 1 struct representing an optionally tapered range instead of an array
+  // Related to Taper Range array
+  static const unsigned int nRangeArraySize = 4;
+  static const unsigned int iTaperUpStart = 0;
+  static const unsigned int iFullStart    = 1;
+  static const unsigned int iFullEnd      = 2;
+  static const unsigned int iTaperDownEnd = 3;
+  // Related to Assoc (non-taper) range array
+  static const unsigned int nAssocArraySize = 2;
+  static const unsigned int iAssocRangeStart = 0;
+  static const unsigned int iAssocRangeEnd = 0;
+
+  // Default Thread count values
+  static const unsigned int DefaultNumNucleationThreads = 5;
+  static const unsigned int DefaultNumHypoThreads = 3;
+  static const unsigned int DefaultNumWebThreads = 0;
+
+  // Other default values
+  static const int          nParamDisabled = -1;  // used to indicate a param is disabled
+  static const int          DefaultHoursWithoutPicking  = nParamDisabled;
+  static const int          DefaultHoursBeforeLookingUp = nParamDisabled;
+  static const int          DefaultMaxPicksPerHour      = nParamDisabled;
+
 };
 }  // namespace glasscore
 #endif  // GLASS_H

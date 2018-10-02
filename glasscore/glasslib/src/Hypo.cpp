@@ -35,7 +35,7 @@ namespace glasscore {
 #define LOCATION_MIN_TIME_STEP_SIZE 0.1
 #define LOCATION_SEARCH_RADIUS_TO_TIME_CONVERSION 30.0
 #define LOCATION_TAPER_CONSTANT 0.0001
-#define LOCATION_MAX_TAPER_TRESH 30
+#define LOCATION_MAX_TAPER_THRESH 30
 
 // ---------------------------------------------------------CHypo
 CHypo::CHypo() {
@@ -308,7 +308,7 @@ void CHypo::addCorrelationReference(std::shared_ptr<CCorrelation> corr) {
 		// NOTE: this only checks by ID, need to improve this to
 		// an ID/Source check
 		if (q->getID() == corr->getID()) {
-			char sLog[1024];
+			char sLog[nMaxLogEntrySize];
 			snprintf(sLog, sizeof(sLog),
 						"CHypo::addCorrelation: ** Duplicate correlation %s",
 						corr->getSite()->getSCNL().c_str());
@@ -370,7 +370,7 @@ double CHypo::calculateAffinity(std::shared_ptr<CPick> pck) {
 
 	// check to see if this pick can  associate with this hypo using
 	// the given association standard deviation
-	if (!canAssociate(pck, 1.0, sdassoc)) {
+	if (!canAssociate(pck, dResidualSigmaLengthSeconds, sdassoc)) {
 		// the pick did not associate
 		return (0.0);
 	}
@@ -394,7 +394,7 @@ double CHypo::calculateAffinity(std::shared_ptr<CPick> pck) {
 
 	// now compute the gap factor using a taper
 	glass3::util::Taper gap;
-	gap = glass3::util::Taper(0.0, 0.0, 270.0, 360.0);
+	gap = glass3::util::Taper(0.0, 0.0, dGapTaperDownBegin, dGapTaperDownEnd);
 	double gapfac = gap.calculateValue(m_dGap);
 
 	// compute the affinity of this pick to this hypo by multiplying
@@ -430,7 +430,7 @@ double CHypo::calculateAffinity(std::shared_ptr<CCorrelation> corr) {
 
 	// compute time factor, multiply by 10 to make time factor
 	// have equal weight to the distance factor
-	double tFactor = std::abs(m_tOrigin - corr->getTCorrelation()) * 10;
+	double tFactor = std::abs(m_tOrigin - corr->getTCorrelation()) * dTimeToDistanceCorrectionFactor;
 
 	// hypo is in geographic coordinates
 	glass3::util::Geo geo1;
@@ -566,7 +566,7 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 
 	// taper to lower calculateValue if large azimuthal gap
 	glass3::util::Taper taperGap;
-	taperGap = glass3::util::Taper(0., 0., m_dAzimuthTaper, 360.);
+	taperGap = glass3::util::Taper(0., 0., m_dAzimuthTaper, dGapTaperDownEnd);
 
 	// these hold the values of the initial, current, and best stack location
 	double valStart = 0;
@@ -577,7 +577,7 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 			* taperGap.calculateValue(
 					calculateGap(m_dLatitude, m_dLongitude, m_dDepth));
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// if testing locator, setup output file
 	std::ofstream outfile;
@@ -604,7 +604,7 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 	// end point. As we iterate through trial locations this makes
 	// the search space decrease.
 	glass3::util::Taper taper;
-	taper = glass3::util::Taper(-0.0001, -0.0001, -0.0001, nIter + 0.0001);
+	taper = glass3::util::Taper(-LOCATION_TAPER_CONSTANT , -LOCATION_TAPER_CONSTANT, -LOCATION_TAPER_CONSTANT, nIter + LOCATION_TAPER_CONSTANT);
 
 	// for the number of requested iterations
 	for (int iter = 0; iter < nIter; iter++) {
@@ -619,8 +619,8 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 		// init x, y, and z gaussian step distances
 		// the km for dx and dy is double so the epicentral search space is
 		// larger than the depth search space, because we live on a sphere
-		double dx = glass3::util::GlassMath::gauss(0.0, dkm * 2);
-		double dy = glass3::util::GlassMath::gauss(0.0, dkm * 2);
+		double dx = glass3::util::GlassMath::gauss(0.0, dkm * dVerticalToHorizontalDistanceCorrectionFactor);
+		double dy = glass3::util::GlassMath::gauss(0.0, dkm * dVerticalToHorizontalDistanceCorrectionFactor);
 		double dz = glass3::util::GlassMath::gauss(0.0, dkm);
 		double dt = glass3::util::GlassMath::gauss(0.0, dOt);
 
@@ -665,8 +665,8 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 		if (bayes > valBest
 				|| (bayes > m_dNucleationStackThreshold
 						&& (valBest - bayes)
-								< (pow(glass3::util::GlassMath::gauss(0, .2), 2)
-										/ (500. / dkm)))) {
+								< (pow(glass3::util::GlassMath::gauss(0, dBayesStackSlopCalculationEmpiricalFactor1MaxRange), dBayesStackSlopCalculationEmpiricalFactor2Exponent)
+										/ (dBayesStackSlopCalculationEmpiricalFactor3StepSizeReduction / dkm)))) {
 			// then this is the new best value
 			valBest = bayes;
 
@@ -679,10 +679,10 @@ void CHypo::annealingLocateBayes(int nIter, double dStart, double dStop,
 									* cos(DEG2RAD * xlat)
 									* (xlon - this->m_hapsAudit.dLonPrev)
 									* cos(DEG2RAD * xlat)) * DEG2KM
-					> m_dWebResolution / 2.0)
-					|| (fabs(this->m_hapsAudit.dDepthPrev - xz) > 7.5
-							&& fabs(m_dDepth - xz)
-									> this->m_hapsAudit.dDepthPrev * 0.25)) {
+           > m_dWebResolution * dWebResolutionRatioForEvaluatingLargeEpicentralLocationChange)
+          || (fabs(this->m_hapsAudit.dDepthPrev - xz) > dMinimumThresholdForEvaluatingHypocentralDepthChangeKM
+              && fabs(m_dDepth - xz)
+             > this->m_hapsAudit.dDepthPrev * dMinimumThresholdForEvaluatingHypocentralDepthChangeRatio)) {
 				// this represents a LARGE movement (currently
 				// m_dWebResolution / 2).  Update auditing information
 				this->m_hapsAudit.dtLastBigMove = glass3::util::Date::now();
@@ -762,7 +762,7 @@ void CHypo::annealingLocateResidual(int nIter, double dStart, double dStop,
 	if (m_bFixed) {
 		return;
 	}
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	double delta;
 	double sigma;
@@ -794,7 +794,8 @@ void CHypo::annealingLocateResidual(int nIter, double dStart, double dStop,
 	// create taper using the number of iterations to define the
 	// end point
 	glass3::util::Taper taper;
-	taper = glass3::util::Taper(-0.0001, -0.0001, -0.0001, nIter + 0.0001);
+	taper = glass3::util::Taper(-LOCATION_TAPER_CONSTANT, -LOCATION_TAPER_CONSTANT, 
+                              -LOCATION_TAPER_CONSTANT, nIter + LOCATION_TAPER_CONSTANT);
 
 	// for the number of requested iterations
 	for (int iter = 0; iter < nIter; iter++) {
@@ -807,8 +808,8 @@ void CHypo::annealingLocateResidual(int nIter, double dStart, double dStop,
 				+ tStop;
 
 		// init x, y, and z gaussian step distances
-		double dx = glass3::util::GlassMath::gauss(0.0, dkm * 2);
-		double dy = glass3::util::GlassMath::gauss(0.0, dkm * 2);
+		double dx = glass3::util::GlassMath::gauss(0.0, dkm * dVerticalToHorizontalDistanceCorrectionFactor);
+		double dy = glass3::util::GlassMath::gauss(0.0, dkm * dVerticalToHorizontalDistanceCorrectionFactor);
 		double dz = glass3::util::GlassMath::gauss(0.0, dkm);
 		double dt = glass3::util::GlassMath::gauss(0.0, dOt);
 
@@ -848,13 +849,13 @@ void CHypo::annealingLocateResidual(int nIter, double dStart, double dStop,
 			// check to see if this is a "BIG" move.  If so, update audit
 			// information.
 			if ((sqrt(
-					(xlat - m_dLatitude) * (xlat - m_dLatitude)
-							+ (xlon - m_dLongitude) * cos(DEG2RAD * xlat)
-									* (xlon - m_dLongitude)
-									* cos(DEG2RAD * xlat)) * DEG2KM
-					> m_dWebResolution / 2.0)
-					|| (fabs(m_dDepth - xz) > 7.5
-							&& fabs(m_dDepth - xz) > m_dDepth * 0.25)) {
+					      (xlat - m_dLatitude) * (xlat - m_dLatitude)
+						  	+ (xlon - m_dLongitude) * cos(DEG2RAD * xlat)
+								* (xlon - m_dLongitude) * cos(DEG2RAD * xlat)) * DEG2KM
+           > m_dWebResolution * dWebResolutionRatioForEvaluatingLargeEpicentralLocationChange)
+          || (fabs(this->m_hapsAudit.dDepthPrev - xz) > dMinimumThresholdForEvaluatingHypocentralDepthChangeKM
+              && fabs(m_dDepth - xz)
+             > this->m_hapsAudit.dDepthPrev * dMinimumThresholdForEvaluatingHypocentralDepthChangeRatio)) {
 				// this represents a LARGE movement (currently m_dWebResolution
 				// / 2).  Update auditing information
 				this->m_hapsAudit.dtLastBigMove = glass3::util::Date::now();
@@ -995,7 +996,7 @@ bool CHypo::canAssociate(std::shared_ptr<CPick> pick, double sigma,
 	// and sigma
 	double stdev = tRes / sigma;
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// check if pick standard deviation is greater than cutoff
 	if (stdev > sdassoc) {
@@ -1048,7 +1049,7 @@ bool CHypo::canAssociate(std::shared_ptr<CCorrelation> corr, double tWindow,
 		return (false);
 	}
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	double tDist = 0;
 	double xDist = 0;
@@ -1144,8 +1145,8 @@ bool CHypo::cancelCheck() {
 		return (false);
 	}
 
-	char sLog[2048];
-	char sHypo[1024];
+	char sLog[2* nMaxLogEntrySize];
+	char sHypo[nMaxLogEntrySize];
 
 	glass3::util::Date dt = glass3::util::Date(m_tOrigin);
 	snprintf(sHypo, sizeof(sHypo), "CHypo::cancel: %s tOrg:%s; dLat:%9.4f; "
@@ -1513,7 +1514,7 @@ double CHypo::calculateBayes(double xlat, double xlon, double xZ, double oT,
 	glass3::util::Geo geo;
 	double value = 0.;
 	double tcal;
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// define a taper for sigma, makes close in readings have higher weight
 	// ranges from 0.75-3.0 from 0-2 degrees, than 3.0 after that (see loop)
@@ -1781,7 +1782,7 @@ double CHypo::calculateAbsResidualSum(double xlat, double xlon, double xZ,
 
 	double sigma;
 	double value = 0.;
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// This sets the travel-time look up location
 	if (m_pNucleationTravelTime1 != NULL) {
@@ -2184,6 +2185,7 @@ std::shared_ptr<json::Object> CHypo::generateHypoMessage() {
 						+ std::to_string(m_hapsAudit.dDepthPrev) + " "
 						+ std::to_string(m_iProcessCount) + " "
 						+ std::to_string(m_dBayesValue) + " "
+						+ std::to_string(m_vPickData.size()) + " "
 						+ std::to_string(m_dInitialBayesValue) + " "
 						+ std::to_string(m_dMinDistance) + " "
 						+ std::to_string(m_dMedianDistance) + " "
@@ -2287,7 +2289,7 @@ double CHypo::localize() {
 	}
 
 	// Localize this hypo
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	glass3::util::Logger::log("debug", "CHypo::localize. " + m_sID);
 
@@ -2316,7 +2318,7 @@ double CHypo::localize() {
 	glass3::util::Taper taper(
 			-LOCATION_TAPER_CONSTANT, -LOCATION_TAPER_CONSTANT,
 			-LOCATION_TAPER_CONSTANT,
-			LOCATION_MAX_TAPER_TRESH + LOCATION_TAPER_CONSTANT);
+			LOCATION_MAX_TAPER_THRESH + LOCATION_TAPER_CONSTANT);
 	double searchR = (m_dWebResolution / 4.
 			+ taper.calculateValue(m_vPickData.size()) * .75 * m_dWebResolution)
 			/ 2.0;
@@ -2409,7 +2411,7 @@ bool CHypo::pruneData() {
 
 	// get the standard deviation allowed for pruning
 	double sdprune = CGlass::getPruningSDCutoff();
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// for each pick in this hypo
 	for (auto pck : m_vPickData) {
@@ -2571,8 +2573,8 @@ bool CHypo::reportCheck() {
 		return (false);
 	}
 
-	char sLog[2048];
-	char sHypo[1024];
+	char sLog[2* nMaxLogEntrySize];
+	char sHypo[nMaxLogEntrySize];
 
 	glass3::util::Date dt = glass3::util::Date(m_tOrigin);
 	snprintf(sHypo, sizeof(sHypo), "%s %s%9.4f%10.4f%6.1f %d", m_sID.c_str(),
@@ -2635,7 +2637,7 @@ bool CHypo::resolveData(std::shared_ptr<CHypo> hyp, bool allowStealing) {
 	glass3::util::Logger::log("debug", "CHypo::resolve. " + m_sID);
 
 	bool bAssoc = false;
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// handle picks
 	// for each pick in this hypo
@@ -2899,7 +2901,7 @@ void CHypo::trap() {
 	// lock mutex for this scope
 	std::lock_guard<std::recursive_mutex> guard(m_HypoMutex);
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// for each pick in this hypocenter
 	for (const auto &q : m_vPickData) {

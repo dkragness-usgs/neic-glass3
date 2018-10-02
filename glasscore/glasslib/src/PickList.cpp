@@ -53,7 +53,7 @@ void CPickList::clear() {
 
 	// reset nPick
 	m_iCountOfTotalPicksProcessed = 0;
-	m_iMaxAllowablePickCount = 10000;
+	m_iMaxAllowablePickCount = Default_nMaxAllowableCorrelationCount;
 
 	// init the upper and lower values
 	std::shared_ptr<CSite> nullSite;
@@ -141,7 +141,7 @@ bool CPickList::addPick(std::shared_ptr<json::Object> pick) {
 	m_PicksToProcessMutex.unlock();
 
 	// don't let the queue get too large
-	while (queueSize >= 1000) {
+	while (queueSize >= PicksToProcessQueueMaxDesiredSize) {
 		/* glassutil::CLogit::log(glassutil::log_level::debug,
 		 "CPickList::addPick. Delaying work due to "
 		 "PickList process queue size."); */
@@ -308,7 +308,7 @@ bool CPickList::scavenge(std::shared_ptr<CHypo> hyp, double tDuration) {
 		return (false);
 	}
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	glass3::util::Logger::log("debug", "CPickList::scavenge. " + hyp->getID());
 

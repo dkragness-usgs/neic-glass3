@@ -1258,6 +1258,37 @@ class CHypo {
 	 * \brief The auditing structure for this hypo
 	 */
 	HypoAuditingPerformanceStruct m_hapsAudit;
+
+  // hmmm... all these double assigns are not gonna work.  They need to be done in 
+  // the source file.  John likes to do that kinda stuff, I'm sure he'll fix it....
+  const static double dResidualSigmaLengthSeconds = 1.0;
+  const static double dGapTaperDownBegin = 270.0;
+  const static double dGapTaperDownEnd = 360.0;
+  const static double dTimeToDistanceCorrectionFactor = 10.0;
+  const static double dVerticalToHorizontalDistanceCorrectionFactor = 2.0;
+  const static unsigned int nMaxLogEntrySize = 1024;
+
+  const static double dBayesStackSlopCalculationEmpiricalFactor1MaxRange = 0.2;
+  const static double dBayesStackSlopCalculationEmpiricalFactor2Exponent = 2.0;
+  const static double dBayesStackSlopCalculationEmpiricalFactor3StepSizeReduction = 500.0;
+
+  // For auditing purposes, indicates what portion of the Web Resolution is required
+  // to indicate an epicentral location change was significant(big, large, etc..)
+  // If the the epicentral delta is longer than the name length of the constant, then
+  // it must be a significante move.  :-p
+  const static double dWebResolutionRatioForEvaluatingLargeEpicentralLocationChange = 0.5;
+
+  // For auditing purposes, indicates the minimum depth change in km that constitutes a
+  // significant change in location.
+  const static double dMinimumThresholdForEvaluatingHypocentralDepthChangeKM = 7.5;
+  // For auditing purposes, indicates the minimum depth change (expressed as a ratio to
+  // the previous depth, that constitutes a significant change in location.
+  const static double dMinimumThresholdForEvaluatingHypocentralDepthChangeRatio = 0.25;
+
+  public:
+    const static double dInitialAnnealStepReducationFactor = 2.0;
+    const static double dFinalAnnealStepReducationFactor   = 100.0;
+
 };
 }  // namespace glasscore
 #endif  // HYPO_H

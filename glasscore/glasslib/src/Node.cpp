@@ -73,7 +73,7 @@ void CNode::clear() {
 
 	clearSiteLinks();
 
-	m_sName = "Nemo";
+	m_sName = "UNDEFINED";
 	m_pWeb = NULL;
 	m_dLatitude = 0;
 	m_dLongitude = 0;

@@ -368,6 +368,18 @@ class CHypoList : public glass3::util::ThreadBaseClass {
 	 * design as delivered by the contractor.
 	 */
 	mutable std::recursive_mutex m_HypoListMutex;
+
+  static const int nEmpiricalNumberOfSecondsInPastToSearchForHyposForPick = 2400;
+  static const int nMaxAllowableHypoCount = 100;
+  static const unsigned int nMaxLogEntrySize = 1024;
+
+  static const unsigned int nMediumNumberOfAnnealIterations = 2000;
+
+  static const double dFinalAnnealTimeStepSize;
+  static const double dPreferredMergeStackImprovementRatio;
+  static const double dMinimumRoundingProtectionRatio;
+  
+
 };
 }  // namespace glasscore
 #endif  // HYPOLIST_H

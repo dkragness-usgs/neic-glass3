@@ -13,7 +13,7 @@
 #include "Site.h"
 #include "SiteList.h"
 #include "Glass.h"
-
+#include <geo.h>
 namespace glasscore {
 
 // ---------------------------------------------------------CCorrelation
@@ -474,7 +474,7 @@ double CCorrelation::getTOrigin() const {
 /*
 
  // ---------------------------------------------------------Process
- bool CCorrelation::process(json::Object *com) {
+ bool CCorrelation::process(json::Object *com) {  // should this function go away, since it's commented out?
 
  // null check json
  if (com == NULL) {
@@ -578,7 +578,7 @@ double CCorrelation::getTOrigin() const {
 
  // define a two second search window
  // NOTE: Hard coded
- double t1 = torg - 1.0;
+ double t1 = torg - 1.0;  // DK CLEANUP - if this function is kept, these 1.0's should be replaced by some constant
  double t2 = torg + 1.0;
 
  // search for the first hypocenter in the window
@@ -596,9 +596,9 @@ double CCorrelation::getTOrigin() const {
  // NOTE: BUG! This is checking the distance to ITSELF?!
  // Shouldn't it be between the HYPO and the correlation?
  CGeo geo1;
- geo1.setGeographic(lat, lon, 6371.0);
+ geo1.setGeographic(lat, lon, EARTHRADIUSKM);
  CGeo geo2;
- geo2.setGeographic(lat, lon, 6371.0);
+ geo2.setGeographic(lat, lon, EARTHRADIUSKM);
  double delta = RAD2DEG * geo1.delta(&geo2);
 
  // if the correlation? is more than 0.1 degrees away, it isn't a match

@@ -293,6 +293,12 @@ class CPickList : public glass3::util::ThreadBaseClass {
 	 * getPicks() calls
 	 */
 	std::shared_ptr<CPick> m_UpperValue;
+
+  static const int Default_nMaxAllowableCorrelationCount = 10000;
+  static const int PicksToProcessQueueMaxDesiredSize = 1000;
+  static const unsigned int nMaxLogEntrySize = 1024;
+
+
 };
 }  // namespace glasscore
 #endif  // PICKLIST_H

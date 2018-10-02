@@ -42,7 +42,7 @@ void CCorrelationList::clear() {
 
 	// reset nCorrelation
 	m_iCountOfTotalCorrelationsProcessed = 0;
-	m_iMaxAllowableCorrelationCount = 10000;
+	m_iMaxAllowableCorrelationCount = Default_nMaxAllowableCorrelationCount;
 }
 
 // -------------------------------------------------------receiveExternalMessage

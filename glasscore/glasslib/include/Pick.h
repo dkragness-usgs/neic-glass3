@@ -372,6 +372,12 @@ class CPick {
 	 * design as delivered by the contractor.
 	 */
 	mutable std::recursive_mutex m_PickMutex;
+
+  static const unsigned int nMaxLogEntrySize = 1024;
+  static const unsigned int nLocationIterationsAfterNucleation = 3;
+  static const double dAnnealMaxPostNucleationInitialTimeStepSize = 5.0;
+  static const double dAnnealPostNucleationFinalTimeStepSize = 5.0;
+
 };
 }  // namespace glasscore
 #endif  // PICK_H

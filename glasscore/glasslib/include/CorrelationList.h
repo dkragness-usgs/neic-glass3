@@ -234,6 +234,9 @@ class CCorrelationList {
 	 * design as delivered by the contractor.
 	 */
 	mutable std::recursive_mutex m_CorrelationListMutex;
+
+  static const int Default_nMaxAllowableCorrelationCount = 10000;
+
 };
 }   // namespace glasscore
 #endif  // CORRELATIONLIST_H

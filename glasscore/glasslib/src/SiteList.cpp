@@ -347,7 +347,7 @@ std::shared_ptr<CSite> CSiteList::getSite(std::string site, std::string comp,
 			(*request)["Loc"] = loc;
 
 			// log
-			char sLog[1024];
+			char sLog[nMaxLogEntrySize];
 			snprintf(sLog, sizeof(sLog), "CSiteList::getSite: SCNL:%s, "
 						"requesting information.",
 						scnl.c_str());

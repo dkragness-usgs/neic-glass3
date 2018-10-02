@@ -37,6 +37,9 @@ Associator::Associator(glass3::util::iInput* inputint,
 
 	tGlasscoreDuration = std::chrono::duration<double>::zero();
 
+  // initialize default values in CGlass
+  glasscore::CGlass::clear();
+
 	// clear / create object(s)
 	clear();
 }
