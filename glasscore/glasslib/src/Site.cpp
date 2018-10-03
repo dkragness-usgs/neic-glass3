@@ -247,7 +247,7 @@ bool CSite::initialize(std::string sta, std::string comp, std::string net,
 	// convert site elevation in meters to surface depth in km
 	// (invert the sign to get positive (above earth radius)
 	// and then divide by 1000 (meters to km))
-	setLocation(lat, lon, -0.001 * elv);
+	setLocation(lat, lon, METERS_ELEVATAION_TO_KM_DEPTH * elv);  
 
 	// quality
 	m_dQuality = qual;
@@ -282,9 +282,10 @@ void CSite::clear() {
 
 	// clear geographic
 	m_Geo = glass3::util::Geo();
-	m_daUnitVectors[0] = 0;
-	m_daUnitVectors[1] = 0;
-	m_daUnitVectors[2] = 0;
+
+  m_daUnitVectors[xCoordIndex] = 0;
+	m_daUnitVectors[yCoordIndex] = 0;
+	m_daUnitVectors[zCoordIndex] = 0;
 
 	// clear lists
 	m_vNodeMutex.lock();
@@ -331,9 +332,9 @@ void CSite::update(CSite *aSite) {
 	double vec[3];
 	aSite->getUnitVectors(vec);
 
-	m_daUnitVectors[0] = vec[0];
-	m_daUnitVectors[1] = vec[1];
-	m_daUnitVectors[2] = vec[2];
+  m_daUnitVectors[xCoordIndex] = vec[xCoordIndex];
+	m_daUnitVectors[yCoordIndex] = vec[yCoordIndex];
+	m_daUnitVectors[zCoordIndex] = vec[zCoordIndex];
 
 	// copy statistics
 	m_tLastPickAdded = aSite->getTLastPickAdded();
@@ -347,9 +348,9 @@ double * CSite::getUnitVectors(double * vec) {
 		return (NULL);
 	}
 
-	vec[0] = m_daUnitVectors[0];
-	vec[1] = m_daUnitVectors[1];
-	vec[2] = m_daUnitVectors[2];
+  vec[xCoordIndex] = m_daUnitVectors[xCoordIndex];
+	vec[yCoordIndex] = m_daUnitVectors[yCoordIndex];
+	vec[zCoordIndex] = m_daUnitVectors[zCoordIndex];
 
 	return (vec);
 }
@@ -359,9 +360,9 @@ void CSite::setLocation(double lat, double lon, double z) {
 	std::lock_guard<std::recursive_mutex> guard(m_SiteMutex);
 	// construct unit vector in cartesian earth coordinates
 	double rxy = cos(DEG2RAD * lat);
-	m_daUnitVectors[0] = rxy * cos(DEG2RAD * lon);
-	m_daUnitVectors[1] = rxy * sin(DEG2RAD * lon);
-	m_daUnitVectors[2] = sin(DEG2RAD * lat);
+	m_daUnitVectors[xCoordIndex] = rxy * cos(DEG2RAD * lon);
+	m_daUnitVectors[yCoordIndex] = rxy * sin(DEG2RAD * lon);
+	m_daUnitVectors[zCoordIndex] = sin(DEG2RAD * lat);
 
 	// set geographic object
 	m_Geo.setGeographic(lat, lon, EARTHRADIUSKM - z);
@@ -390,13 +391,19 @@ double CSite::getDistance(std::shared_ptr<CSite> site) {
 	}
 
 	// use unit vectors in cartesian earth coordinates
-	// to quickly great circle distance in km
+	// to quickly calculate great circle distance in km
 	double dot = 0;
 	double dkm;
 	for (int i = 0; i < 3; i++) {
-		dot += m_daUnitVectors[i] * site->m_daUnitVectors[i];
+		dot += m_daUnitVectors[i] * site->m_daUnitVectors[i];  // how does this code work?  isn't m_daUnitVectors private?
 	}
-	dkm = 6366.2 * acos(dot);
+	dkm = 6366.2 * acos(dot);  // not sure where this constant came from.  We tend to see 6371.0 used which is the IUGG mean radius,
+                             // based on polar and equatorial radii.  This 6366.2 seems to be based on the
+                             // old definition of a km as 1/40000th of the circumference of the earth.  The preferred definition
+                             // seems to be one based on latitude, with equatorial at 6378 and polar at 6356.
+                             // All potential radii used are within 0.5% of each other, so it probably doesn't make that much
+                             // difference.  I would be in favor of using the same 6371 value that we use in other places:
+                             //  geo.h's EARTHRADIUSKM for consistency, but you'd have to run that by Will.
 
 	// return distance
 	return (dkm);

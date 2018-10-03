@@ -507,7 +507,11 @@ class CSite {
 	 */
 	double m_daUnitVectors[3];
 
-	/**
+  static const int xCoordIndex = 0;
+  static const int yCoordIndex = 1;
+  static const int zCoordIndex = 2;
+
+  /**
 	 * \brief A boolean flag indicating whether this site is disabled external
 	 * to glass. This is different than bUse, which is managed by glass
 	 * processes.

@@ -281,6 +281,8 @@ class CSiteList : public glass3::util::ThreadBaseClass {
 	 * site is declared too noisy to use, a -1 disables this metric
 	 */
 	std::atomic<int> m_iMaxPicksPerHour;
+
+  static const int nHoursToSeconds = 3600;
 };
 }  // namespace glasscore
 #endif  // SITELIST_H

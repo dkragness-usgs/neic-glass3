@@ -623,6 +623,12 @@ class CWeb : public glass3::util::ThreadBaseClass {
 	 * design as delivered by the contractor.
 	 */
 	mutable std::recursive_mutex m_WebMutex;
+
+  static const unsigned int nMaxLogEntrySize = 1024;
+  static const double dDefaultMaxDepth;
+  static const double dDefaultAziTaper;
+  static const double dNoDepthResolution;
+  static const double dTravelTimeUndefined;
 };
 }  // namespace glasscore
 #endif  // WEB_H

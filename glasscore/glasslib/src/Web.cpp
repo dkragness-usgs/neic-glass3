@@ -27,6 +27,11 @@
 
 namespace glasscore {
 
+  const double CWeb::dDefaultMaxDepth = 800.0;
+  const double CWeb::dDefaultAziTaper = 360.0;
+  const double CWeb::dNoDepthResolution = -1.0;
+  const double CWeb::dTravelTimeUndefined = -1.0;
+  
 // site sorting function
 // Compares nodal distance for nearest site assignment
 bool sortSite(const std::pair<double, std::shared_ptr<CSite>> &lhs,
@@ -75,17 +80,19 @@ CWeb::~CWeb() {
 // ---------------------------------------------------------clear
 void CWeb::clear() {
 	std::lock_guard<std::recursive_mutex> webGuard(m_WebMutex);
+
+  // reset to hardcoded DEFAULT values
 	m_iNumStationsPerNode = 10;
 	m_iNucleationDataCountThreshold = 5;
 	m_dNucleationStackThreshold = 2.5;
 	m_dNodeResolution = 100;
-	m_dDepthResolution = -1;
-	m_sName = "Nemo";
+	m_dDepthResolution = dNoDepthResolution;
+	m_sName = "UNDEFINED";
 	m_pSiteList = NULL;
 	m_bUpdate = false;
 	m_bSaveGrid = false;
-	m_dAzimuthTaper = 360.0;
-	m_dMaxDepth = 800.0;
+	m_dAzimuthTaper = dDefaultAziTaper;
+	m_dMaxDepth = dDefaultMaxDepth;
 
 	// clear out all the nodes in the web
 	try {
@@ -198,7 +205,7 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 		return (false);
 	}
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 	std::vector<double> depthLayerArray;
 	int numDepthLayers = 0;
 
@@ -226,13 +233,13 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 	}
 
 	// calculate the number of nodes from the desired resolution
-	// using a function that was empirically determined via using different
+	// using a function that was EMPIRICALLY determined via using different
 	// numNode values and computing the average resolution from a node to
 	// the nearest other 6 nodes. The spreadsheet used to calculate this function
-	// is located in NodesToResoultionCalculations.xlsx.
+	// is located in ** NodesToResoultionCalculations.xlsx ** .
 	// The intention is to calculate the number of nodes to ensure the desired
 	// node resolution when the grid is generated below
-	int numNodes = 5.0E8 * std::pow(getNodeResolution(), -1.965);
+	int numNodes = 5.3E8 * std::pow(getNodeResolution(), -1.965);  
 
 	// should have an odd number of nodes (see paper named below)
 	if ((numNodes % 2) == 0) {
@@ -263,7 +270,7 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 	// std::vector<std::pair<double, double>> vVert;
 	int iNodeCount = 0;
 	int numSamples = (numNodes - 1) / 2;
-	double fibRatio = (1 + std::sqrt(5.0)) / 2.0;  // AKA golden ratio
+	double fibRatio = 1.6180339888;  // AKA golden ratio  - https://en.wikipedia.org/wiki/Golden_ratio 
 
 	for (int i = (-1 * numSamples); i <= numSamples; i++) {
 		double aLat = std::asin((2 * i) / ((2.0 * numSamples) + 1))
@@ -271,11 +278,11 @@ bool CWeb::generateGlobalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 		double aLon = fmod(i, fibRatio) * (360.0 / fibRatio);
 
 		// longitude bounds check
-		if (aLon < -180.0) {
-			aLon += 360.0;
+		if (aLon < MINLONGITUDE) {
+			aLon += LONGITUDEWRAP;
 		}
-		if (aLon > 180.0) {
-			aLon -= 360.0;
+		if (aLon > MAXLONGITUDE) {
+			aLon -= LONGITUDEWRAP;
 		}
 
 		// lock the site list while adding a node
@@ -389,7 +396,7 @@ bool CWeb::generateLocalGrid(std::shared_ptr<json::Object> gridConfiguration) {
 		return (false);
 	}
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 	double lat = 0;
 	double lon = 0;
 	int rows = 0;
@@ -637,7 +644,7 @@ bool CWeb::generateExplicitGrid(
 		return (false);
 	}
 
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 
 	// load basic (common) grid configuration
 	if (loadGridConfiguration(gridConfiguration) == false) {
@@ -646,6 +653,10 @@ bool CWeb::generateExplicitGrid(
 
 	int nN = 0;
 	std::vector<std::vector<double>> nodes;
+  const int iNodeIndexLat   = 0;
+  const int iNodeIndexLon   = 1;
+  const int iNodeIndexDepth = 2;
+
 	double resol = 0;
 
 	// the number of columns in this generateLocalGrid
@@ -682,9 +693,9 @@ bool CWeb::generateExplicitGrid(
 			double lon = obj["Longitude"].ToDouble();
 			double depth = obj["Depth"].ToDouble();
 			nodes[i].resize(3);
-			nodes[i][0] = lat;
-			nodes[i][1] = lon;
-			nodes[i][2] = depth;
+			nodes[i][iNodeIndexLat] = lat;
+			nodes[i][iNodeIndexLon] = lon;
+			nodes[i][iNodeIndexDepth] = depth;
 			i++;
 		}
 	} else {
@@ -714,9 +725,9 @@ bool CWeb::generateExplicitGrid(
 	// loop through node vector
 	for (int i = 0; i < nN; i++) {
 		// get lat,lon,depth
-		double lat = nodes[i][0];
-		double lon = nodes[i][1];
-		double Z = nodes[i][2];
+		double lat = nodes[i][iNodeIndexLat];
+		double lon = nodes[i][iNodeIndexLon];
+		double Z = nodes[i][iNodeIndexDepth];
 
 		std::lock_guard<std::mutex> guard(m_vSiteMutex);
 
@@ -781,14 +792,14 @@ bool CWeb::loadGridConfiguration(
 	}
 
 	// grid definition variables and defaults
-	std::string name = "Nemo";
+	std::string name = "UNKNOWN";
 	int detect = CGlass::getNumStationsPerNode();
 	int nucleate = CGlass::getNucleationDataCountThreshold();
 	double thresh = CGlass::getNucleationStackThreshold();
 
 	double resol = 0;
-	double aziTaper = 360.0;
-	double maxDepth = 800.0;
+	double aziTaper = dDefaultAziTaper;
+	double maxDepth = dDefaultMaxDepth;
 	bool saveGrid = false;
 	bool update = false;
 
@@ -900,7 +911,7 @@ bool CWeb::loadGridConfiguration(
 					== json::ValueType::DoubleVal)) {
 		m_dDepthResolution = (*gridConfiguration)["DepthResolution"].ToDouble();
 	} else {
-		m_dDepthResolution = -1;
+		m_dDepthResolution = dNoDepthResolution;
 	}
 
 	// initialize
@@ -1235,7 +1246,7 @@ bool CWeb::loadWebSiteList() {
 	}
 
 	// log
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 	snprintf(sLog, sizeof(sLog),
 				"CWeb::loadWebSiteList: %d sites available for web %s", nsite,
 				m_sName.c_str());
@@ -1287,7 +1298,7 @@ void CWeb::sortSiteListForNode(double lat, double lon) {
 	glass3::util::Geo geo;
 
 	// NOTE: node depth is ignored here
-	geo.setGeographic(lat, lon, 6371.0);
+	geo.setGeographic(lat, lon, EARTHRADIUSKM);
 
 	// set the distance to each site
 	for (int i = 0; i < m_vSitesSortedForCurrentNode.size(); i++) {
@@ -1318,7 +1329,7 @@ std::shared_ptr<CNode> CWeb::generateNode(double lat, double lon, double z,
 		return (NULL);
 	}
 	double maxZ = m_dMaxDepth;
-	if (m_dDepthResolution != -1) {
+	if (m_dDepthResolution != dNoDepthResolution) {
 		maxZ = z + m_dDepthResolution;
 	}
 
@@ -1414,12 +1425,12 @@ std::shared_ptr<CNode> CWeb::generateNodeSites(std::shared_ptr<CNode> node) {
 		double delta = RAD2DEG * aSite.first;
 
 		// compute traveltimes between site and node
-		double travelTime1 = -1;
+		double travelTime1 = dTravelTimeUndefined;
 		if (m_pNucleationTravelTime1 != NULL) {
 			travelTime1 = m_pNucleationTravelTime1->T(delta);
 		}
 
-		double travelTime2 = -1;
+		double travelTime2 = dTravelTimeUndefined;
 		if (m_pNucleationTravelTime2 != NULL) {
 			travelTime2 = m_pNucleationTravelTime2->T(delta);
 		}
@@ -1484,7 +1495,7 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 
 		node->setEnabled(false);
 
-		if (nodeCount % 1000 == 0) {
+		if (nodeCount % 1000 == 0) { // modding by 1000 ensure we don't get that many log entries
 			glass3::util::Logger::log(
 					"debug",
 					"CWeb::addSite: Station " + site->getSCNL() + " processed "
@@ -1508,7 +1519,7 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 		// set to node geographic location
 		// NOTE: node depth is ignored here
 		glass3::util::Geo geo;
-		geo.setGeographic(node->getLatitude(), node->getLongitude(), 6371.0);
+		geo.setGeographic(node->getLatitude(), node->getLongitude(), EARTHRADIUSKM);
 
 		// compute delta distance between site and node
 		double newDistance = RAD2DEG * site->getGeo().delta(&geo);
@@ -1541,11 +1552,11 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 		}
 
 		// compute traveltimes between site and node
-		double travelTime1 = -1;
+		double travelTime1 = dTravelTimeUndefined;
 		if (m_pNucleationTravelTime1 != NULL) {
 			travelTime1 = m_pNucleationTravelTime1->T(newDistance);
 		}
-		double travelTime2 = -1;
+		double travelTime2 = dTravelTimeUndefined;
 		if (m_pNucleationTravelTime2 != NULL) {
 			travelTime2 = m_pNucleationTravelTime2->T(newDistance);
 		}
@@ -1576,7 +1587,7 @@ void CWeb::addSite(std::shared_ptr<CSite> site) {
 
 	// log info if we've added a site
 	if (nodeModCount > 0) {
-		char sLog[1024];
+		char sLog[nMaxLogEntrySize];
 		snprintf(sLog, sizeof(sLog), "CWeb::addSite: Added site: %s to %d "
 					"node(s) in web: %s",
 					site->getSCNL().c_str(), nodeModCount, m_sName.c_str());
@@ -1639,7 +1650,7 @@ void CWeb::removeSite(std::shared_ptr<CSite> site) {
 
 		node->setEnabled(false);
 
-		if (nodeCount % 1000 == 0) {
+		if (nodeCount % 1000 == 0) {  // modding by 1000 to ensure we don't get too many log entries
 			glass3::util::Logger::log(
 					"debug",
 					"CWeb::remSite: Station " + site->getSCNL() + " processed "
@@ -1679,11 +1690,11 @@ void CWeb::removeSite(std::shared_ptr<CSite> site) {
 			double newDistance = RAD2DEG * nextSite.first;
 
 			// compute traveltimes between site and node
-			double travelTime1 = -1;
+			double travelTime1 = dTravelTimeUndefined;
 			if (m_pNucleationTravelTime1 != NULL) {
 				travelTime1 = m_pNucleationTravelTime1->T(newDistance);
 			}
-			double travelTime2 = -1;
+			double travelTime2 = dTravelTimeUndefined;
 			if (m_pNucleationTravelTime2 != NULL) {
 				travelTime2 = m_pNucleationTravelTime2->T(newDistance);
 			}
@@ -1714,7 +1725,7 @@ void CWeb::removeSite(std::shared_ptr<CSite> site) {
 	}
 
 	// log info if we've removed a site
-	char sLog[1024];
+	char sLog[nMaxLogEntrySize];
 	if (nodeModCount > 0) {
 		snprintf(
 				sLog, sizeof(sLog),

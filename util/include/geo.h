@@ -18,6 +18,8 @@
 #define MAXLONGITUDE 180.0
 #define MINLONGITUDE -180.0
 #define LONGITUDEWRAP 360.0
+#define METERS_ELEVATAION_TO_KM_DEPTH  -0.001
+
 
 namespace glass3 {
 namespace util {

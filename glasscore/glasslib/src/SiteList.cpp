@@ -336,7 +336,7 @@ std::shared_ptr<CSite> CSiteList::getSite(std::string site, std::string comp,
 		}
 
 		// only ask for a station occasionally
-		if ((tNow - tLookup) > (60 * 60 * m_iHoursBeforeLookingUp)) {
+		if ((tNow - tLookup) > (nHoursToSeconds * m_iHoursBeforeLookingUp)) {
 			// construct request json message
 			std::shared_ptr<json::Object> request = std::make_shared<
 					json::Object>(json::Object());
@@ -408,7 +408,7 @@ std::shared_ptr<json::Object> CSiteList::generateSiteListMessage(bool send) {
 		site->getGeo().getGeographic(&lat, &lon, &z);
 
 		// convert from earth radius to elevation
-		double elv = (z - 6317.0) * -1000.0;
+		double elv = (z - EARTHRADIUSKM) / METERS_ELEVATAION_TO_KM_DEPTH;
 
 		// construct a json message containing our site info
 		stationObj["Lat"] = lat;
@@ -465,7 +465,7 @@ glass3::util::WorkState CSiteList::work() {
 	// check every hour
 	// NOTE: hardcoded to one hour, any more often seemed excessive
 	// didn't seem like a parameter that would be changed
-	if ((tNow - m_tLastChecked) < (60 * 60)) {
+	if ((tNow - m_tLastChecked) < (nHoursToSeconds)) {
 		// no
 		return (glass3::util::WorkState::Idle);
 	}
@@ -564,7 +564,7 @@ glass3::util::WorkState CSiteList::work() {
 
 			// have we seen data?
 			if ((tNow - tLastPickAdded)
-					< (60 * 60 * m_iMaxHoursWithoutPicking)) {
+					< (nHoursToSeconds * m_iMaxHoursWithoutPicking)) {
 				glass3::util::Logger::log(
 						"debug",
 						"CSiteList::work: Added " + aSite->getSCNL()
