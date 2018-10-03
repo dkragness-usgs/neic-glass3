@@ -9,6 +9,7 @@
 
 namespace traveltime {
 
+  static const double CTravelTime::dTTInvalid = -1.0 ;
 // ---------------------------------------------------------CTravelTime
 CTravelTime::CTravelTime() {
 	pDistanceWarp = NULL;
@@ -116,6 +117,14 @@ bool CTravelTime::setup(std::string phase, std::string file) {
 								"CTravelTime::Setup: Cannot open file:" + file);
 		return (false);
 	}
+
+  // DK REVIEW - the next set of code is all parsing code.  To be done
+  // properly, there should be a single header with read/write functions
+  // that can serialize/deserialize TT data from/to binary data in memory.
+  // It'd be understandable if we chose to embrace the current code based
+  // on the fact that it works, but did not want ot spend lots of effort investigating
+  // it, and rather put that effort towards fitting in a more robust or more 
+  // efficient TT package.
 
 	// header
 	// read file type
@@ -246,10 +255,10 @@ double CTravelTime::T(double delta) {
 double CTravelTime::T(int deltaIndex, int depthIndex) {
 	// bounds checks
 	if ((deltaIndex < 0) || (deltaIndex >= nDistanceWarp)) {
-		return (-1.0);
+		return (dTTInvalid);
 	}
 	if ((depthIndex < 0) || (depthIndex >= nDepthWarp)) {
-		return (-1.0);
+		return (dTTInvalid);
 	}
 
 	// get traveltime from travel time array
@@ -276,6 +285,20 @@ double CTravelTime::bilinear(double distance, double depth) {
 			// calculate depth index
 			int depthIndex = startingDepth + j;
 
+      // DK REVIEW 
+      // I don't know if there's some code in the generator that ensures we don't
+      // end up with values/requests such that the Depth and Delta indexes aren' at the ends of the table
+      // such that startingDelta + 1 or startingDepth + 1 would push beyond the edge of the
+      // table and return undesirable results.
+      // It looks like there's code in T() that returns a negative value and
+      // ultimately results in this TravelTime object returning a negative value
+      // for data that should be in the table.
+      // Seems like we could add in code that says:
+      // if startingDelta <= nDistanceWarp
+      //  deltaIndex = startingDelta + i;
+      // and do the same thing for depth warp.
+
+
 			// get current travel time from travel time array
 			double time = T(deltaIndex, depthIndex);
 
@@ -301,7 +324,7 @@ double CTravelTime::bilinear(double distance, double depth) {
 	// check if we had errors
 	if (error) {
 		// no traveltime
-		return (-1.0);
+		return (dTTInvalid);
 	}
 
 	return (travelTime);

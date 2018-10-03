@@ -24,7 +24,6 @@
 namespace traveltime {
 
 // forward declarations
-class CRay;
 class CTimeWarp;
 
 /**
@@ -63,7 +62,7 @@ class CTravelTime {
 	 * \brief Load or generate branch data
 	 *
 	 * Attempts to load branch data (using Load()) for a phase using a given
-	 * CRay and phase std::string.
+	 * phase std::string and filename.
 	 *
 	 * \param phase - A std::std::string representing the phase to use, default
 	 * is "P"
@@ -218,6 +217,10 @@ class CTravelTime {
 	 * geographic location. Set by setOrigin()
 	 */
 	glass3::util::Geo geoOrg;
+
+  public:
+  static const double dTTInvalid;
+
 };
 }  // namespace traveltime
 #endif  // TRAVELTIME_H

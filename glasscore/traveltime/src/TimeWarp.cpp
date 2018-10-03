@@ -57,13 +57,19 @@ void CTimeWarp::setup(double gridMin, double gridMax, double decayConst,
 
 // ---------------------------------------------------------grid
 double CTimeWarp::grid(double val) {
-	// Calculate grid index from value
+	// Calculate grid index from value  DK REVIEW - this comment is wrong.  A double index?  indexes are usually positive integers (and 0)
 	if (bSetup == false) {
 		glass3::util::Logger::log("error",
 								"CTimeWarp::grid: Time Warp is not set up.");
 	}
 
-	// init
+	// init 
+  // DK REVIEW - this one's a head scratcher and naming the variables a, b, and c doesn't help.
+  // Looks like the intent here was to transform a measurement on a physical measurement scale to one on 
+  // a pre-conceived internal scale, where datapoints exist at each natural-integral value, such that the data points
+  // are equidistant on the internal scale, and conceived such that they efficiently represent changes in the physical
+  // curve scale.
+  // this should be documented or explained somewhere, or replaced with something else entirely.
 	double a = 1.0 / dSlopeInfinity;
 	double b = 1.0 / dSlopeZero - 1.0 / dSlopeInfinity;
 	double c = b * exp(-dDecayConstant * dGridMinimum) / dDecayConstant
@@ -91,7 +97,7 @@ double CTimeWarp::value(double gridIndex) {
 	// Calculate interpolated value
 	// NOTE: Why 100 here?
 	for (int i = 0; i < 100; i++) {
-		double f = grid(val) - gridIndex;
+		double f = grid(val) - gridIndex;  
 		if (fabs(f) < 0.000001) {
 			break;
 		}

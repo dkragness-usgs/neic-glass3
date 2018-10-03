@@ -17,8 +17,6 @@ namespace traveltime {
 
 #define MAX_TRAV 40  // Maximum number of supported travel time objects
 
-class CRay;
-
 /**
  * \brief travel time interface class
  *
@@ -211,6 +209,7 @@ class CTTT {
 	 */
 	double dAssocMax[MAX_TRAV];
 
+  static const double dTTTooLargeToBeValid;
 	// std::mutex m_TTTMutex;
 };
 }  // namespace traveltime

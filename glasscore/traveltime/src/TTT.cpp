@@ -6,9 +6,10 @@
 #include <string>
 #include <cmath>
 #include "TravelTime.h"
-#include "Ray.h"
 
 namespace traveltime {
+
+  const double CTTT::dTTTooLargeToBeValid = 1000.0;
 
 // ---------------------------------------------------------CTTT
 CTTT::CTTT() {
@@ -16,6 +17,12 @@ CTTT::CTTT() {
 }
 
 // ---------------------------------------------------------CTTT
+// DK REVIEW
+// From a performance perspective, it would make sense to attach CTTT to glass, and remove the SetOrigin() function
+// and "origin" data from CTTT and CTraveltime, such that all source/receiver parameters for a particular
+// call are passed in as function params for that call.
+// Then we could have a single CTTT object and would not have any object data that would
+// result in a bottleneck.
 CTTT::CTTT(const CTTT &ttt) {
 	clear();
 
@@ -60,8 +67,8 @@ void CTTT::clear() {
 	for (int i = 0; i < MAX_TRAV; i++) {
 		pTrv[i] = NULL;
 		pTaper[i] = NULL;
-		dAssocMin[i] = -1.0;
-		dAssocMax[i] = -1.0;
+		dAssocMin[i] = CTravelTime::dTTInvalid;
+		dAssocMax[i] = CTravelTime::dTTInvalid;
 	}
 }
 
@@ -139,7 +146,7 @@ double CTTT::T(glass3::util::Geo *geo, std::string phase) {
 	// no valid travel time
 	dWeight = 0.0;
 	sPhase = "?";
-	return (-1.0);
+	return (CTravelTime::dTTInvalid);
 }
 
 // ---------------------------------------------------------T
@@ -170,7 +177,7 @@ double CTTT::Td(double delta, std::string phase, double depth) {
 	// no valid travel time
 	sPhase = "?";
 	dWeight = 0.0;
-	return (-1.0);
+	return (CTravelTime::dTTInvalid);
 }
 
 // ---------------------------------------------------------T
@@ -200,7 +207,7 @@ double CTTT::T(double delta, std::string phase) {
 	// no valid travel time
 	sPhase = "?";
 	dWeight = 0.0;
-	return (-1.0);
+	return (CTravelTime::dTTInvalid);
 }
 
 // ---------------------------------------------------------T
@@ -208,6 +215,11 @@ double CTTT::testTravelTimes(std::string phase) {
 	// Calculate time from delta (degrees)
 	double time = 0;
 	std::ofstream outfile;
+
+  // DK REVIEW would be best if this was output as a string,
+  // rather than writing to a specific OS file, but it is
+  // presumed this is not a functionality you would use during
+  // a production glass run, but more for testing/debugging of TT.
 	std::string filename = phase + "_travel_time_Z_0.txt";
 	outfile.open(filename, std::ios::out);
 
@@ -245,7 +257,7 @@ double CTTT::T(glass3::util::Geo *geo, double tObserved) {
 	double bestTraveltime;
 	std::string bestPhase;
 	double weight;
-	double minResidual = 1000.0;
+	double minResidual = dTTTooLargeToBeValid;
 
 	// for each phase
 	for (int i = 0; i < nTrv; i++) {
@@ -302,7 +314,7 @@ double CTTT::T(glass3::util::Geo *geo, double tObserved) {
 	}
 
 	// check to see if minimum residual is valid
-	if (minResidual < 999.0) {
+	if (minResidual < dTTTooLargeToBeValid) {
 		sPhase = bestPhase;
 		dWeight = weight;
 
@@ -312,6 +324,6 @@ double CTTT::T(glass3::util::Geo *geo, double tObserved) {
 	// no valid travel time
 	sPhase = "?";
 	dWeight = 0.0;
-	return (-1.0);
+	return (CTravelTime::dTTInvalid);
 }
 }  // namespace traveltime
